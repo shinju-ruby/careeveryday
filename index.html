@@ -379,7 +379,7 @@ nav button{padding:6px 13px;font-size:14.5px}
     <div class="dash">
       <div class="card w"><h2>📅 今天的行程 <button class="act" data-act="openDay" data-date="">＋ 新增</button></h2><div id="wEvents"></div></div>
       <div class="card w"><h2>✅ 今天要做 <button class="act" data-act="openDay" data-date="" data-k="td">＋ 新增</button></h2><div id="wTodos"></div></div>
-      <div class="card w peek"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2>💧 今日習慣 <button class="act" data-act="tab" data-tab="habits">管理</button></h2><div id="wHabits"></div></div>
+      <div class="card w peek"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2>💧 我的今日習慣 <button class="act" data-act="tab" data-tab="habits">管理</button></h2><div id="wHabits"></div></div>
       <div class="card w"><h2>📈 本週進度 <button class="act" data-act="tab" data-tab="calendar">看行事曆</button></h2><div id="wWeek"></div></div>
       <div class="card w peek"><img class="pet left" src="icons/pets/tabby.svg" alt=""><h2>🏕️ 旅行露營 <button class="act" data-act="tab" data-tab="trips">全部</button></h2><div id="wTrips"></div></div>
       <div class="card w"><h2>💰 本月收支 <button class="act" data-act="tab" data-tab="diary">記帳</button></h2><div id="wMoney"></div></div>
@@ -556,7 +556,7 @@ nav button{padding:6px 13px;font-size:14.5px}
   <!-- 習慣 -->
   <section data-page="habits" class="hidden">
     <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
-      <div class="row between"><h2 style="margin:0">💧 今天的習慣</h2>
+      <div class="row between"><h2 style="margin:0">💧 我的習慣</h2>
         <div class="navbtns"><button class="round" id="hPrev">‹</button><span class="period" id="hLabel" style="min-width:120px"></span><button class="round" id="hNext">›</button></div></div>
       <div id="hToday" style="margin-top:8px"></div>
     </div>
@@ -690,7 +690,7 @@ nav button{padding:6px 13px;font-size:14.5px}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 儀表板版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 個人習慣版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -768,8 +768,22 @@ const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,t
 function makeDb(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
   return {events:d.events||[], todos:(d.todos||[]).map(normTodo), ideas:d.ideas||[], tags:Array.isArray(d.tags)?d.tags:DEFAULT_TAGS.slice(),
     diary:(d.diary && typeof d.diary==='object')?d.diary:{}, settings:st,
-    habits:Array.isArray(d.habits)?d.habits:[{id:'h-water', name:'喝水', emoji:'💧', target:8, unit:'杯'}],
-    habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:{}, trips:Array.isArray(d.trips)?d.trips:[]}; }
+    habits:Array.isArray(d.habits)?d.habits:null, habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:null,
+    habitsBy:(d.habitsBy && typeof d.habitsBy==='object')?d.habitsBy:{}, habitLogBy:(d.habitLogBy && typeof d.habitLogBy==='object')?d.habitLogBy:{},
+    trips:Array.isArray(d.trips)?d.trips:[]}; }
+// 習慣是每個人自己的：依登入帳號分開存
+const meKey = () => (typeof Sync !== 'undefined' && Sync.uid()) || 'local';
+function myHabits(){
+  const k = meKey();
+  if(!db.habitsBy[k]){
+    if(k !== 'local' && db.habitsBy.local){ db.habitsBy[k] = db.habitsBy.local; db.habitLogBy[k] = db.habitLogBy.local || {}; delete db.habitsBy.local; delete db.habitLogBy.local; }
+    else if(db.habits){ db.habitsBy[k] = db.habits; db.habitLogBy[k] = db.habitLog || {}; db.habits = null; db.habitLog = null; }
+    else db.habitsBy[k] = [{id:'h-water', name:'喝水', emoji:'💧', target:8, unit:'杯'}];
+    if(k !== 'local') setTimeout(saveQuiet, 0);
+  }
+  return db.habitsBy[k];
+}
+function myLog(){ const k = meKey(); myHabits(); return db.habitLogBy[k] || (db.habitLogBy[k] = {}); }
 let db = makeDb();
 function normTodo(t){
   t.steps = Array.isArray(t.steps) ? t.steps : [];
@@ -810,10 +824,12 @@ const Sync = (() => {
     const diary = Object.assign({}, l.diary);
     Object.entries(r.diary).forEach(([k,v]) => { const lv = diary[k];
       diary[k] = !lv ? v : {mood:v.mood||lv.mood, text:(v.text||'').length>=(lv.text||'').length?v.text:lv.text, money:mergeById(lv.money||[], v.money||[])}; });
-    const habitLog = JSON.parse(JSON.stringify(l.habitLog));
-    Object.entries(r.habitLog).forEach(([d,o]) => { habitLog[d] = habitLog[d] || {}; Object.entries(o).forEach(([k,v]) => { habitLog[d][k] = Math.max(habitLog[d][k]||0, v); }); });
+    const habitsBy = Object.assign({}, r.habitsBy), habitLogBy = JSON.parse(JSON.stringify(r.habitLogBy));
+    Object.entries(l.habitsBy).forEach(([u,arr]) => { habitsBy[u] = mergeById(habitsBy[u]||[], arr); });
+    Object.entries(l.habitLogBy).forEach(([u,lg]) => { const t = habitLogBy[u] || (habitLogBy[u] = {});
+      Object.entries(lg).forEach(([d,o]) => { t[d] = t[d] || {}; Object.entries(o).forEach(([k,v]) => { t[d][k] = Math.max(t[d][k]||0, v); }); }); });
     return makeDb({events:mergeById(l.events,r.events), todos:mergeById(l.todos,r.todos), ideas:mergeById(l.ideas,r.ideas), tags, diary, settings:r.settings,
-      habits:mergeById(l.habits,r.habits), habitLog, trips:mergeById(l.trips,r.trips)});
+      habits:r.habits||l.habits, habitLog:r.habitLog||l.habitLog, habitsBy, habitLogBy, trips:mergeById(l.trips,r.trips)});
   }
   function applyRemote(data){
     db = makeDb(data);
@@ -940,7 +956,7 @@ const Sync = (() => {
     }catch(e){ console.warn(e); failed = true; ui(); $('#syncInfo').textContent = '雲端同步載入失敗，請確認網路連線。資料仍會先存在這個瀏覽器。'; }
     $('#gateOffline').onclick = () => { offline = true; ui(); toast('目前離線使用，有網路後重新整理就會同步'); };
   }
-  return {push, init};
+  return {push, init, uid: () => user ? user.uid : null};
 })();
 const progress = t => t.steps.length ? Math.round(t.steps.filter(s=>s.done).length / t.steps.length * 100) : (t.done ? 100 : 0);
 const startOf = t => t.start || (t.due && ymd(new Date(t.createdAt)) > t.due ? t.due : ymd(new Date(t.createdAt)));
@@ -1257,7 +1273,7 @@ document.addEventListener('click', e => {
     case 'tab': goTab(b.dataset.tab); return;
     case 'closeMore': $('#moreSheet').classList.remove('on'); return;
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
-    case 'delHabit': { const h = db.habits.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; db.habits = db.habits.filter(x=>x.id!==h.id); Object.values(db.habitLog).forEach(o => delete o[h.id]); break; }
+    case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
     case 'hEmoji': hEmoji = b.dataset.e; renderHabits(); return;
     case 'trType': trType = b.dataset.k; renderTrips(); return;
     case 'trCounty': trCounty = b.dataset.c; renderTrips(); $('#trList').scrollIntoView({behavior:'smooth', block:'start'}); return;
@@ -1351,10 +1367,10 @@ $('#calAdd').onclick = () => openDay(view==='month' ? today() : ymd(cursor));
 // ---------- 習慣追蹤 ----------
 const HABIT_EMOJIS = ['💧','🏃','🧘','📖','💊','🥗','😴','🧹','🍎','✍️','🦷','🚶','🙏','📵','👶'];
 let hEmoji = '🏃', hDate = today();
-const hCount = (ds, id) => ((db.habitLog[ds]||{})[id]) || 0;
+const hCount = (ds, id) => ((myLog()[ds]||{})[id]) || 0;
 function habitAdd(id, n, ds){
-  ds = ds || hDate; const h = db.habits.find(x=>x.id===id); if(!h) return;
-  const log = db.habitLog[ds] || (db.habitLog[ds] = {});
+  ds = ds || hDate; const h = myHabits().find(x=>x.id===id); if(!h) return;
+  const ml = myLog(), log = ml[ds] || (ml[ds] = {});
   const before = log[id] || 0; log[id] = Math.max(0, before + n);
   if(before < h.target && log[id] >= h.target) toast(`${h.emoji} ${h.name}達標！잘했어 🎉`);
   save();
@@ -1371,15 +1387,15 @@ $('#hPrev').onclick = () => { hDate = ymd(addDays(parse(hDate),-1)); renderHabit
 $('#hNext').onclick = () => { if(hDate < today()){ hDate = ymd(addDays(parse(hDate),1)); renderHabits(); } };
 $('#hAdd').onclick = () => {
   const name = $('#hName').value.trim(); if(!name){ toast('請輸入習慣名稱'); return; }
-  db.habits.push({id:uid(), name, emoji:hEmoji, target:Math.max(1, +$('#hTarget').value||1), unit:$('#hUnit').value.trim()});
+  myHabits().push({id:uid(), name, emoji:hEmoji, target:Math.max(1, +$('#hTarget').value||1), unit:$('#hUnit').value.trim()});
   $('#hName').value=''; $('#hUnit').value=''; $('#hTarget').value=1; save(); toast('新習慣加好了，가보자고! 💪');
 };
 function renderHabits(){
   $('#hEmojis').innerHTML = HABIT_EMOJIS.map(e=>`<button class="${e===hEmoji?'on':''}" data-act="hEmoji" data-e="${e}">${e}</button>`).join('');
   $('#hLabel').textContent = prettyDate(hDate) + (hDate===today()?' 今天':'');
-  $('#hToday').innerHTML = db.habits.length ? db.habits.map(h=>habitRow(h, hDate)).join('') : '<div class="empty">還沒有習慣，從下面新增一個吧</div>';
+  $('#hToday').innerHTML = myHabits().length ? myHabits().map(h=>habitRow(h, hDate)).join('') : '<div class="empty">還沒有習慣，從下面新增一個吧</div>';
   const days = [...Array(7)].map((_,i)=>ymd(addDays(new Date(), i-6)));
-  $('#hWeek').innerHTML = db.habits.length ? db.habits.map(h => {
+  $('#hWeek').innerHTML = myHabits().length ? myHabits().map(h => {
     const hit = days.filter(d=>hCount(d,h.id)>=h.target).length;
     return `<div class="habit"><span class="em">${h.emoji}</span><div class="grow"><b>${esc(h.name)}</b> <span class="meta">7 天達成 ${hit} 天 · 每天 ${h.target} ${esc(h.unit||'')}</span>
       <div class="dots">${days.map(d=>{const c=hCount(d,h.id);return `<i class="${c>=h.target?'full':c>0?'part':''}" title="${md(d)}：${c}"></i>`;}).join('')}</div></div>
@@ -1459,7 +1475,7 @@ function renderDash(){
   $('#wEvents').innerHTML = evs.length ? evs.map(ev=>`<div class="mini"><span class="time">${ev.time||'全天'}</span><span class="t">${esc(ev.title)}</span></div>`).join('') : '<div class="empty">今天沒有行程，好好享受 ☕</div>';
   const tds = db.todos.filter(x => (!x.done && x.due && x.due<=t) || (x.done && x.doneAt && ymd(new Date(x.doneAt))===t && x.due)).sort(tdSort);
   $('#wTodos').innerHTML = tds.length ? tds.slice(0,8).map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t">${tagDot(td.tag)}${esc(td.title)}</span>${isLate(td)?'<span class="overdue" style="font-size:12px">逾期</span>':td.steps.length?`<span class="meta">${progress(td)}%</span>`:''}</div>`).join('') + (tds.length>8?`<div class="meta">還有 ${tds.length-8} 件，到「待辦」看全部</div>`:'') : '<div class="empty">今天沒有到期的待辦 🎉</div>';
-  $('#wHabits').innerHTML = db.habits.length ? db.habits.map(h=>habitRow(h, t)).join('') : '<div class="empty">到「習慣」新增想培養的好習慣</div>';
+  $('#wHabits').innerHTML = myHabits().length ? myHabits().map(h=>habitRow(h, t)).join('') : '<div class="empty">到「習慣」新增想培養的好習慣</div>';
   const [ws,we] = weekRange(0), wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we);
   const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
   $('#wWeek').innerHTML = `<div class="prog" style="margin:0 0 10px"><div class="bar"><div style="width:${avg}%"></div></div><span class="pct">${avg}%</span></div>
@@ -1547,7 +1563,7 @@ function answer(q){
     const last = db.trips.slice().sort(tripSort).pop(), by = {}; db.trips.forEach(x => by[x.county] = (by[x.county]||0) + 1);
     const top = Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,n])=>`${c} ${n} 次`).join('、');
     return `【旅行露營】\n累積露營：${camps.length} 露（${yr} 年 ${camps.filter(x=>x.start.startsWith(yr)).length} 露），共 ${camps.reduce((a,x)=>a+nights(x),0)} 晚\n旅遊：${tr.length} 次\n去過 ${Object.keys(by).length} 個縣市${top?`\n最常去：${top}`:''}${last?`\n最近一次：${prettyDate(last.start)} ${last.title}（${last.county}）`:''}`; }
-  if(/喝水|習慣|運動/.test(q)){ const t = today(); return db.habits.length ? '【今天的習慣】\n' + db.habits.map(h=>`  ${h.emoji} ${h.name}：${hCount(t,h.id)}/${h.target} ${h.unit||''}${hCount(t,h.id)>=h.target?' ✓':''}${streak(h)>1?`（連續 ${streak(h)} 天）`:''}`).join('\n') : '還沒有設定習慣喔，到「習慣」新增一個吧！'; }
+  if(/喝水|習慣|運動/.test(q)){ const t = today(); return myHabits().length ? '【今天的習慣】\n' + myHabits().map(h=>`  ${h.emoji} ${h.name}：${hCount(t,h.id)}/${h.target} ${h.unit||''}${hCount(t,h.id)>=h.target?' ✓':''}${streak(h)>1?`（連續 ${streak(h)} 天）`:''}`).join('\n') : '還沒有設定習慣喔，到「習慣」新增一個吧！'; }
   if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k=>db.diary[k].money.forEach(m=>m.kind==='out'?o+=m.amt:i+=m.amt));
     const td = (db.diary[today()]||{money:[]}).money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
     return `【記帳】\n今天支出：$${money(td)}\n本月支出：$${money(o)}\n本月收入：$${money(i)}\n本月結餘：$${money(i-o)}`; }
