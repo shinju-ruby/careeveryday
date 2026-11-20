@@ -35,7 +35,7 @@ function tick(){
   // 固定提醒
   const parts = [];
   if(mail.daily !== false && st.daily && st.daily.on && hm >= st.daily.time && !was('daily:'+t)){ mark('daily:'+t); parts.push('daily'); }
-  if(mail.weekly !== false && st.weekly && st.weekly.on && wday(t) === 0 && hm >= st.weekly.time && !was('weekly:'+t)){ mark('weekly:'+t); parts.push('weekly'); }
+  if(mail.weekly !== false && st.weekly && st.weekly.on && wday(t) === ([0,5,6].indexOf(+st.weekly.day) >= 0 ? +st.weekly.day : 0) && hm >= st.weekly.time && !was('weekly:'+t)){ mark('weekly:'+t); parts.push('weekly'); }
   if(parts.length){
     const w = parts.indexOf('weekly') >= 0;
     const dl = parts.indexOf('daily') >= 0;

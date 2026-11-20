@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>갓생 살자!</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
@@ -40,7 +40,7 @@ nav{display:flex;gap:8px;overflow-x:auto;padding:6px 0 12px}
 nav button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);padding:6px 16px;border-radius:999px;font-size:15px;cursor:pointer;white-space:nowrap;transition:transform .1s}
 nav button:hover{transform:translateY(-2px)}
 nav button.on{background:var(--ink);color:#fff}
-main{padding:20px 0 90px}
+main.wrap{padding-top:20px;padding-bottom:90px}
 .card{background:var(--card);border:3px solid var(--ink);border-radius:var(--r);padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
 .card h2{font-size:18px;font-weight:900;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;border:2px solid var(--ink)}
@@ -65,7 +65,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .hero p{margin:0;font-weight:500}
 .hero::after{content:"";position:absolute;right:-30px;top:-40px;width:170px;height:170px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink)}
 .hero::before{content:"";position:absolute;left:-40px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:var(--blue);border:3px solid var(--ink);opacity:.9}
-.hero > *{position:relative;z-index:1}
+.hero > *:not(#heroSun){position:relative;z-index:1}
 .hero-stats{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
 .hero-stats div{background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:6px 14px;font-weight:700;font-size:14px}
 .hero-stats b{font-size:20px;font-weight:900;margin-right:4px}
@@ -82,7 +82,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .seg button+button{border-left:2px solid var(--ink)}
 .seg button.on{background:var(--yellow)}
 .navbtns{display:flex;gap:6px;align-items:center}
-.navbtns .period{font-weight:900;font-size:17px;min-width:150px;text-align:center}
+.navbtns .period{font-weight:900;font-size:17px;min-width:150px;text-align:center;white-space:nowrap}
 .round{width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-weight:900;cursor:pointer;font-size:16px}
 
 /* month */
@@ -234,7 +234,9 @@ details.fold[open]>summary{margin-bottom:10px}
 .cdcard b{display:block;font-size:24px;font-weight:900;line-height:1.1}
 .cdcard span{font-size:12px;font-weight:700}
 /* diary */
-.moods{display:flex;gap:6px;flex-wrap:wrap}
+.moods{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px 3px 4px}
+.moods::-webkit-scrollbar{display:none}
+.moods button{flex:none}
 .moods button{font-size:22px;width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:#fff;cursor:pointer;opacity:.55}
 .moods button.on{opacity:1;background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
 .money{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1.5px dashed #E6DFCC;font-size:14px}
@@ -331,8 +333,23 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+.remrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:2px dashed #EEE3CC}
+.remrow b{font-size:15px;white-space:nowrap}
+.remrow .tsel{padding:4px 6px;border-radius:10px;font-size:14px;width:auto}
+.remrow .eye{font-size:18px;padding:2px 4px}
+.sw{position:relative;display:inline-block;width:42px;height:24px;flex:none}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
+.sw i{position:absolute;inset:0;border:2px solid var(--ink);border-radius:999px;background:#E9E3D3;transition:background .15s}
+.sw i::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--ink);box-sizing:border-box;transition:transform .15s}
+.sw input:checked + i{background:var(--mint)} .sw input:checked + i::after{transform:translateX(18px)}
+.sw input:focus-visible + i{outline:3px solid var(--blue);outline-offset:2px}
+details.fold.small>summary::after{width:24px;height:24px;font-size:16px}
+.annrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #EEE3CC}
+#annNext .annrow:last-child{border-bottom:0}
+#annSheet .seg{margin:8px 0 10px}
+#heroSun{position:absolute;right:22px;top:16px;font-size:38px;line-height:1;z-index:1;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.15))}
 @media (max-width:720px){
-  header{position:static}
+  header{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top);background:rgba(255,247,232,.97)}
   header nav{display:none}
   .top{padding:10px 0}
   .logo img{width:38px;height:38px}
@@ -343,6 +360,10 @@ nav#nav button.on span{display:inline}
   .toprt .today-label{font-size:12px;padding:1px 9px}
   .tagbar.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
   .tagbar.scroll .tchip{flex:none}
+  .moods{gap:4px;justify-content:space-between} .moods button{width:38px;height:38px;font-size:19px}
+  .emojis,.tabsel{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:3px} .emojis>*,.tabsel>*{flex:none}
+  .remrow{gap:6px} .remrow b{font-size:14px} .remrow .tsel{font-size:13.5px;padding:3px 4px}
+  #heroSun{right:12px;top:8px;font-size:30px}
   .todo{padding:10px}
   .tmeta{margin-left:0} .todo .prog{margin-left:0}
   .steps{margin-left:6px}
@@ -360,7 +381,7 @@ nav#nav button.on span{display:inline}
   .bnav button span{display:none}
   .bnav button.on span{display:block;font-size:11px;font-weight:700}
   .bnav button.on{background:var(--yellow)}
-  main{padding:14px 0 110px}
+  main.wrap{padding-top:14px;padding-bottom:calc(130px + env(safe-area-inset-bottom))}
   .card{padding:14px;border-radius:16px;margin-bottom:14px;box-shadow:3px 3px 0 var(--ink)}
   .card.peek{margin-top:40px}
   .card .pet{width:62px;top:-40px}
@@ -374,14 +395,14 @@ nav#nav button.on span{display:inline}
   .cheer{font-size:13px}
   #toasts{bottom:90px}
   body .modal{align-items:flex-end;padding:0}
-  body .modal .card{border-radius:22px 22px 0 0;max-height:88vh;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  body .modal .card{border-radius:22px 22px 0 0;max-height:86vh;max-height:86dvh;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
   .month{gap:3px} .cell{min-height:54px;padding:3px;border-radius:9px}
   .cell .chip{display:none}
   body .cell .dotrow{display:flex}
   .week{grid-template-columns:repeat(7,minmax(108px,1fr))}
   input,select,textarea{font-size:16px}
   .tiles{grid-template-columns:repeat(4,1fr);gap:6px}
-  .navbtns{gap:4px;flex-wrap:nowrap} .navbtns .period{min-width:0;font-size:14.5px;padding:0 2px} .navbtns .btn{white-space:nowrap;padding:4px 10px !important}
+  .navbtns{gap:4px;flex-wrap:nowrap} .navbtns .period{min-width:0;font-size:13px;padding:0 1px;letter-spacing:-.2px} .navbtns .btn{white-space:nowrap;padding:4px 10px !important}
   .seg button{padding:5px 12px}
   .trip .badge{width:50px;height:50px}
   .tile{padding:7px 4px;text-align:center;border-radius:12px}
@@ -408,7 +429,7 @@ nav#nav button.on span{display:inline}
 /* report modal */
 .modal{position:fixed;inset:0;background:rgba(29,37,71,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
 .modal.on{display:flex}
-.modal .card{max-width:560px;width:100%;max-height:85vh;overflow:auto;margin:0;animation:pop .25s}
+.modal .card{max-width:560px;width:100%;max-height:85vh;max-height:85dvh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:0;animation:pop .25s}
 .modal pre{white-space:pre-wrap;font:inherit;background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin:0 0 12px}
 /* ---------- 動畫：毛孩 ---------- */
 @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-2deg)}}
@@ -454,7 +475,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   .formgrid{grid-template-columns:auto 1fr}
   .cell{min-height:64px} .cell .chip{font-size:10px}
   .hero h2{font-size:22px}
-  .navbtns .period{min-width:110px;font-size:15px}
+  .navbtns .period{min-width:0;font-size:13px}
 }
 </style>
 </head>
@@ -487,6 +508,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <!-- 主頁（儀表板） -->
   <section data-page="home">
     <div class="card hero">
+      <span id="heroSun" aria-hidden="true">☀️</span>
       <h2 id="greet">좋은 아침!</h2>
       <p id="heroLine"></p>
       <span class="cheer" id="cheer" title="點一下換一句"></span>
@@ -548,17 +570,6 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         </div>
       </div>
       <div id="planView"></div>
-    </div>
-    <div class="card peek" id="icsCard"><img class="pet right" src="icons/pets/calico.svg" alt="">
-      <h2>📥 匯入 Google 日曆</h2>
-      <ol class="meta" style="padding-left:20px;margin:0 0 10px">
-        <li>用<b>電腦</b>打開 Google 日曆 → 右上角齒輪「設定」→ 左邊「匯入和匯出」→ 按「匯出」，會下載一個 .zip 檔</li>
-        <li>回到這裡，按下面的按鈕選那個 .zip 檔（或解壓縮後的 .ics 檔）</li>
-      </ol>
-      <div class="row"><span class="meta">匯入的行程</span><select id="icsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10">提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option></select>
-        <label class="btn blue">選擇檔案<input type="file" id="icsFile" accept=".ics,.zip,text/calendar,application/zip" multiple class="hidden"></label></div>
-      <div id="icsResult" style="margin-top:10px;font-size:14px"></div>
-      <p class="meta" style="margin-bottom:0">會匯入過去一年和未來的行程，重複行程也會保留。重複匯入同一份檔案不會變成兩份。</p>
     </div>
 
   </section>
@@ -840,35 +851,28 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         <label class="btn white">匯入備份檔<input type="file" id="importFile" accept="application/json" class="hidden"></label>
       </div>
     </div>
+    <div class="card" id="icsCard"><details class="fold"><summary><h2>📥 匯入 Google 日曆</h2></summary>
+      <ol class="meta" style="padding-left:20px;margin:0 0 10px">
+        <li>用<b>電腦</b>打開 Google 日曆 → 右上角齒輪「設定」→ 左邊「匯入和匯出」→ 按「匯出」，會下載一個 .zip 檔</li>
+        <li>回到這裡，按下面的按鈕選那個 .zip 檔（或解壓縮後的 .ics 檔）</li>
+      </ol>
+      <div class="row"><span class="meta">匯入的行程</span><select id="icsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10">提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option></select>
+        <label class="btn blue">選擇檔案<input type="file" id="icsFile" accept=".ics,.zip,text/calendar,application/zip" multiple class="hidden"></label></div>
+      <div id="icsResult" style="margin-top:10px;font-size:14px"></div>
+      <p class="meta" style="margin-bottom:0">會匯入過去一年和未來的行程，重複行程也會保留。重複匯入同一份檔案不會變成兩份。</p>
+    </details></div>
     <div class="card">
-      <h2>🎂 生日與紀念日</h2>
-      <p class="meta" style="margin-top:0">會顯示在行事曆上，30 天內的會在主頁倒數。農曆的會自動換算成每年的國曆日期。</p>
-      <div id="annList"></div>
-      <div class="row" style="margin-top:10px">
-        <select id="annEmoji"><option>🎂</option><option>💍</option><option>💕</option><option>🎉</option><option>🕯️</option><option>🐾</option></select>
-        <input type="text" id="annName" placeholder="例如：外婆生日" style="flex:1;min-width:120px">
-      </div>
-      <div class="row" style="margin-top:8px">
-        <select id="annM"></select><select id="annD"></select>
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="annLunar"> 農曆</label>
-        <button class="btn mint" id="annAdd" style="padding:5px 14px">新增</button>
-      </div>
+      <div class="row between"><h2 style="margin:0">🎂 生日與紀念日</h2><span class="meta" id="annCount"></span></div>
+      <div id="annNext" style="margin:8px 0 10px"></div>
+      <div class="row"><button class="btn white" id="annOpenList" style="padding:5px 14px">📋 看全部</button><button class="btn mint" id="annOpenAdd" style="padding:5px 14px">＋ 新增日子</button></div>
     </div>
     <div class="card">
-      <h2>⏰ 固定提醒</h2>
-      <p class="meta" style="margin-top:0">時間到會跳出一份整理好的清單（行程、待辦、進度）。網頁要開著才收得到，建議把這個分頁一直留著。</p>
-      <div class="row" style="margin-bottom:8px">
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sDailyOn"> 每天晚上提醒「明天」</label>
-        <input type="time" id="sDailyTime">
-        <button class="btn white" id="sDailyPreview" style="padding:3px 12px">預覽</button>
-      </div>
-      <div class="row">
-        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sWeeklyOn"> 每週日晚上提醒「下週」</label>
-        <input type="time" id="sWeeklyTime">
-        <button class="btn white" id="sWeeklyPreview" style="padding:3px 12px">預覽</button>
-      </div>
-      <div style="border-top:2px dashed #ddd;margin-top:12px;padding-top:10px">
-        <b>📱 手機通知 ＆ 📧 Email（不用開網頁）</b>
+      <h2 style="margin-bottom:6px">⏰ 固定提醒</h2>
+      <div class="remrow"><label class="sw"><input type="checkbox" id="sDailyOn"><i></i></label><b class="grow">🌙 明天預告</b>
+        <span class="meta">每天</span><select id="sDailyTime" class="tsel" aria-label="明天預告時間"></select><button class="icon eye" id="sDailyPreview" title="預覽" aria-label="預覽明天預告">👀</button></div>
+      <div class="remrow"><label class="sw"><input type="checkbox" id="sWeeklyOn"><i></i></label><b class="grow">🗓️ 下週預告</b>
+        <select id="sWeeklyDay" class="tsel" aria-label="下週預告是星期幾"><option value="5">週五</option><option value="6">週六</option><option value="0">週日</option></select><select id="sWeeklyTime" class="tsel" aria-label="下週預告時間"></select><button class="icon eye" id="sWeeklyPreview" title="預覽" aria-label="預覽下週預告">👀</button></div>
+      <details class="fold small" style="margin-top:10px"><summary><b>📱 手機通知 ＆ 📧 Email</b></summary>
         <p class="meta" style="margin:4px 0 8px">要先在 Google Apps Script 安裝一次，<a href="https://github.com/shinju-ruby/careeveryday/blob/main/email-reminder/安裝說明.md" target="_blank" rel="noopener">看安裝說明</a>。裝好以後，下面勾選的提醒會跳到手機、寄到信箱：</p>
         <div class="row" style="margin-bottom:8px">
           <button class="btn blue" id="pushBtn" style="padding:5px 14px">📱 開啟這支手機的通知</button>
@@ -880,15 +884,11 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailWeekly"> 下週預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailItems"> 行程和待辦的提醒</label>
         </div>
-      </div>
+        <div class="row" style="margin-top:10px"><button class="btn white" id="testNotify" style="padding:4px 12px">🔔 測試提醒</button><span class="meta">網頁開著時：時間到會跳出整理好的清單</span></div>
+      </details>
     </div>
     <div class="card">
-      <h2>🔔 提醒測試</h2>
-      <p class="meta">按下去會馬上跳一個測試提醒，確認提醒有沒有正常運作。</p>
-      <button class="btn blue" id="testNotify">測試提醒</button>
-    </div>
-    <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭成員版 3</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 介面整理版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -911,6 +911,19 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 <div id="fx"></div>
 <div id="welcome" class="hidden"><div class="wl-pets"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/tabby.svg" alt=""><img src="icons/pets/shiba.svg" alt=""></div>
   <div class="wl-kr">어서 와!</div><div class="wl-sub" id="wlSub">歡迎回來 ♡</div><div class="wl-paws"><span style="animation-delay:1.10s">🐾</span><span style="animation-delay:1.25s">🐾</span><span style="animation-delay:1.40s">🐾</span><span style="animation-delay:1.55s">🐾</span><span style="animation-delay:1.70s">🐾</span></div></div>
+<div class="modal" id="annSheet"><div class="card sheet">
+  <div class="row between"><h2 style="margin:0">🎂 生日與紀念日</h2><button class="icon" id="annClose" style="font-size:20px" aria-label="關閉">✕</button></div>
+  <div class="seg" id="annSeg"><button data-k="list" class="on">📋 目前的日子</button><button data-k="add">＋ 新增</button></div>
+  <div id="annListWrap"><div id="annList"></div></div>
+  <div id="annAddWrap" class="hidden">
+    <p class="meta" style="margin-top:0">會顯示在行事曆上，30 天內的會在主頁倒數。農曆的會自動換算成國曆。</p>
+    <div class="row"><select id="annEmoji"><option>🎂</option><option>💍</option><option>💕</option><option>🎉</option><option>🕯️</option><option>🐾</option></select>
+      <input type="text" id="annName" placeholder="例如：外婆生日" maxlength="30" style="flex:1;min-width:120px"></div>
+    <div class="row" style="margin-top:8px"><select id="annM"></select><select id="annD"></select>
+      <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="annLunar"> 農曆</label></div>
+    <button class="btn mint" id="annAdd" style="margin-top:12px;width:100%">新增</button>
+  </div>
+</div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
   <div id="dsList" style="margin:8px 0"></div>
@@ -1004,7 +1017,7 @@ const TAG_COLORS = ['#FF7EB6','#38B6FF','#22C39A','#FFC93C','#8B6CFF','#FF6B3D',
 const DEFAULT_ANNIV = () => [['a-hub','老公生日',6,11,0,'🎂'],['a-me','我的生日',10,29,0,'🎂'],['a-mumu','慕慕生日',10,17,0,'🎂'],['a-man','蔓蔓生日',1,21,0,'🎂'],
   ['a-dad','爸爸生日',4,3,0,'🎂'],['a-mom','媽媽生日',11,23,0,'🎂'],['a-wed','結婚紀念日',6,2,0,'💍'],['a-date','交往紀念日',9,23,0,'💕'],['a-mil','婆婆生日',9,23,1,'🎂']]
   .map(([id,name,m,d,lunar,emoji]) => ({id,name,m,d,lunar:!!lunar,emoji}));
-const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,time:'21:00'}, fired:{}});
+const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,time:'21:00',day:0}, fired:{}});
 // 記帳：以前放在日記裡（diary[日期].money），現在獨立成 db.money，才能和家人共用
 function extractMoney(d){
   const m = (d.money && typeof d.money==='object' && !Array.isArray(d.money)) ? JSON.parse(JSON.stringify(d.money)) : {};
@@ -1012,7 +1025,21 @@ function extractMoney(d){
   return m;
 }
 function cleanDiary(dy){ const o = {}; Object.entries(dy||{}).forEach(([k,v]) => { if(v) o[k] = {mood:v.mood||'', text:v.text||''}; }); return o; }
-function makeDb(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
+// 安全：從雲端、家人或備份檔讀進來的資料，先把會被放進畫面標籤裡的欄位清乾淨
+const SAFE_KEYS = new Set(['id','emoji','mood','kind','status','pri','type','repeat','cat','tag','date','start','end','due','time','until','country','unit','store','by','gotBy']);
+function scrub(o, depth){
+  if(depth > 8 || !o || typeof o !== 'object') return o;
+  if(Array.isArray(o)){ o.forEach(x => scrub(x, depth+1)); return o; }
+  Object.keys(o).forEach(k => { const v = o[k];
+    if(typeof v === 'string'){
+      if(k === 'color'){ if(!/^#[0-9a-fA-F]{3,8}$/.test(v)) o[k] = '#38B6FF'; }
+      else if(SAFE_KEYS.has(k) && /[<>"'&`\\]/.test(v)) o[k] = v.replace(/[<>"'&`\\]/g, '');
+    } else if(v && typeof v === 'object') scrub(v, depth+1);
+  });
+  return o;
+}
+function makeDb(d){ return scrub(makeDb0(d), 0); }
+function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
   return {events:d.events||[], todos:(d.todos||[]).map(normTodo), ideas:d.ideas||[], tags:Array.isArray(d.tags)?d.tags:DEFAULT_TAGS.slice(),
     diary:cleanDiary(d.diary), money:extractMoney(d), settings:st,
     habits:Array.isArray(d.habits)?d.habits:null, habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:null,
@@ -1107,7 +1134,7 @@ const Sync = (() => {
       if(!ss || !ss.exists || !(ss.data().members||[]).includes(user.uid)) return kicked();
       const sd = ss.data();
       sData = sd.json ? JSON.parse(sd.json) : null; seenS = sd.json || ''; members = (sd.members||[]).length; memberIds = sd.members||[]; profiles = sd.profiles||{}; ownerId = sd.owner||'';
-      const mine = {name:user.displayName || (user.email||'').split('@')[0], email:user.email||'', photo:user.photoURL||''};
+      const mine = {name:(user.displayName || (user.email||'').split('@')[0]).slice(0,40), email:user.email||'', photo:/^https:\/\//.test(user.photoURL||'') ? user.photoURL : ''};
       if(JSON.stringify(profiles[user.uid]) !== JSON.stringify(mine)) sRef.update({['profiles.' + user.uid]: mine}).catch(e => console.warn('profile', e));
       // 舊版把全部資料都放在家庭空間；第一次用新版時，把個人的部分複製回自己的帳號
       if(!ud.v2 && sData) uData = uData ? merge(sData, uData) : sData;
@@ -1191,7 +1218,7 @@ const Sync = (() => {
     } else {
       const ids = memberIds.length ? memberIds : [user.uid];
       box.innerHTML = `<div class="fam-list">${ids.map(id => { const pf = profiles[id] || {}, me = id===user.uid, nm = pf.name || (me ? Sync.name() : '家人');
-          return `<div class="fam-m">${pf.photo ? `<img src="${esc(pf.photo)}" alt="" referrerpolicy="no-referrer">` : `<span class="av">${esc(nm.slice(0,1))}</span>`}<div class="grow"><b>${esc(nm)}${me?' <span class="meta">（你）</span>':''}${id===ownerId?' 👑':''}</b>${pf.email?`<div class="meta" style="font-size:12px">${esc(pf.email)}</div>`:!pf.name&&!me?'<div class="meta" style="font-size:12px">打開新版 App 後就會顯示名字</div>':''}</div>${user.uid===ownerId && !me ? `<button class="btn white" data-famrm="${esc(id)}" style="padding:3px 10px;font-size:13px;color:#E2401C">移除</button>` : ''}</div>`; }).join('')}</div>
+          return `<div class="fam-m">${/^https:\/\//.test(pf.photo||'') ? `<img src="${esc(pf.photo)}" alt="" referrerpolicy="no-referrer">` : `<span class="av">${esc(nm.slice(0,1))}</span>`}<div class="grow"><b>${esc(nm)}${me?' <span class="meta">（你）</span>':''}${id===ownerId?' 👑':''}</b>${pf.email?`<div class="meta" style="font-size:12px">${esc(pf.email)}</div>`:!pf.name&&!me?'<div class="meta" style="font-size:12px">打開新版 App 後就會顯示名字</div>':''}</div>${user.uid===ownerId && !me ? `<button class="btn white" data-famrm="${esc(id)}" style="padding:3px 10px;font-size:13px;color:#E2401C">移除</button>` : ''}</div>`; }).join('')}</div>
         <p class="meta">共用：🛒 ✅ 📅 💰 🏕️　其餘只有自己看得到</p>
         <div class="row"><input type="text" id="famLink" readonly value="${esc(inviteLink())}"><button class="btn blue" id="famCopy">複製連結</button></div>
         <p class="meta" style="margin:6px 0 0">把連結傳給家人，用他的 Google 帳號登入就能加入。</p>
@@ -1401,7 +1428,7 @@ function renderPlan(){
     html += '</div><p class="meta" style="margin:8px 0 0">點任何一天的格子，就能直接新增行程或待辦。藍色是行程，橘色是待辦期限，粉紅色是生日和紀念日，紅字是節日。</p>';
   } else if(view==='week'){
     const s = monday(cursor), e = addDays(s,6);
-    $('#periodLabel').textContent = `${md(ymd(s))} ～ ${md(ymd(e))}`;
+    $('#periodLabel').textContent = `${md(ymd(s))}–${md(ymd(e))}`;
     const ws = ymd(s), we = ymd(e);
     const wk = db.todos.filter(td => td.due && td.due>=ws && td.due<=we);
     const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
@@ -1419,7 +1446,7 @@ function renderPlan(){
     if(active.length){ html += '<div class="subhead">🏃 本週進行中（期限在之後）</div>' + active.sort(tdSort).map(todoCard).join(''); }
   } else if(view==='day'){
     const ds = ymd(cursor);
-    $('#periodLabel').textContent = prettyDate(ds) + (ds===t?' 今天':'');
+    $('#periodLabel').textContent = prettyDate(ds);
     const hs = holidaysOn(ds);
     html += `<p class="meta" style="margin:6px 0 0;text-align:center">${lunarFull(ds)}${hs.length?' · '+hs.map(h=>`<b class="${h.kind==='fest'?'fest':''}">${esc(holText(h))}</b>`).join('、'):''}</p>`;
     html += `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn mint" data-act="openDay" data-date="${ds}" style="padding:5px 14px">＋ 在這天新增</button></div>`;
@@ -2193,7 +2220,8 @@ function renderDash(){
 // ---------- 主頁頂部 ----------
 function renderHero(){
   const now = new Date(), h = now.getHours(), t = today();
-  $('#greet').textContent = h<5?'이제 자야지! 夜深了，早點休息 🌙':h<11?'좋은 아침! 早安 ☀️':h<14?'맛점하세요! 午餐吃飽飽 🍱':h<18?'오후도 화이팅! 下午再衝一下 💪':'오늘도 수고했어! 今天辛苦了 🌆';
+  $('#greet').textContent = h<5?'이제 자야지! 夜深了，早點休息':h<11?'좋은 아침! 早安':h<14?'맛점하세요! 午餐吃飽飽':h<18?'오후도 화이팅! 下午再衝一下':'오늘도 수고했어! 今天辛苦了';
+  $('#heroSun').textContent = (h<6 || h>=18) ? '🌙' : '☀️';
   if(!$('#cheer').textContent) nextCheer();
   const evs = eventsOn(t).length, due = db.todos.filter(x=>!x.done && x.due && x.due<=t).length;
   const [ws,we] = weekRange(0); const wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we);
@@ -2375,7 +2403,7 @@ function checkReminders(){
   const st = db.settings, d = new Date(), t = today(), nowHM = pad(d.getHours())+':'+pad(d.getMinutes());
   const parts = [];
   if(st.daily.on && nowHM >= st.daily.time && st.fired.daily !== t){ st.fired.daily = t; changed = true; parts.push('daily'); }
-  if(st.weekly.on && d.getDay()===0 && nowHM >= st.weekly.time && st.fired.weekly !== t){ st.fired.weekly = t; changed = true; parts.push('weekly'); }
+  if(st.weekly.on && d.getDay()===weeklyDay() && nowHM >= st.weekly.time && st.fired.weekly !== t){ st.fired.weekly = t; changed = true; parts.push('weekly'); }
   if(parts.length) showReport(parts);
   if(changed) save();
 }
@@ -2394,18 +2422,33 @@ $('#sWeeklyPreview').onclick = () => showReport(['weekly']);
 function renderAnniv(){
   const t = today();
   const list = (db.anniv||[]).map(a => ({a, ds:nextAnniv(a, t)})).sort((x,y)=>(x.ds||'9').localeCompare(y.ds||'9'));
-  $('#annList').innerHTML = list.length ? list.map(({a,ds}) => `<div class="annrow"><span style="font-size:20px">${a.emoji}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${annivDate(a)}${ds?` · 下一次 ${prettyDate(ds)}，還有 ${diffDays(t,ds)} 天`:''}</div></div><button class="icon" data-act="delAnn" data-id="${a.id}" title="刪除">✕</button></div>`).join('') : '<div class="empty">還沒有紀念日</div>';
+  const row = ({a,ds}, del) => `<div class="annrow"><span style="font-size:20px">${esc(a.emoji)}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${a.lunar ? annivDate(a) + (ds?' · ':'') : ''}${ds?`${prettyDate(ds)}，還有 ${diffDays(t,ds)} 天`:annivDate(a)}</div></div>${del?`<button class="icon" data-act="delAnn" data-id="${esc(a.id)}" title="刪除" aria-label="刪除">✕</button>`:''}</div>`;
+  $('#annCount').textContent = list.length ? `共 ${list.length} 個` : '';
+  $('#annNext').innerHTML = list.length ? '<div class="meta" style="margin-bottom:2px">接下來的日子</div>' + list.slice(0,2).map(x => row(x, false)).join('') : '<div class="empty">還沒有紀念日，按「新增日子」加一個</div>';
+  $('#annList').innerHTML = list.length ? list.map(x => row(x, true)).join('') : '<div class="empty">還沒有紀念日</div>';
 }
 $('#annM').innerHTML = Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1} 月</option>`).join('');
 $('#annD').innerHTML = Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1} 日</option>`).join('');
 $('#annAdd').onclick = () => { const name = $('#annName').value.trim(); if(!name){ toast('請輸入名稱'); return; }
   db.anniv.push({id:uid(), name, m:+$('#annM').value, d:+$('#annD').value, lunar:$('#annLunar').checked, emoji:$('#annEmoji').value});
-  $('#annName').value = ''; save(); toast('紀念日加好了 🎂'); };
+  $('#annName').value = ''; save(); toast('紀念日加好了 🎂'); annTab('list'); };
+function annTab(k){ $$('#annSeg button').forEach(b => b.classList.toggle('on', b.dataset.k===k)); $('#annListWrap').classList.toggle('hidden', k!=='list'); $('#annAddWrap').classList.toggle('hidden', k!=='add'); }
+function openAnn(k){ annTab(k); $('#annSheet').classList.add('on'); if(k==='add') setTimeout(() => $('#annName').focus(), 50); }
+$$('#annSeg button').forEach(b => b.onclick = () => annTab(b.dataset.k));
+$('#annOpenList').onclick = () => openAnn('list'); $('#annOpenAdd').onclick = () => openAnn('add');
+$('#annClose').onclick = () => $('#annSheet').classList.remove('on');
+$('#annSheet').onclick = e => { if(e.target.id==='annSheet') $('#annSheet').classList.remove('on'); };
+function fillTimes(sel, v){
+  const list = []; for(let h=6; h<24; h++) for(const m of ['00','30']) list.push(pad(h)+':'+m);
+  if(v && !list.includes(v)){ list.push(v); list.sort(); }
+  $(sel).innerHTML = list.map(t => `<option value="${t}">${+t.slice(0,2) < 12 ? '早上' : +t.slice(0,2) < 18 ? '下午' : '晚上'} ${t}</option>`).join(''); $(sel).value = v;
+}
+function weeklyDay(){ const d = +(db.settings.weekly||{}).day; return [0,5,6].includes(d) ? d : 0; }
 function renderSettings(){
   renderAnniv();
   const st = db.settings;
-  $('#sDailyOn').checked = st.daily.on; $('#sDailyTime').value = st.daily.time;
-  $('#sWeeklyOn').checked = st.weekly.on; $('#sWeeklyTime').value = st.weekly.time;
+  $('#sDailyOn').checked = st.daily.on; fillTimes('#sDailyTime', st.daily.time);
+  $('#sWeeklyOn').checked = st.weekly.on; fillTimes('#sWeeklyTime', st.weekly.time); $('#sWeeklyDay').value = String(weeklyDay());
   const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false;
   const on = Sync.pushOn(); $('#pushBtn').textContent = on ? '🔕 關閉這支手機的通知' : '📱 開啟這支手機的通知'; $('#pushInfo').textContent = on ? '✅ 這支手機已開啟通知' : '';
 }
@@ -2416,8 +2459,8 @@ $('#pushBtn').onclick = async () => {
 };
 [['#sMailEmail','email'],['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
   db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));
-[['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time']].forEach(([sel,k,f]) =>
-  $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : e.target.value; if(f==='time' && !v) return;
+[['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time'],['#sWeeklyDay','weekly','day']].forEach(([sel,k,f]) =>
+  $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : f==='day' ? +e.target.value : e.target.value; if(f==='time' && !v) return; if(f==='day') delete db.settings.fired[k];
     db.settings[k][f] = v; if(f==='time') delete db.settings.fired[k]; saveQuiet(); toast('提醒設定已更新'); }));
 function updateNotice(){
   const ok = 'Notification' in window && Notification.permission==='granted';
