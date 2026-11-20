@@ -51,5 +51,11 @@ await t('主揪可讀判斷文件', assertSucceeds(getDoc(doc(admin,'cl_meta','a
 // 原本生產力 app 規則沒被影響
 await t('users：自己的可寫', assertSucceeds(setDoc(doc(a,'users','parentA'), { json:'{}' })));
 await t('users：別人的不能讀', assertFails(getDoc(doc(b,'users','parentA'))));
+await t('管理員建立 22:00 才開放的課', setDoc(doc(admin,'cl_courses','c3'), { title:'z', open:true, openAt:Timestamp.fromMillis(Date.now()+3600000) }));
+await t('開放時間前報名被擋', assertFails(signupBatch(a,'parentA',ID('t1'),{ courseId:'c3' },{ courseId:'c3' })));
+await t('管理員建立已到開放時間的課', setDoc(doc(admin,'cl_courses','c4'), { title:'w', open:true, openAt:Timestamp.fromMillis(Date.now()-1000) }));
+await t('開放時間後可報名', assertSucceeds(signupBatch(a,'parentA',ID('t2'),{ courseId:'c4' },{ courseId:'c4' })));
+await t('openAt 為 null 可報名', assertSucceeds(setDoc(doc(admin,'cl_courses','c5'), { title:'v', open:true, openAt:null }).then(()=>signupBatch(a,'parentA',ID('t3'),{ courseId:'c5' },{ courseId:'c5' }))));
+await t('管理員可刪報名與繳費', assertSucceeds(deleteDoc(doc(admin,'cl_signups',ID('t2'))).then(()=>deleteDoc(doc(admin,'cl_pay',ID('t2'))))));
 console.log(`\n通過 ${pass}，失敗 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

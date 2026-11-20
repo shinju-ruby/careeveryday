@@ -32,6 +32,8 @@
         && request.resource.data.companions is int && request.resource.data.companions >= 0 && request.resource.data.companions <= 5
         && request.resource.data.note is string && request.resource.data.note.size() <= 100
         && get(/databases/$(database)/documents/cl_courses/$(request.resource.data.courseId)).data.open == true
+        && (get(/databases/$(database)/documents/cl_courses/$(request.resource.data.courseId)).data.get('openAt', null) == null
+            || request.time >= get(/databases/$(database)/documents/cl_courses/$(request.resource.data.courseId)).data.openAt)
       );
       // 家長只能「取消」自己的報名，不能改順序或改回來
       allow update: if isClAdmin() || (
