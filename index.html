@@ -888,7 +888,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭成員版 2</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭成員版 3</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1103,7 +1103,9 @@ const Sync = (() => {
     const us = await uRef.get(), ud = us.exists ? us.data() : {};
     let uData = ud.json ? JSON.parse(ud.json) : null, sData = null; seenU = ud.json || ''; seenS = '';
     if(sid){
-      const ss = await sRef.get(), sd = ss.exists ? ss.data() : {};
+      let ss = null; try{ ss = await sRef.get(); }catch(e){ ss = null; }
+      if(!ss || !ss.exists || !(ss.data().members||[]).includes(user.uid)) return kicked();
+      const sd = ss.data();
       sData = sd.json ? JSON.parse(sd.json) : null; seenS = sd.json || ''; members = (sd.members||[]).length; memberIds = sd.members||[]; profiles = sd.profiles||{}; ownerId = sd.owner||'';
       const mine = {name:user.displayName || (user.email||'').split('@')[0], email:user.email||'', photo:user.photoURL||''};
       if(JSON.stringify(profiles[user.uid]) !== JSON.stringify(mine)) sRef.update({['profiles.' + user.uid]: mine}).catch(e => console.warn('profile', e));
@@ -1127,12 +1129,29 @@ const Sync = (() => {
     }, e => { console.warn(e); badge('⚠️ 同步失敗'); });
     if(sRef) unsubS = sRef.onSnapshot(sn => {
       const d = sn.data(); if(!d) return;
+      if(!(d.members||[]).includes(user.uid)) return kicked();
       members = (d.members||[]).length; memberIds = d.members||[]; profiles = d.profiles||{}; ownerId = d.owner||''; renderFamily();
       if(!d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenS || d.json === lastS) return;
       seenS = d.json; lastS = d.json;
       applyRemote(Object.assign({}, omit(db, SHARED), pick(makeDb(JSON.parse(d.json)), SHARED))); okBadge();
-    }, e => { console.warn(e); badge('⚠️ 同步失敗'); });
+    }, e => { console.warn(e); if(e && e.code === 'permission-denied') kicked(); else badge('⚠️ 同步失敗'); });
     renderFamily();
+  }
+  // 被移出家庭空間：改回只用自己的帳號（共用資料留一份在這台裝置上）
+  async function kicked(){
+    if(!user) return;
+    const keep = db;
+    detach();
+    try{ await userRef().set({space:firebase.firestore.FieldValue.delete()}, {merge:true}); }catch(e){}
+    await attach(null, false);
+    if(!db.todos.length && keep.todos.length){ db = makeDb(keep); save(); }
+    toast('你已經不在家庭空間裡了，資料改回只存在自己的帳號');
+  }
+  async function removeMember(id){
+    const nm = (profiles[id]||{}).name || '這位家人';
+    if(!sRef || !confirm('把「' + nm + '」移出家庭空間？\n移除後對方就看不到共用的購物清單、待辦、行事曆、記帳和旅遊露營。之後可以再用邀請連結加回來。')) return;
+    await sRef.update({members: firebase.firestore.FieldValue.arrayRemove(id), ['profiles.' + id]: firebase.firestore.FieldValue.delete()});
+    toast('已把' + nm + '移出家庭空間');
   }
   async function createSpace(){
     const id = Array.from(crypto.getRandomValues(new Uint8Array(15)), x => 'abcdefghijkmnpqrstuvwxyz23456789'[x % 32]).join('');
@@ -1172,12 +1191,13 @@ const Sync = (() => {
     } else {
       const ids = memberIds.length ? memberIds : [user.uid];
       box.innerHTML = `<div class="fam-list">${ids.map(id => { const pf = profiles[id] || {}, me = id===user.uid, nm = pf.name || (me ? Sync.name() : '家人');
-          return `<div class="fam-m">${pf.photo ? `<img src="${esc(pf.photo)}" alt="" referrerpolicy="no-referrer">` : `<span class="av">${esc(nm.slice(0,1))}</span>`}<div class="grow"><b>${esc(nm)}${me?' <span class="meta">（你）</span>':''}${id===ownerId?' 👑':''}</b>${pf.email?`<div class="meta" style="font-size:12px">${esc(pf.email)}</div>`:!pf.name&&!me?'<div class="meta" style="font-size:12px">打開新版 App 後就會顯示名字</div>':''}</div></div>`; }).join('')}</div>
+          return `<div class="fam-m">${pf.photo ? `<img src="${esc(pf.photo)}" alt="" referrerpolicy="no-referrer">` : `<span class="av">${esc(nm.slice(0,1))}</span>`}<div class="grow"><b>${esc(nm)}${me?' <span class="meta">（你）</span>':''}${id===ownerId?' 👑':''}</b>${pf.email?`<div class="meta" style="font-size:12px">${esc(pf.email)}</div>`:!pf.name&&!me?'<div class="meta" style="font-size:12px">打開新版 App 後就會顯示名字</div>':''}</div>${user.uid===ownerId && !me ? `<button class="btn white" data-famrm="${esc(id)}" style="padding:3px 10px;font-size:13px;color:#E2401C">移除</button>` : ''}</div>`; }).join('')}</div>
         <p class="meta">共用：🛒 ✅ 📅 💰 🏕️　其餘只有自己看得到</p>
         <div class="row"><input type="text" id="famLink" readonly value="${esc(inviteLink())}"><button class="btn blue" id="famCopy">複製連結</button></div>
         <p class="meta" style="margin:6px 0 0">把連結傳給家人，用他的 Google 帳號登入就能加入。</p>
         <button class="btn white" id="famLeave" style="margin-top:12px">離開家庭空間</button>`;
       $('#famCopy').onclick = () => { const i = $('#famLink'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(() => toast('已複製，傳給家人吧！'), () => { document.execCommand('copy'); toast('已複製'); }); };
+      $$('[data-famrm]').forEach(b => b.onclick = () => removeMember(b.dataset.famrm).catch(e => toast('移除失敗：' + (e.message||e.code))));
       $('#famLeave').onclick = () => leaveSpace().catch(e => toast('操作失敗：' + (e.message||e.code)));
     }
   }
