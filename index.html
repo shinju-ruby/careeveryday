@@ -239,19 +239,21 @@ details.fold[open]>summary{margin-bottom:10px}
 .donelog li{padding:4px 0;font-size:14px}
 /* pets */
 .card.peek{position:relative;margin-top:44px}
-.card .pet{position:absolute;top:-47px;width:72px;z-index:2;pointer-events:none}
+.card .pet{position:absolute;top:-47px;width:72px;z-index:2;cursor:pointer;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 100%}
+.card .pet.left{animation-delay:-1.3s}
 .card .pet.right{right:26px} .card .pet.left{left:26px}
 .pets3{position:absolute;top:-47px;right:22px;display:flex;gap:2px;z-index:2;pointer-events:none}
 .pets3 img{width:64px}
 .hero{padding-bottom:70px}
 .hero-pets{position:absolute !important;right:14px;bottom:-14px;display:flex;gap:4px;z-index:2}
-.hero-pets img{width:82px;transition:transform .2s}
-.hero-pets img:hover{transform:translateY(-8px) rotate(-4deg)}
+.hero-pets img{width:82px;cursor:pointer;animation:bob 2.8s ease-in-out infinite;transform-origin:50% 100%}
+.hero-pets img:nth-child(2){animation-delay:-.9s} .hero-pets img:nth-child(3){animation-delay:-1.8s}
+
 .gate-box{position:relative;margin-top:50px}
 .gate-pets{position:absolute;top:-55px;left:0;right:0;display:flex;justify-content:center;gap:8px}
 .gate-box .gate-pets img{width:84px;height:auto;border:0;box-shadow:none;border-radius:0}
 .toast img{width:34px;flex:none}
-.empty-pet{display:block;width:70px;margin:6px auto 0;opacity:.9}
+.empty-pet{display:block;width:70px;margin:6px auto 0;opacity:.9;cursor:pointer;animation:bob 3s ease-in-out infinite}
 /* dashboard */
 .dash{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
 .dash .span2{grid-column:1/-1}
@@ -396,6 +398,42 @@ nav#nav button.on span{display:inline}
 .modal.on{display:flex}
 .modal .card{max-width:560px;width:100%;max-height:85vh;overflow:auto;margin:0;animation:pop .25s}
 .modal pre{white-space:pre-wrap;font:inherit;background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+/* ---------- 動畫：毛孩 ---------- */
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-2deg)}}
+@keyframes petjump{0%{transform:translateY(0) scale(1)}25%{transform:translateY(-22px) scale(1.08,.95) rotate(-6deg)}50%{transform:translateY(0) scale(1.1,.9)}70%{transform:translateY(-8px) rotate(4deg)}100%{transform:none}}
+img.jump{animation:petjump .7s ease-out !important}
+.pbubble{position:fixed;z-index:76;background:#fff;border:2.5px solid var(--ink);border-radius:16px;padding:6px 12px;font-weight:900;font-size:14px;box-shadow:3px 3px 0 var(--ink);pointer-events:none;white-space:nowrap;animation:bubble 1.8s ease forwards;transform:translate(-50%,-100%)}
+.pbubble::after{content:"";position:absolute;left:50%;bottom:-9px;width:12px;height:12px;background:#fff;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+@keyframes bubble{0%{opacity:0;margin-top:8px}12%{opacity:1;margin-top:0}80%{opacity:1}100%{opacity:0;margin-top:-10px}}
+body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='%23F2E3C4' opacity='.55'%3E%3Cg transform='translate(30 40) rotate(-20)'%3E%3Cellipse cx='0' cy='6' rx='7' ry='6'/%3E%3Ccircle cx='-7' cy='-4' r='2.6'/%3E%3Ccircle cx='-2.5' cy='-8' r='2.6'/%3E%3Ccircle cx='2.5' cy='-8' r='2.6'/%3E%3Ccircle cx='7' cy='-4' r='2.6'/%3E%3C/g%3E%3Cg transform='translate(115 115) rotate(25)'%3E%3Cellipse cx='0' cy='6' rx='7' ry='6'/%3E%3Ccircle cx='-7' cy='-4' r='2.6'/%3E%3Ccircle cx='-2.5' cy='-8' r='2.6'/%3E%3Ccircle cx='2.5' cy='-8' r='2.6'/%3E%3Ccircle cx='7' cy='-4' r='2.6'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+/* 開場歡迎 */
+#welcome{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:opacity .45s, transform .45s;
+  background-image:radial-gradient(circle at 15% 20%, #FFE0A8 0 80px, transparent 81px),radial-gradient(circle at 88% 28%, #CDEBFF 0 100px, transparent 101px),radial-gradient(circle at 18% 85%, #FFD3E6 0 70px, transparent 71px),radial-gradient(circle at 85% 82%, #D8F6EC 0 90px, transparent 91px)}
+#welcome.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#welcome .wl-pets{display:flex;gap:6px;align-items:flex-end}
+#welcome .wl-pets img{width:104px;opacity:0;animation:wlDrop .7s cubic-bezier(.3,1.6,.5,1) forwards, wlWave 1s ease-in-out .9s 2}
+#welcome .wl-pets img:nth-child(1){animation-delay:.1s,1s} #welcome .wl-pets img:nth-child(2){animation-delay:.3s,1.15s} #welcome .wl-pets img:nth-child(3){animation-delay:.5s,1.3s}
+@keyframes wlDrop{0%{opacity:0;transform:translateY(-180px) scale(.6)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes wlWave{0%,100%{transform:none}25%{transform:rotate(-8deg) translateY(-6px)}75%{transform:rotate(8deg) translateY(-6px)}}
+#welcome .wl-kr{font-family:"Jua","Noto Sans KR",sans-serif;font-size:46px;color:var(--orange);text-shadow:2.5px 2.5px 0 var(--ink);letter-spacing:2px;opacity:0;animation:wlPop .5s .8s cubic-bezier(.3,1.6,.5,1) forwards;margin-top:10px}
+#welcome .wl-sub{font-weight:900;font-size:17px;opacity:0;animation:wlPop .5s 1s ease forwards}
+#welcome .wl-paws{font-size:20px;letter-spacing:10px;margin-top:8px}
+#welcome .wl-paws span{opacity:0;display:inline-block;animation:wlPop .3s ease forwards}
+@keyframes wlPop{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:none}}
+/* 慶祝 */
+#fx{position:fixed;inset:0;z-index:75;pointer-events:none;overflow:hidden}
+#fx .cf{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:cfFall linear forwards}
+@keyframes cfFall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+#fx .spark{position:absolute;font-size:22px;animation:spark .8s ease-out forwards;transform:translate(-50%,-50%)}
+@keyframes spark{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.2) rotate(90deg)}}
+#fx .cheerbox{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);text-align:center;animation:cheerIn 2.2s ease forwards}
+#fx .cheerbox img{width:120px;animation:petjump .7s .15s ease-out}
+#fx .cheerbox b{display:block;font-family:"Jua","Noto Sans KR",sans-serif;font-size:40px;color:var(--orange);text-shadow:2.5px 2.5px 0 var(--ink);letter-spacing:1px;white-space:nowrap}
+#fx .cheerbox span{display:inline-block;background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:4px 14px;font-weight:900;box-shadow:3px 3px 0 var(--ink);margin-top:4px;white-space:nowrap}
+#fx .glow{position:absolute;left:50%;top:42%;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;background:radial-gradient(circle,#FFF3B0 0,#FFE06688 35%,transparent 70%);animation:glow 2.2s ease forwards}
+@keyframes glow{0%{transform:scale(.2);opacity:0}20%{transform:scale(1);opacity:1}80%{opacity:.8}100%{transform:scale(1.3);opacity:0}}
+@keyframes cheerIn{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%)}}
+@media (prefers-reduced-motion:reduce){ .card .pet,.hero-pets img,.empty-pet{animation:none} #welcome{display:none} }
 @keyframes pop{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
 .formgrid{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px 10px;align-items:center;margin-top:10px}
 .formgrid label{font-size:13px;font-weight:700}
@@ -813,7 +851,7 @@ nav#nav button.on span{display:inline}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 作業書影劇版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 毛孩動畫版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -833,6 +871,9 @@ nav#nav button.on span{display:inline}
   </div>
 </div>
 <div id="toasts"></div>
+<div id="fx"></div>
+<div id="welcome" class="hidden"><div class="wl-pets"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/tabby.svg" alt=""><img src="icons/pets/shiba.svg" alt=""></div>
+  <div class="wl-kr">어서 와!</div><div class="wl-sub" id="wlSub">歡迎回來 ♡</div><div class="wl-paws"><span style="animation-delay:1.10s">🐾</span><span style="animation-delay:1.25s">🐾</span><span style="animation-delay:1.40s">🐾</span><span style="animation-delay:1.55s">🐾</span><span style="animation-delay:1.70s">🐾</span></div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
   <div id="dsList" style="margin:8px 0"></div>
@@ -1615,14 +1656,14 @@ document.addEventListener('click', e => {
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
     case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
     case 'hEmoji': hEmoji = b.dataset.e; renderHabits(); return;
-    case 'toggleHw': { const h = myHw().find(x=>x.id===b.dataset.hid); if(!h) return; h.done = !h.done; h.doneAt = h.done ? Date.now() : null; if(h.done) toast('作業完成！수고했어 📚✨'); break; }
+    case 'toggleHw': { const h = myHw().find(x=>x.id===b.dataset.hid); if(!h) return; h.done = !h.done; h.doneAt = h.done ? Date.now() : null; if(h.done){ toast('作業完成！수고했어 📚✨'); celebrate('📚 作業交出去了！'); } break; }
     case 'editHw': hwEdit(b.dataset.hid); return;
     case 'delHw': { if(!confirm('確定刪除這份作業？')) return; const a = myHw(), i = a.findIndex(x=>x.id===b.dataset.hid); if(i>=0) a.splice(i,1); break; }
     case 'hwCourse': hwFilterCourse = b.dataset.c; renderHw(); return;
     case 'mdKindF': mdKindFilter = b.dataset.k; renderMedia(); return;
     case 'mdEdit': mdEdit(b.dataset.mid); return;
     case 'mdDel': if(!confirm('確定刪除這筆紀錄？')) return; db.media = db.media.filter(x=>x.id!==b.dataset.mid); break;
-    case 'mdDone': { const m = db.media.find(x=>x.id===b.dataset.mid); if(!m) return; m.status = 'done'; m.date = today(); toast(`${MD_KIND[m.kind].em} 看完了！記得寫個心得 ✍️`); break; }
+    case 'mdDone': { const m = db.media.find(x=>x.id===b.dataset.mid); if(!m) return; m.status = 'done'; m.date = today(); toast(`${MD_KIND[m.kind].em} 看完了！記得寫個心得 ✍️`); celebrate(`${MD_KIND[m.kind].em} 看完「${m.title.slice(0,12)}」`); break; }
     case 'trCountry': trCountry = b.dataset.c; trCounty = ''; renderTrips(); $('#trList').scrollIntoView({behavior:'smooth', block:'start'}); return;
     case 'trMapV': trMapV = b.dataset.v; renderTrips(); return;
     case 'trType': trType = b.dataset.k; renderTrips(); return;
@@ -1630,10 +1671,11 @@ document.addEventListener('click', e => {
     case 'trEdit': editTrip(b.dataset.tid); return;
     case 'trDel': if(!confirm('確定刪除這筆紀錄？')) return; db.trips = db.trips.filter(x=>x.id!==b.dataset.tid); break;
     case 'expand': case 'gExpand': expanded.has(id) ? expanded.delete(id) : expanded.add(id); renderAll(); return;
-    case 'toggleTodo': if(td){ setTodoDone(td, !td.done); td.steps.forEach(s => { if(s.done!==td.done){ s.done = td.done; s.doneAt = td.done ? Date.now() : null; } }); if(td.done) toast('대박! 完成一件，太棒了 🎉'); } break;
+    case 'toggleTodo': if(td){ setTodoDone(td, !td.done); td.steps.forEach(s => { if(s.done!==td.done){ s.done = td.done; s.doneAt = td.done ? Date.now() : null; } }); if(td.done){ toast('대박! 完成一件，太棒了 🎉'); celebrate('「' + td.title.slice(0,14) + '」完成！'); } } break;
     case 'toggleStep': if(td){ const s = td.steps.find(x=>x.id===sid); if(s){ s.done = !s.done; s.doneAt = s.done ? Date.now() : null;
         const all = td.steps.every(x=>x.done);
-        if(all && !td.done){ setTodoDone(td, true); toast('최고야! 所有步驟都完成，整件事搞定 🎉'); }
+        if(all && !td.done){ setTodoDone(td, true); toast('최고야! 所有步驟都完成，整件事搞定 🎉'); celebrate('所有步驟都完成了！'); }
+        else if(s.done) sparkle(lastXY[0], lastXY[1], 8);
         else if(!all && td.done) setTodoDone(td, false);
         else if(s.done) toast('잘했어! 又前進一步 👣'); } } break;
     case 'pickTag': pickTag = b.dataset.tag; renderTagBars(); return;
@@ -1814,7 +1856,8 @@ function habitAdd(id, n, ds){
   ds = ds || hDate; const h = myHabits().find(x=>x.id===id); if(!h) return;
   const ml = myLog(), log = ml[ds] || (ml[ds] = {});
   const before = log[id] || 0; log[id] = Math.max(0, before + n);
-  if(before < h.target && log[id] >= h.target) toast(`${h.emoji} ${h.name}達標！잘했어 🎉`);
+  if(before < h.target && log[id] >= h.target){ toast(`${h.emoji} ${h.name}達標！잘했어 🎉`); celebrate(`${h.emoji} ${h.name}今天達標！`); }
+  else if(n > 0) sparkle(lastXY[0], lastXY[1], 5);
   save();
 }
 function streak(h){ let n = 0, d = new Date(); if(hCount(ymd(d), h.id) < h.target) d = addDays(d,-1);
@@ -2059,6 +2102,49 @@ function beep(){
   try{ const C = window.AudioContext||window.webkitAudioContext, c = new C(), o = c.createOscillator(), g = c.createGain();
     o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.15,c.currentTime);
     g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6); o.start(); o.stop(c.currentTime+.6); }catch(e){}
+}
+// ---------- 動畫：歡迎、慶祝、毛孩說話 ----------
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function welcome(){
+  let seen = false; try{ seen = sessionStorage.getItem('pa-welcomed'); sessionStorage.setItem('pa-welcomed', '1'); }catch(e){}
+  if(seen || REDUCED) return;
+  const w = $('#welcome'), h = new Date().getHours();
+  $('#wlSub').textContent = h<5 ? '這麼晚還在努力，辛苦了 🌙' : h<11 ? '早安！今天也一起加油 ☀️' : h<14 ? '午安！吃飽了嗎？🍱' : h<18 ? '下午好！再衝一下 💪' : '晚安～今天辛苦了 🌆';
+  w.classList.remove('hidden');
+  const close = () => { w.classList.add('out'); setTimeout(() => w.remove(), 500); };
+  w.onclick = close; setTimeout(close, 2600);
+})();
+const PET_LINES = {calico:['喵～你今天好棒！','摸摸頭 💕','喵！記得喝水 💧','三花幫你加油！'], tabby:['呼嚕呼嚕～','休息一下也沒關係','喵嗚，慢慢來 🐾','虎斑陪你寫作業 ✏️'], shiba:['汪！화이팅！','一起去散步嗎？🐕','汪汪！做得好！','柴柴最喜歡你了 💛']};
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function petTalk(img, line){
+  const k = (img.getAttribute('src').match(/pets\/(\w+)\.svg/)||[])[1]; if(!k) return;
+  img.classList.remove('jump'); void img.offsetWidth; img.classList.add('jump'); setTimeout(() => img.classList.remove('jump'), 750);
+  const r = img.getBoundingClientRect(), b = document.createElement('div'); b.className = 'pbubble'; b.textContent = line || pick(PET_LINES[k]);
+  b.style.left = Math.min(innerWidth-80, Math.max(80, r.left + r.width/2)) + 'px'; b.style.top = Math.max(46, r.top - 6) + 'px';
+  document.body.appendChild(b); setTimeout(() => b.remove(), 1800);
+}
+document.addEventListener('click', e => { const img = e.target.closest('img[src*="icons/pets/"]'); if(img && !img.closest('#welcome,#gate,.toast')) petTalk(img); });
+let lastXY = [innerWidth/2, innerHeight/2];
+document.addEventListener('pointerdown', e => { lastXY = [e.clientX, e.clientY]; }, true);
+function sparkle(x, y, n){
+  if(REDUCED) return; const fx = $('#fx');
+  for(let i=0;i<(n||10);i++){ const sp = document.createElement('span'); sp.className = 'spark'; sp.textContent = pick(['✨','⭐','💛','✦','🌟']);
+    const a = Math.random()*Math.PI*2, d = 40 + Math.random()*50; sp.style.left = x+'px'; sp.style.top = y+'px';
+    sp.style.setProperty('--dx', Math.cos(a)*d+'px'); sp.style.setProperty('--dy', Math.sin(a)*d+'px'); fx.appendChild(sp); setTimeout(() => sp.remove(), 850); }
+}
+const CHEER_KR = ['대박!','최고야!','잘했어!','수고했어!','짱이야!','멋져!'];
+function celebrate(sub){
+  const [x,y] = lastXY; sparkle(x, y, 12);
+  if(REDUCED){ return; }
+  const fx = $('#fx'), colors = ['#FF6B3D','#FFC93C','#38B6FF','#22C39A','#FF7EB6','#8B6CFF'];
+  for(let i=0;i<46;i++){ const c = document.createElement('i'); c.className = 'cf';
+    c.style.left = Math.random()*100+'vw'; c.style.background = pick(colors); c.style.animationDuration = (1.6+Math.random()*1.4)+'s'; c.style.animationDelay = Math.random()*.35+'s';
+    c.style.setProperty('--dx', (Math.random()*160-80)+'px'); c.style.setProperty('--r', (Math.random()*900-450)+'deg');
+    if(Math.random()<.3) c.style.borderRadius = '50%'; fx.appendChild(c); setTimeout(() => c.remove(), 3400); }
+  const g = document.createElement('div'); g.className = 'glow'; fx.appendChild(g); setTimeout(() => g.remove(), 2300);
+  const box = document.createElement('div'); box.className = 'cheerbox';
+  box.innerHTML = `<img src="icons/pets/${pick(['calico','tabby','shiba'])}.svg" alt=""><b>${pick(CHEER_KR)}</b><span>${esc(sub||'完成了，太厲害了！')}</span>`;
+  fx.appendChild(box); setTimeout(() => box.remove(), 2300);
 }
 function toast(msg, sticky){
   const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = `<img src="icons/pets/${['calico','tabby','shiba'][Math.floor(Math.random()*3)]}.svg" alt=""><span class="grow">${esc(msg)}</span>`;
