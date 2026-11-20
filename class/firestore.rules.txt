@@ -1,0 +1,61 @@
+// ===== 共學揪課報名：Firestore 安全規則 =====
+// 貼到 Firebase 主控台 → Firestore Database → 規則，
+// 放在 `match /databases/{database}/documents {` 裡面、原本的 users / spaces 規則旁邊（不要刪掉原本的）。
+// 把下面的 主揪的Gmail@gmail.com 換成你自己（主揪）的 Google 帳號，可以放好幾個。
+
+    function isClAdmin() {
+      return request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.email in ['主揪的Gmail@gmail.com'];
+    }
+
+    // 課程：大家都看得到，只有主揪能改
+    match /cl_courses/{id} {
+      allow read: if true;
+      allow write: if isClAdmin();
+    }
+
+    // 報名：有連線（匿名也算）就看得到名單；只能用自己的身分報名、時間由伺服器決定（不能插隊）
+    match /cl_signups/{id} {
+      allow read: if request.auth != null;
+      allow create: if isClAdmin() || (
+        request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.cancelled == false
+        && request.resource.data.keys().hasOnly(['courseId','sessionId','parentName','childName','childAge','companions','note','uid','cancelled','createdAt'])
+        && request.resource.data.parentName is string && request.resource.data.parentName.size() > 0 && request.resource.data.parentName.size() <= 30
+        && request.resource.data.childName is string && request.resource.data.childName.size() > 0 && request.resource.data.childName.size() <= 20
+        && request.resource.data.note.size() <= 100
+        && get(/databases/$(database)/documents/cl_courses/$(request.resource.data.courseId)).data.open == true
+      );
+      // 家長只能「取消」自己的報名，不能改順序或改回來
+      allow update: if isClAdmin() || (
+        request.auth != null && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled','cancelledAt'])
+        && request.resource.data.cancelled == true
+      );
+      allow delete: if isClAdmin();
+    }
+
+    // 繳費狀態與末五碼：只有本人和主揪看得到；家長只能標「已回報」，「已收款」只有主揪能按
+    match /cl_pay/{id} {
+      allow read: if isClAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow create: if isClAdmin() || (
+        request.auth != null && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status in ['unpaid','reported']
+      );
+      allow update: if isClAdmin() || (
+        request.auth != null && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && resource.data.status != 'confirmed'
+        && request.resource.data.status in ['unpaid','reported']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','note','updatedAt','courseId','uid'])
+        && request.resource.data.note.size() <= 20
+      );
+      allow delete: if isClAdmin();
+    }
+
+    // 用來判斷「是不是主揪」
+    match /cl_meta/{id} {
+      allow read, write: if isClAdmin();
+    }
