@@ -474,6 +474,10 @@ textarea{width:100%;min-height:70px;resize:vertical}
       </div>
     </div>
     <div class="card">
+      <h2>👨‍👩‍👧 家庭共用</h2>
+      <div id="familyBox"><p class="meta">登入後才能使用家庭共用。</p></div>
+    </div>
+    <div class="card">
       <h2>💾 資料備份</h2>
       <p class="meta">所有資料只存在這台電腦的這個瀏覽器裡。清除瀏覽器資料或換電腦前，記得先匯出備份。</p>
       <div class="row">
@@ -501,7 +505,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 登入版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭共用版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -599,12 +603,75 @@ const Sync = (() => {
     if(document.activeElement !== $('#dText')) dShownFor = null;
     renderAll();
   }
+  const userRef = () => firebase.firestore().collection('users').doc(user.uid);
+  const spaceRef = id => firebase.firestore().collection('spaces').doc(id);
+  let spaceId = null, members = 0;
+  function detach(){ if(unsub){ unsub(); unsub = null; } ref = null; ready = false; spaceId = null; members = 0; renderFamily(); }
+  async function attach(r, sid, mergeLocal){
+    detach(); ref = r; spaceId = sid;
+    const snap = await ref.get();
+    if(snap.exists && snap.data().json){ const remote = JSON.parse(snap.data().json); applyRemote(mergeLocal ? merge(remote, db) : remote); }
+    if(sid && snap.exists) members = (snap.data().members||[]).length;
+    ready = true;
+    if(mergeLocal || !snap.exists || !snap.data().json) push(); else badge(sid ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
+    unsub = ref.onSnapshot(sn => {
+      const d = sn.data(); if(!d) return;
+      if(sid){ members = (d.members||[]).length; renderFamily(); }
+      if(!d.json || d.device === DEVICE || sn.metadata.hasPendingWrites) return;
+      applyRemote(JSON.parse(d.json)); badge(sid ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
+    }, e => { console.warn(e); badge('⚠️ 同步失敗'); });
+    renderFamily();
+  }
+  async function createSpace(){
+    const id = Array.from(crypto.getRandomValues(new Uint8Array(15)), x => 'abcdefghijkmnpqrstuvwxyz23456789'[x % 32]).join('');
+    await spaceRef(id).set({members:[user.uid], owner:user.uid, json:JSON.stringify(db), device:DEVICE, updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await userRef().set({space:id}, {merge:true});
+    await attach(spaceRef(id), id, false);
+    toast('家庭空間建立好了！把邀請連結傳給家人吧 👨‍👩‍👧');
+  }
+  async function joinSpace(code){
+    code = String(code||'').trim().replace(/.*join=/,'');
+    if(!code) return;
+    try{
+      await spaceRef(code).update({members: firebase.firestore.FieldValue.arrayUnion(user.uid)});
+    }catch(e){ toast('加入失敗：邀請碼不正確，或家庭空間不存在'); console.warn(e); return; }
+    await userRef().set({space:code}, {merge:true});
+    await attach(spaceRef(code), code, true);
+    toast('已加入家庭空間，資料開始共用 🎉');
+  }
+  async function leaveSpace(){
+    if(!spaceId || !confirm('離開後就不再和家人共用，目前的資料會複製一份留在你自己的帳號。確定離開？')) return;
+    const sid = spaceId;
+    await userRef().set({space:firebase.firestore.FieldValue.delete(), json:JSON.stringify(db), device:DEVICE, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    try{ await spaceRef(sid).update({members: firebase.firestore.FieldValue.arrayRemove(user.uid)}); }catch(e){}
+    await attach(userRef(), null, false);
+    toast('已離開家庭空間');
+  }
+  const inviteLink = () => location.origin + location.pathname + '?join=' + spaceId;
+  function renderFamily(){
+    const box = $('#familyBox'); if(!box) return;
+    if(!user){ box.innerHTML = '<p class="meta">登入後才能使用家庭共用。</p>'; return; }
+    if(!spaceId){
+      box.innerHTML = `<p class="meta" style="margin-top:0">建立家庭空間後，把邀請連結傳給家人。家人用自己的 Google 帳號登入並加入，就能一起看、一起編輯所有資料。</p>
+        <button class="btn" id="famCreate">建立家庭空間</button>
+        <div class="row" style="margin-top:12px"><input type="text" id="famCode" placeholder="或貼上家人給你的邀請碼／連結"><button class="btn white" id="famJoin">加入</button></div>`;
+      $('#famCreate').onclick = () => createSpace().catch(e => toast('建立失敗：' + (e.message||e.code)));
+      $('#famJoin').onclick = () => joinSpace($('#famCode').value);
+    } else {
+      box.innerHTML = `<p style="margin-top:0;font-weight:700">✅ 你已在家庭空間裡，目前有 ${members||1} 位成員一起共用。</p>
+        <p class="meta">邀請家人：把下面的連結傳給他，用他自己的 Google 帳號登入後就會問要不要加入。</p>
+        <div class="row"><input type="text" id="famLink" readonly value="${esc(inviteLink())}"><button class="btn blue" id="famCopy">複製連結</button></div>
+        <button class="btn white" id="famLeave" style="margin-top:12px">離開家庭空間</button>`;
+      $('#famCopy').onclick = () => { const i = $('#famLink'); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(() => toast('已複製，傳給家人吧！'), () => { document.execCommand('copy'); toast('已複製'); }); };
+      $('#famLeave').onclick = () => leaveSpace().catch(e => toast('操作失敗：' + (e.message||e.code)));
+    }
+  }
   function push(){
     if(!ref || !ready) return;
     badge('☁️ 同步中…'); clearTimeout(timer);
     timer = setTimeout(() => {
-      ref.set({json: JSON.stringify(db), device: DEVICE, updatedAt: firebase.firestore.FieldValue.serverTimestamp()})
-        .then(() => badge('☁️ 已同步')).catch(e => { badge('⚠️ 同步失敗'); console.warn(e); });
+      ref.set({json: JSON.stringify(db), device: DEVICE, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
+        .then(() => badge(spaceId ? '👨‍👩‍👧 已同步' : '☁️ 已同步')).catch(e => { badge('⚠️ 同步失敗'); console.warn(e); });
     }, 700);
   }
   function ui(){
@@ -631,23 +698,17 @@ const Sync = (() => {
       firebase.initializeApp(FIREBASE_CONFIG); loaded = true; ui();
       try{ await firebase.firestore().enablePersistence({synchronizeTabs:true}); }catch(e){}
       firebase.auth().onAuthStateChanged(async u => {
-        user = u; authKnown = true; ui(); if(unsub){ unsub(); unsub = null; } ref = null; ready = false;
+        user = u; authKnown = true; ui(); detach();
         if(!u){ badge(''); return; }
         badge('☁️ 連線中…');
-        ref = firebase.firestore().collection('users').doc(u.uid);
-        const first = localStorage.getItem('pa-synced-uid') !== u.uid;
-        const snap = await ref.get();
-        if(snap.exists && snap.data().json){
-          const remote = JSON.parse(snap.data().json);
-          applyRemote(first ? merge(remote, db) : remote);
-        }
-        ready = true; localStorage.setItem('pa-synced-uid', u.uid);
-        if(first || !snap.exists) push(); else badge('☁️ 已同步');
-        if(first) toast('已登入，資料開始同步 ☁️');
-        unsub = ref.onSnapshot(sn => {
-          const d = sn.data(); if(!d || !d.json || d.device === DEVICE || sn.metadata.hasPendingWrites) return;
-          applyRemote(JSON.parse(d.json)); badge('☁️ 已同步');
-        });
+        try{
+          const us = await userRef().get();
+          const sp = us.exists && us.data().space;
+          await attach(sp ? spaceRef(sp) : userRef(), sp || null, localStorage.getItem('pa-synced-uid') !== u.uid);
+          localStorage.setItem('pa-synced-uid', u.uid);
+          const join = new URLSearchParams(location.search).get('join');
+          if(join){ history.replaceState(null, '', location.pathname); if(join !== spaceId && confirm('要加入這個家庭空間嗎？加入後會和家人共用行程、待辦、日記和記帳。')) await joinSpace(join); }
+        }catch(e){ console.warn(e); badge('⚠️ 同步失敗'); toast('同步失敗：' + (e.message||e.code)); }
       });
       $('#syncLogin').onclick = $('#gateLogin').onclick = () => {
         const prov = new firebase.auth.GoogleAuthProvider();
