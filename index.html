@@ -201,6 +201,16 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .entry{border:2px solid var(--ink);border-radius:12px;padding:8px 12px;margin-bottom:8px;cursor:pointer;background:var(--soft-yellow)}
 .entry:hover{transform:translateY(-1px)}
 .donelog li{padding:4px 0;font-size:14px}
+/* login gate */
+#gate{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px;
+  background-image:radial-gradient(circle at 12% 18%, #FFE0A8 0 90px, transparent 91px),radial-gradient(circle at 90% 25%, #CDEBFF 0 110px, transparent 111px),radial-gradient(circle at 15% 88%, #FFD3E6 0 80px, transparent 81px),radial-gradient(circle at 88% 85%, #D8F6EC 0 100px, transparent 101px)}
+#gate.on{display:flex}
+.gate-box{background:#fff;border:3px solid var(--ink);border-radius:28px;box-shadow:6px 6px 0 var(--ink);padding:32px 26px;text-align:center;max-width:360px;width:100%;animation:pop .3s}
+.gate-box img{width:110px;height:110px;border-radius:28px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.gate-box .kr{font-family:"Black Han Sans","Noto Sans KR",sans-serif;font-size:42px;color:var(--orange);text-shadow:3px 3px 0 var(--ink);margin-top:14px;line-height:1.1}
+.gate-box .sub{font-weight:900;letter-spacing:2px;margin-top:4px}
+.gate-box p{color:var(--muted);font-size:14px}
+.gate-box .btn{display:block;width:100%}
 /* report modal */
 .modal{position:fixed;inset:0;background:rgba(29,37,71,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
 .modal.on{display:flex}
@@ -240,11 +250,6 @@ textarea{width:100%;min-height:70px;resize:vertical}
   <div class="notice" id="notifyNotice">
     🔔 提醒還沒開啟！<button class="btn white" id="enableNotify" style="padding:3px 12px">開啟瀏覽器通知</button>
     <span class="meta">（沒開也沒關係，網頁開著時會跳出畫面提示並發出提示音）</span>
-  </div>
-
-  <div class="notice hidden" id="syncBanner" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--soft-blue)">
-    <span class="grow" style="font-weight:700">☁️ 登入 Google 帳號，手機和電腦的資料就會自動同步</span>
-    <button class="btn blue" id="syncLogin2">用 Google 登入</button>
   </div>
 
   <!-- 主頁 -->
@@ -496,13 +501,24 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 雲端同步版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 登入版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
   </section>
 </main>
 
+<div id="gate">
+  <div class="gate-box">
+    <img src="icons/icon-192.png" alt="">
+    <div class="kr">갓생 살자!</div>
+    <div class="sub">認真過好每一天</div>
+    <p id="gateMsg">載入中…</p>
+    <button class="btn" id="gateLogin" style="font-size:17px;padding:11px 22px"><span style="background:#fff;color:#4285F4;border-radius:50%;display:inline-grid;place-items:center;width:24px;height:24px;font-weight:900;margin-right:8px;vertical-align:-2px">G</span>用 Google 帳號登入</button>
+    <button class="btn white hidden" id="gateOffline" style="margin-top:10px">先離線使用</button>
+    <p class="meta" style="margin-top:18px">只有你登入的帳號看得到自己的資料 🔒</p>
+  </div>
+</div>
 <div id="toasts"></div>
 <div class="modal" id="reportModal"><div class="card"><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
 
@@ -565,7 +581,7 @@ const FIREBASE_CONFIG = {
 };
 const Sync = (() => {
   const DEVICE = (() => { try{ let d = localStorage.getItem('pa-device'); if(!d){ d = uid(); localStorage.setItem('pa-device', d); } return d; }catch(e){ return uid(); } })();
-  let ref = null, user = null, timer = null, ready = false, unsub = null, loaded = false;
+  let ref = null, user = null, timer = null, ready = false, unsub = null, loaded = false, authKnown = false, failed = false, offline = false;
   const badge = txt => { const b = $('#syncBadge'); b.style.display = txt ? '' : 'none'; b.textContent = txt; };
   function loadScript(src){ return new Promise((ok,no) => { const x = document.createElement('script'); x.src = src; x.onload = ok; x.onerror = no; document.head.appendChild(x); }); }
   function mergeById(a, b){ const m = new Map(); a.concat(b).forEach(x => { if(x && x.id) m.set(x.id, Object.assign({}, m.get(x.id)||{}, x)); }); return [...m.values()]; }
@@ -595,7 +611,12 @@ const Sync = (() => {
     const on = !!FIREBASE_CONFIG;
     $('#syncLogin').classList.toggle('hidden', !on || !!user);
     $('#syncLogout').classList.toggle('hidden', !user);
-    $('#syncBanner').classList.toggle('hidden', !on || !!user || location.protocol === 'file:' || !loaded);
+    const gate = on && location.protocol !== 'file:' && !user && !offline;
+    $('#gate').classList.toggle('on', gate);
+    document.body.style.overflow = gate ? 'hidden' : '';
+    $('#gateLogin').classList.toggle('hidden', !loaded || !authKnown);
+    $('#gateMsg').textContent = failed ? '連不上登入服務，請確認網路後重新整理。' : (!loaded || !authKnown) ? '載入中…' : '登入後就能看到你的計畫，手機和電腦自動同步';
+    $('#gateOffline').classList.toggle('hidden', !(failed && localStorage.getItem('pa-synced-uid')));
     $('#syncInfo').textContent = !on ? '還沒設定雲端同步，目前資料只存在這個瀏覽器。'
       : location.protocol === 'file:' ? '雲端同步要從網址打開才能用（例如 GitHub Pages 的網址），直接點開檔案不支援登入。'
       : user ? `已用 ${user.email} 登入。手機和電腦登入同一個帳號，資料就會自動同步。` : '登入後，這台裝置的資料會和雲端合併，之後所有裝置自動同步。';
@@ -610,7 +631,7 @@ const Sync = (() => {
       firebase.initializeApp(FIREBASE_CONFIG); loaded = true; ui();
       try{ await firebase.firestore().enablePersistence({synchronizeTabs:true}); }catch(e){}
       firebase.auth().onAuthStateChanged(async u => {
-        user = u; ui(); if(unsub){ unsub(); unsub = null; } ref = null; ready = false;
+        user = u; authKnown = true; ui(); if(unsub){ unsub(); unsub = null; } ref = null; ready = false;
         if(!u){ badge(''); return; }
         badge('☁️ 連線中…');
         ref = firebase.firestore().collection('users').doc(u.uid);
@@ -628,16 +649,17 @@ const Sync = (() => {
           applyRemote(JSON.parse(d.json)); badge('☁️ 已同步');
         });
       });
-      $('#syncLogin').onclick = $('#syncLogin2').onclick = () => {
+      $('#syncLogin').onclick = $('#gateLogin').onclick = () => {
         const prov = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(prov).catch(e => {
           if(e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') firebase.auth().signInWithRedirect(prov);
           else toast('登入失敗：' + (e.message||e.code));
         });
       };
-      $('#syncLogout').onclick = () => { if(confirm('登出後，這台裝置會保留目前的資料，但不再同步。確定登出？')) firebase.auth().signOut(); };
+      $('#syncLogout').onclick = () => { if(confirm('確定要登出嗎？登出後要重新登入才能使用。')){ firebase.auth().signOut(); goTab('home'); } };
       firebase.auth().getRedirectResult().catch(e => toast('登入失敗：' + (e.message||e.code)));
-    }catch(e){ console.warn(e); $('#syncInfo').textContent = '雲端同步載入失敗，請確認網路連線。資料仍會先存在這個瀏覽器。'; }
+    }catch(e){ console.warn(e); failed = true; ui(); $('#syncInfo').textContent = '雲端同步載入失敗，請確認網路連線。資料仍會先存在這個瀏覽器。'; }
+    $('#gateOffline').onclick = () => { offline = true; ui(); toast('目前離線使用，有網路後重新整理就會同步'); };
   }
   return {push, init};
 })();
