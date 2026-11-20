@@ -1,6 +1,6 @@
 /**
- * 갓생 살자! Email 提醒（Google Apps Script）
- * 不用開網頁，也會照 App 裡的設定寄 Email 給你：
+ * 갓생 살자! 手機通知＋Email 提醒（Google Apps Script）
+ * 不用開網頁，也會照 App 裡的設定跳手機通知、寄 Email 給你：
  *   1. 每天晚上「明天預告」（時間跟 App 設定頁一樣，預設 21:00）
  *   2. 週日晚上「下週預告」
  *   （行程、待辦的個別提醒預設不寄，要的話到 App 設定頁勾選）
@@ -16,11 +16,14 @@ function setup(){
   ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('tick').timeBased().everyMinutes(10).create();
   const db = loadDb();
+  const n = sendPush_('✅ 設定完成', '之後每天晚上會在這裡跳出明天預告 🎉');
   MailApp.sendEmail({to: myEmail_(), subject: '✅ 갓생 살자! Email 提醒設定完成',
-    htmlBody: wrap_('設定完成 🎉', '之後每 10 分鐘會檢查一次，時間到就寄 Email 給你。\n\n目前讀到：行程 ' + db.events.length + ' 個、待辦 ' + db.todos.length + ' 件、紀念日 ' + (db.anniv||[]).length + ' 個。\n\n下面是明天預告的樣子：\n\n' + dayReport(addD(todayT(), 1), '明天'))});
+    htmlBody: wrap_('設定完成 🎉', '之後每 10 分鐘會檢查一次，時間到就通知你。\n\n手機通知：' + (PUSH_TOKENS.length ? '已送出測試通知到 ' + n + ' 支手機' : '還沒有手機開啟通知（到 App 設定按「開啟這支手機的通知」，再執行一次 setup）') + '\n\n目前讀到：行程 ' + db.events.length + ' 個、待辦 ' + db.todos.length + ' 件、紀念日 ' + (db.anniv||[]).length + ' 個。\n\n下面是明天預告的樣子：\n\n' + dayReport(addD(todayT(), 1), '明天'))});
 }
 // 想先看看會寄什麼：執行 preview
-function preview(){ Logger.log(dailyText()); Logger.log(weeklyText()); }
+function preview(){ Logger.log(dailyText()); Logger.log(weeklyText()); Logger.log(daySummary(addD(todayT(), 1))); }
+// 只想測試手機通知：執行 testPush
+function testPush(){ loadDb(); Logger.log('送出 ' + sendPush_('🔔 測試通知', '看到這則就代表手機通知正常 👍') + ' 則'); }
 
 // ===== 每 10 分鐘執行 =====
 function tick(){
@@ -36,7 +39,9 @@ function tick(){
   if(parts.length){
     const w = parts.indexOf('weekly') >= 0;
     const dl = parts.indexOf('daily') >= 0;
-    send_(w ? '🗓️ 下週預告' : '🌙 明天預告', w && dl ? weekReport(1) + '\n\n' + dailyText() : w ? weeklyText() : dailyText());
+    const title = w ? '🗓️ 下週預告' : '🌙 明天預告';
+    sendPush_(title, w ? weekSummary() + (dl ? '\n' + daySummary(addD(t,1)) : '') : daySummary(addD(t,1)));
+    if(mail.email !== false) send_(title, w && dl ? weekReport(1) + '\n\n' + dailyText() : w ? weeklyText() : dailyText());
   }
   // 行程、待辦的個別提醒
   if(mail.items === true){   // 預設不寄個別提醒，到 App 設定勾選才會寄
@@ -51,7 +56,8 @@ function tick(){
       const at = Date.parse(td.remindAt + (td.remindAt.length === 16 ? ':00' : '') + '+08:00'), k = 'td:' + td.id + ':' + td.remindAt;
       if(now >= at && now < at + 86400000 && !was(k)){ mark(k); items.push('✅ ' + td.title + (td.due ? '\n   期限 ' + pretty(td.due) : '') + (td.steps.length ? '，進度 ' + progress(td) + '%' : '')); }
     });
-    if(items.length) send_('🔔 提醒：' + items[0].split('\n')[0].replace(/^\S+\s/, '') + (items.length > 1 ? ' 等 ' + items.length + ' 項' : ''), items.join('\n\n'));
+    if(items.length) sendPush_('🔔 提醒', items.join('\n'));
+    if(items.length && mail.email !== false) send_('🔔 提醒：' + items[0].split('\n')[0].replace(/^\S+\s/, '') + (items.length > 1 ? ' 等 ' + items.length + ' 項' : ''), items.join('\n\n'));
   }
   if(changed) props.setProperty('sent', JSON.stringify(sent.slice(-300)));
 }
@@ -65,20 +71,51 @@ function fsGet_(path){
   return JSON.parse(r.getContentText());
 }
 const fv_ = (doc, k) => doc.fields && doc.fields[k] && doc.fields[k].stringValue;
+let PUSH_TOKENS = [];
+const tokens_ = d => ((d.fields && d.fields.pushTokens && d.fields.pushTokens.arrayValue.values) || []).map(v => v.stringValue).filter(Boolean);
 function loadDb(){
-  const me = myEmail_().toLowerCase(); let pageToken = '', mine = null;
+  const me = myEmail_().toLowerCase(); let pageToken = '', mine = null; const all = [];
   do{
     const res = fsGet_('users?pageSize=100' + (pageToken ? '&pageToken=' + encodeURIComponent(pageToken) : ''));
-    (res.documents || []).forEach(d => { if((fv_(d, 'email') || '').toLowerCase() === me) mine = d; });
+    (res.documents || []).forEach(d => { all.push(d); if((fv_(d, 'email') || '').toLowerCase() === me) mine = d; });
     pageToken = res.nextPageToken || '';
-  } while(pageToken && !mine);
+  } while(pageToken);
   if(!mine) throw new Error('找不到你的資料。請先用 ' + me + ' 登入一次網頁版 App（新版會記下 Email），再執行一次。');
   const space = fv_(mine, 'space'), doc = space ? fsGet_('spaces/' + space) : mine;
+  // 手機通知：自己的手機，加上同一個家庭空間裡有開啟通知的家人
+  PUSH_TOKENS = tokens_(mine);
+  if(space) all.forEach(d => { if(d !== mine && fv_(d, 'space') === space) PUSH_TOKENS = PUSH_TOKENS.concat(tokens_(d)); });
+  PUSH_TOKENS = PUSH_TOKENS.filter((x, i, a) => a.indexOf(x) === i);
   const d = JSON.parse(fv_(doc, 'json') || '{}');
   d.events = d.events || []; d.todos = (d.todos || []).map(x => Object.assign({steps: [], pri: 'mid'}, x)); d.settings = d.settings || {};
   DB = d; return d;
 }
 function myEmail_(){ return Session.getEffectiveUser().getEmail(); }
+
+// ===== 手機通知 =====
+function sendPush_(title, body){
+  let ok = 0;
+  PUSH_TOKENS.forEach(token => {
+    const r = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + PROJECT_ID + '/messages:send', {method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'x-goog-user-project': PROJECT_ID},
+      payload: JSON.stringify({message: {token: token, webpush: {notification: {title: title, body: body.slice(0, 600), icon: APP_URL + 'icons/icon-192.png'}, fcm_options: {link: APP_URL}}}})});
+    if(r.getResponseCode() === 200) ok++; else console.log('手機通知失敗（' + r.getResponseCode() + '）：' + r.getContentText().slice(0, 300));
+  });
+  return ok;
+}
+function daySummary(ds){
+  const evs = eventsOn(ds), tds = DB.todos.filter(td => !td.done && td.due === ds), hs = holidaysOn(ds);
+  let out = pretty(ds) + '：' + (evs.length ? '行程 ' + evs.length + ' 個' : '沒有行程') + '、' + (tds.length ? '待辦 ' + tds.length + ' 件' : '沒有到期待辦');
+  if(hs.length) out += '\n' + hs.join('、');
+  if(evs.length) out += '\n' + evs.slice(0, 3).map(e => (e.time || '全天') + ' ' + e.title).join('、');
+  if(tds.length) out += '\n✅ ' + tds.slice(0, 3).map(t => t.title).join('、');
+  return out;
+}
+function weekSummary(){
+  const r = weekRange(1), evs = eventsBetween(r[0], r[1]), tds = DB.todos.filter(x => !x.done && x.due && x.due >= r[0] && x.due <= r[1]);
+  const hs = []; for(let d = r[0]; d <= r[1]; d = addD(d,1)) holidaysOn(d).forEach(h => hs.push(md(d) + ' ' + h));
+  return '下週 ' + md(r[0]) + '～' + md(r[1]) + '：行程 ' + evs.length + ' 個、待辦 ' + tds.length + ' 件' + (hs.length ? '\n' + hs.join('、') : '');
+}
 
 // ===== 寄信 =====
 function send_(subject, text){

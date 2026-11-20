@@ -689,9 +689,14 @@ nav#nav button.on span{display:inline}
         <button class="btn white" id="sWeeklyPreview" style="padding:3px 12px">預覽</button>
       </div>
       <div style="border-top:2px dashed #ddd;margin-top:12px;padding-top:10px">
-        <b>📧 Email 提醒（不用開網頁）</b>
-        <p class="meta" style="margin:4px 0 8px">要先在 Google Apps Script 安裝一次，<a href="https://github.com/shinju-ruby/careeveryday/blob/main/email-reminder/安裝說明.md" target="_blank" rel="noopener">看安裝說明</a>。裝好以後，下面勾選的會寄到你的信箱：</p>
+        <b>📱 手機通知 ＆ 📧 Email（不用開網頁）</b>
+        <p class="meta" style="margin:4px 0 8px">要先在 Google Apps Script 安裝一次，<a href="https://github.com/shinju-ruby/careeveryday/blob/main/email-reminder/安裝說明.md" target="_blank" rel="noopener">看安裝說明</a>。裝好以後，下面勾選的提醒會跳到手機、寄到信箱：</p>
+        <div class="row" style="margin-bottom:8px">
+          <button class="btn blue" id="pushBtn" style="padding:5px 14px">📱 開啟這支手機的通知</button>
+          <span class="meta" id="pushInfo"></span>
+        </div>
         <div class="row">
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailEmail"> 也寄 Email</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailDaily"> 明天預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailWeekly"> 下週預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailItems"> 行程和待辦的提醒</label>
@@ -704,7 +709,7 @@ nav#nav button.on span{display:inline}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 Email 提醒版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 手機通知版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -864,6 +869,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "70270100203",
   appId: "1:70270100203:web:6171f0514163cdf6d3d4ae"
 };
+const VAPID_KEY = 'BLU749VMUXzBb3SwClEp4hUu938P-Lb8ogBUn8prdNpoXpOX-5s--gJ2FjgjLOoq3RRr_Iz55R8ImxNKEcyBCfA';
 const Sync = (() => {
   const DEVICE = (() => { try{ let d = localStorage.getItem('pa-device'); if(!d){ d = uid(); localStorage.setItem('pa-device', d); } return d; }catch(e){ return uid(); } })();
   let ref = null, user = null, timer = null, ready = false, unsub = null, loaded = false, authKnown = false, failed = false, offline = false;
@@ -980,7 +986,7 @@ const Sync = (() => {
     try{
       const v = '10.14.1', base = `https://www.gstatic.com/firebasejs/${v}/`;
       await loadScript(base+'firebase-app-compat.js');
-      await Promise.all([loadScript(base+'firebase-auth-compat.js'), loadScript(base+'firebase-firestore-compat.js')]);
+      await Promise.all([loadScript(base+'firebase-auth-compat.js'), loadScript(base+'firebase-firestore-compat.js'), loadScript(base+'firebase-messaging-compat.js').catch(()=>{})]);
       firebase.initializeApp(FIREBASE_CONFIG); loaded = true; ui();
       try{ await firebase.firestore().enablePersistence({synchronizeTabs:true}); }catch(e){}
       firebase.auth().onAuthStateChanged(async u => {
@@ -993,6 +999,7 @@ const Sync = (() => {
           await attach(sp ? spaceRef(sp) : userRef(), sp || null, localStorage.getItem('pa-synced-uid') !== u.uid);
           localStorage.setItem('pa-synced-uid', u.uid);
           if(u.email) userRef().set({email:u.email}, {merge:true}).catch(()=>{}); // 讓 Email 提醒找得到你的資料
+          if(pushOn()) getPushToken().catch(e => console.warn('push', e));
           const join = new URLSearchParams(location.search).get('join');
           if(join){ history.replaceState(null, '', location.pathname); if(join !== spaceId && confirm('要加入這個家庭空間嗎？加入後會和家人共用行程、待辦、日記和記帳。')) await joinSpace(join); }
         }catch(e){ console.warn(e); badge('⚠️ 同步失敗'); toast('同步失敗：' + (e.message||e.code)); }
@@ -1009,7 +1016,39 @@ const Sync = (() => {
     }catch(e){ console.warn(e); failed = true; ui(); $('#syncInfo').textContent = '雲端同步載入失敗，請確認網路連線。資料仍會先存在這個瀏覽器。'; }
     $('#gateOffline').onclick = () => { offline = true; ui(); toast('目前離線使用，有網路後重新整理就會同步'); };
   }
-  return {push, init, uid: () => user ? user.uid : null};
+  // ---------- 手機通知（Firebase 推播） ----------
+  const pushOn = () => { try{ return 'Notification' in window && Notification.permission==='granted' && !!localStorage.getItem('pa-push-token'); }catch(e){ return false; } };
+  async function getPushToken(){
+    if(!firebase.messaging) throw new Error('推播元件載入失敗，請重新整理再試一次');
+    const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
+    const msg = firebase.messaging();
+    const token = await msg.getToken({vapidKey: VAPID_KEY, serviceWorkerRegistration: reg});
+    if(!token) throw new Error('拿不到通知代碼');
+    const old = localStorage.getItem('pa-push-token');
+    const upd = {pushTokens: firebase.firestore.FieldValue.arrayUnion(token)};
+    await userRef().set(upd, {merge:true});
+    if(old && old !== token) userRef().update({pushTokens: firebase.firestore.FieldValue.arrayRemove(old)}).catch(()=>{});
+    localStorage.setItem('pa-push-token', token);
+    if(!msgHooked){ msgHooked = true; msg.onMessage(p => { const n = p.notification || {}; toast((n.title||'提醒') + '：' + (n.body||'')); }); }
+    return token;
+  }
+  let msgHooked = false;
+  async function enablePush(){
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+    if(!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window))
+      throw new Error(ios && !standalone ? 'iPhone 要從主畫面的 App 圖示打開，才能開啟通知（Safari 分頁裡不行）' : '這個瀏覽器不支援手機通知');
+    const perm = await Notification.requestPermission();   // iPhone 規定要在按下按鈕的當下詢問
+    if(perm !== 'granted') throw new Error('通知權限沒有打開。請到 iPhone「設定 → 通知 → 갓생 살자」裡允許');
+    if(!loaded || !user) throw new Error('請先登入');
+    return getPushToken();
+  }
+  async function disablePush(){
+    const t = localStorage.getItem('pa-push-token'); localStorage.removeItem('pa-push-token');
+    if(t && user) await userRef().update({pushTokens: firebase.firestore.FieldValue.arrayRemove(t)}).catch(()=>{});
+    try{ if(firebase.messaging) await firebase.messaging().deleteToken(); }catch(e){}
+  }
+  return {push, init, uid: () => user ? user.uid : null, enablePush, disablePush, pushOn};
 })();
 const progress = t => t.steps.length ? Math.round(t.steps.filter(s=>s.done).length / t.steps.length * 100) : (t.done ? 100 : 0);
 const startOf = t => t.start || (t.due && ymd(new Date(t.createdAt)) > t.due ? t.due : ymd(new Date(t.createdAt)));
@@ -1838,9 +1877,15 @@ function renderSettings(){
   const st = db.settings;
   $('#sDailyOn').checked = st.daily.on; $('#sDailyTime').value = st.daily.time;
   $('#sWeeklyOn').checked = st.weekly.on; $('#sWeeklyTime').value = st.weekly.time;
-  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true;
+  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false;
+  const on = Sync.pushOn(); $('#pushBtn').textContent = on ? '🔕 關閉這支手機的通知' : '📱 開啟這支手機的通知'; $('#pushInfo').textContent = on ? '✅ 這支手機已開啟通知' : '';
 }
-[['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
+$('#pushBtn').onclick = async () => {
+  try{ if(Sync.pushOn()){ await Sync.disablePush(); toast('已關閉這支手機的通知'); } else { await Sync.enablePush(); toast('通知開好了 📱 時間到就會跳出來'); } }
+  catch(e){ toast(e.message || String(e)); }
+  renderSettings();
+};
+[['#sMailEmail','email'],['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
   db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));
 [['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time']].forEach(([sel,k,f]) =>
   $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : e.target.value; if(f==='time' && !v) return;
