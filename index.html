@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的生產力小幫手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF7E8; --card:#FFFFFF; --ink:#1D2547; --muted:#6A6F86; --line:#1D2547;
+  --orange:#FF6B3D; --yellow:#FFC93C; --blue:#38B6FF; --mint:#22C39A; --pink:#FF7EB6; --purple:#8B6CFF;
+  --soft-orange:#FFE3D6; --soft-yellow:#FFF1C7; --soft-blue:#DDF2FF; --soft-mint:#D8F6EC; --soft-pink:#FFE2EF; --soft-purple:#ECE6FF;
+  --shadow:4px 4px 0 var(--ink); --r:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.55;
+  background-image:radial-gradient(circle at 8% 12%, #FFE0A8 0 70px, transparent 71px),radial-gradient(circle at 96% 30%, #CDEBFF 0 90px, transparent 91px),radial-gradient(circle at 4% 85%, #FFD3E6 0 60px, transparent 61px);
+  background-attachment:fixed}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:10;background:rgba(255,247,232,.93);backdrop-filter:blur(6px);border-bottom:3px solid var(--ink)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 6px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:21px;letter-spacing:.5px}
+.logo .dot{width:34px;height:34px;border-radius:50%;background:var(--orange);border:3px solid var(--ink);display:grid;place-items:center;font-size:18px;box-shadow:2px 2px 0 var(--ink)}
+.today-label{font-weight:700;font-size:14px;background:var(--yellow);border:2px solid var(--ink);border-radius:999px;padding:3px 12px}
+nav{display:flex;gap:8px;overflow-x:auto;padding:6px 0 12px}
+nav button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;color:var(--ink);padding:6px 16px;border-radius:999px;font-size:15px;cursor:pointer;white-space:nowrap;transition:transform .1s}
+nav button:hover{transform:translateY(-2px)}
+nav button.on{background:var(--ink);color:#fff}
+main{padding:20px 0 90px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:var(--r);padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.card h2{font-size:18px;font-weight:900;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;border:2px solid var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+input,select,textarea{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 11px}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--yellow);outline-offset:1px}
+input[type=text],textarea{flex:1;min-width:150px}
+textarea{width:100%;min-height:70px;resize:vertical}
+.btn{font:inherit;font-weight:700;border:2px solid var(--ink);background:var(--orange);color:#fff;padding:8px 18px;border-radius:12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.blue{background:var(--blue)} .btn.mint{background:var(--mint)} .btn.white{background:#fff;color:var(--ink)}
+.icon{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:8px}
+.icon:hover{background:var(--soft-yellow);color:var(--ink)}
+.meta{color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.hidden{display:none !important}
+
+/* hero */
+.hero{background:var(--orange);color:#fff;position:relative;overflow:hidden}
+.hero h2{font-size:26px;margin:0 0 4px;color:#fff}
+.hero p{margin:0;font-weight:500}
+.hero::after{content:"";position:absolute;right:-30px;top:-40px;width:170px;height:170px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink)}
+.hero::before{content:"";position:absolute;right:110px;bottom:-50px;width:100px;height:100px;border-radius:50%;background:var(--blue);border:3px solid var(--ink)}
+.hero > *{position:relative;z-index:1}
+.hero-stats{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.hero-stats div{background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:6px 14px;font-weight:700;font-size:14px}
+.hero-stats b{font-size:20px;font-weight:900;margin-right:4px}
+
+/* ask */
+.ask-answer{white-space:pre-wrap;background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin-top:12px;display:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chips button{font:inherit;font-size:13px;font-weight:700;background:var(--soft-yellow);border:2px solid var(--ink);color:var(--ink);border-radius:999px;padding:3px 12px;cursor:pointer}
+.chips button:nth-child(3n+2){background:var(--soft-mint)} .chips button:nth-child(3n){background:var(--soft-pink)}
+
+/* segmented */
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff}
+.seg button{font:inherit;font-weight:700;border:0;background:transparent;padding:5px 16px;cursor:pointer;color:var(--ink)}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button.on{background:var(--yellow)}
+.navbtns{display:flex;gap:6px;align-items:center}
+.navbtns .period{font-weight:900;font-size:17px;min-width:150px;text-align:center}
+.round{width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-weight:900;cursor:pointer;font-size:16px}
+
+/* month */
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.month .wd{text-align:center;font-weight:900;font-size:13px;padding:2px 0}
+.month .wd:first-child,.month .wd:last-child{color:var(--orange)}
+.cell{min-height:92px;border:2px solid var(--ink);border-radius:12px;padding:4px 5px;background:#fff;cursor:pointer;overflow:hidden;transition:transform .1s}
+.cell:hover{transform:translateY(-2px)}
+.cell.out{opacity:.38}
+.cell.today{background:var(--soft-yellow)}
+.cell .num{font-weight:900;font-size:13px}
+.cell.today .num{background:var(--orange);color:#fff;border-radius:999px;padding:0 7px}
+.chip{display:block;font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.ev{background:var(--soft-blue)} .chip.td{background:var(--soft-orange)} .chip.td.done{background:var(--soft-mint);text-decoration:line-through;opacity:.7}
+.chip.more{background:transparent;color:var(--muted)}
+
+/* week */
+.week{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:8px;margin-top:14px;overflow-x:auto;padding-bottom:6px}
+.wcol{border:2px solid var(--ink);border-radius:14px;background:#fff;min-height:200px;display:flex;flex-direction:column}
+.wcol .wh{padding:6px 8px;border-bottom:2px solid var(--ink);font-weight:900;font-size:14px;cursor:pointer;border-radius:12px 12px 0 0}
+.wcol.today .wh{background:var(--yellow)}
+.wcol .wb{padding:6px;display:flex;flex-direction:column;gap:5px}
+.witem{font-size:12.5px;border-radius:8px;padding:4px 6px;display:flex;gap:5px;align-items:flex-start}
+.witem.ev{background:var(--soft-blue)} .witem.td{background:var(--soft-orange)} .witem.td.done{background:var(--soft-mint)}
+.witem.td.done .t{text-decoration:line-through;opacity:.6}
+.witem input{margin:2px 0 0;width:14px;height:14px;flex:none;accent-color:var(--mint)}
+
+/* todo card */
+.todo{border:2px solid var(--ink);border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}
+.todo.done{background:#F4FBF8}
+.todo .head{display:flex;gap:10px;align-items:flex-start}
+.todo .ttl{font-weight:700;font-size:15.5px}
+.todo.done .ttl{text-decoration:line-through;color:var(--muted)}
+.chk{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:2.5px solid var(--ink);border-radius:7px;background:#fff;cursor:pointer;flex:none;margin:1px 0 0;display:grid;place-items:center;padding:0}
+.chk:checked{background:var(--mint)}
+.chk:checked::after{content:"✓";color:#fff;font-weight:900;font-size:14px;line-height:1}
+.chk.sm{width:18px;height:18px;border-width:2px;border-radius:5px}
+.chk.sm:checked::after{font-size:12px}
+.prog{display:flex;align-items:center;gap:8px;margin-top:8px}
+.bar{flex:1;height:12px;background:#fff;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.bar>div{height:100%;background:repeating-linear-gradient(45deg,var(--mint) 0 8px,#3DD6AE 8px 16px);transition:width .3s}
+.pct{font-weight:900;font-size:13px;min-width:40px;text-align:right}
+.steps{list-style:none;margin:10px 0 0 32px;padding:0}
+.steps li{display:flex;gap:8px;align-items:center;padding:4px 0;border-top:1.5px dashed #D9D3C4;font-size:14px}
+.steps li:first-child{border-top:0}
+.steps li.done span{text-decoration:line-through;color:var(--muted)}
+.steps .add{margin-top:6px;display:flex;gap:6px}
+.steps .add input{padding:5px 9px;font-size:14px}
+.p-high{background:var(--soft-pink)} .p-mid{background:var(--soft-yellow)} .p-low{background:var(--soft-blue)}
+.overdue{color:#E2401C;font-weight:700}
+.tagbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tchip{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--ink);border-radius:999px;padding:2px 12px;cursor:pointer;background:#fff;color:var(--ink)}
+.tchip.on{box-shadow:2px 2px 0 var(--ink);transform:translate(-1px,-1px)}
+.tchip .x{margin-left:4px;opacity:.5}
+.tdot{display:inline-block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink);margin-right:3px;vertical-align:1px}
+
+/* day */
+.dayline{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:2px dashed #E6DFCC}
+.dayline:first-child{border-top:0}
+.time{font-weight:900;min-width:52px;background:var(--soft-blue);border:2px solid var(--ink);border-radius:10px;text-align:center;font-size:13px;padding:2px 4px}
+.subhead{font-weight:900;margin:16px 0 8px;font-size:15px;display:flex;align-items:center;gap:6px}
+.subhead:first-child{margin-top:4px}
+
+/* gantt */
+.gantt{margin-top:14px;border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:#fff}
+.g-row{display:grid;grid-template-columns:minmax(120px,30%) 1fr;border-top:1.5px solid #E6DFCC;min-height:42px}
+.g-row:first-child{border-top:0}
+.g-name{padding:8px 10px;font-size:13.5px;font-weight:700;border-right:2px solid var(--ink);display:flex;flex-direction:column;justify-content:center;min-width:0}
+.g-name .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-name.step{padding-left:24px;font-weight:500;color:var(--muted);font-size:12.5px}
+.g-track{position:relative}
+.g-head{background:var(--soft-yellow);font-weight:900;font-size:11.5px}
+.g-head .g-track{display:flex}
+.g-head .g-track span{flex:1;text-align:center;border-left:1px solid #E6DFCC;padding:4px 0;overflow:hidden;white-space:nowrap}
+.g-bar{position:absolute;top:9px;height:22px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--soft-orange);cursor:pointer;min-width:12px}
+.g-bar>div{height:100%;background:var(--orange)}
+.g-bar.done{background:var(--soft-mint)} .g-bar.done>div{background:var(--mint)}
+.g-bar.late{border-color:#E2401C;border-style:dashed}
+.g-bar label{position:absolute;left:8px;top:0;font-size:11px;font-weight:900;line-height:18px;color:var(--ink);white-space:nowrap}
+.g-dot{position:absolute;top:13px;width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);background:#fff;margin-left:-7px}
+.g-dot.done{background:var(--mint)}
+.g-today{position:absolute;top:0;bottom:0;width:0;border-left:2.5px dashed var(--orange);z-index:2;pointer-events:none}
+.g-grid{position:absolute;top:0;bottom:0;border-left:1px solid #F1EBDC}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:10px;border-radius:99px;border:2px solid var(--ink);vertical-align:middle;margin-right:4px}
+
+/* ideas */
+.idea{border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin-bottom:10px;display:flex;gap:8px;background:var(--soft-yellow)}
+.idea:nth-child(3n+2){background:var(--soft-pink)} .idea:nth-child(3n){background:var(--soft-mint)}
+.idea.pin{box-shadow:3px 3px 0 var(--ink)}
+.grow{flex:1;min-width:0}
+
+.notice{background:var(--soft-pink);border:2px solid var(--ink);border-radius:14px;padding:10px 14px;font-size:14px;margin-bottom:18px;display:none}
+#toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:30;max-width:calc(100% - 32px)}
+.toast{background:var(--ink);color:#fff;padding:12px 16px;border-radius:14px;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--orange);font-size:14px;font-weight:500;display:flex;gap:10px;align-items:center;animation:pop .25s}
+.toast button{background:var(--yellow);border:0;color:var(--ink);font-weight:700;border-radius:8px;padding:3px 9px;cursor:pointer}
+/* countdown */
+.cd{display:inline-block;font-weight:900;font-size:12.5px;border:2px solid var(--ink);border-radius:10px;padding:1px 9px;background:var(--yellow);margin-left:4px}
+.cd.today{background:var(--orange);color:#fff} .cd.past{background:#fff;color:#E2401C;border-color:#E2401C}
+.cdstrip{display:flex;gap:10px;overflow-x:auto;margin-top:12px;padding-bottom:4px}
+.cdcard{flex:none;background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:6px 12px;min-width:120px}
+.cdcard b{display:block;font-size:24px;font-weight:900;line-height:1.1}
+.cdcard span{font-size:12px;font-weight:700}
+/* diary */
+.moods{display:flex;gap:6px;flex-wrap:wrap}
+.moods button{font-size:22px;width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:#fff;cursor:pointer;opacity:.55}
+.moods button.on{opacity:1;background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+.money{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1.5px dashed #E6DFCC;font-size:14px}
+.money:first-child{border-top:0}
+.amt{font-weight:900;min-width:70px;text-align:right}
+.amt.out{color:#E2401C} .amt.in{color:#0E9C78}
+.sum3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sum3 div{border:2px solid var(--ink);border-radius:12px;padding:6px 10px;text-align:center;font-size:12px;font-weight:700}
+.sum3 b{display:block;font-size:19px;font-weight:900}
+.catrow{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.catrow .bar>div{background:var(--orange)}
+.entry{border:2px solid var(--ink);border-radius:12px;padding:8px 12px;margin-bottom:8px;cursor:pointer;background:var(--soft-yellow)}
+.entry:hover{transform:translateY(-1px)}
+.donelog li{padding:4px 0;font-size:14px}
+/* report modal */
+.modal{position:fixed;inset:0;background:rgba(29,37,71,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.modal .card{max-width:560px;width:100%;max-height:85vh;overflow:auto;margin:0;animation:pop .25s}
+.modal pre{white-space:pre-wrap;font:inherit;background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
+.formgrid{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px 10px;align-items:center;margin-top:10px}
+.formgrid label{font-size:13px;font-weight:700}
+@media (max-width:640px){
+  .formgrid{grid-template-columns:auto 1fr}
+  .cell{min-height:64px} .cell .chip{font-size:10px}
+  .hero h2{font-size:22px}
+  .navbtns .period{min-width:110px;font-size:15px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo"><span class="dot">☀️</span>我的生產力小幫手</div>
+      <span class="today-label" id="todayLabel"></span>
+    </div>
+    <nav id="nav">
+      <button data-tab="home" class="on">🏠 主頁</button>
+      <button data-tab="todos">✅ 待辦</button>
+      <button data-tab="gantt">📊 甘特圖</button>
+      <button data-tab="events">📅 行程</button>
+      <button data-tab="diary">📔 日記</button>
+      <button data-tab="ideas">💡 靈感</button>
+      <button data-tab="settings">⚙️ 設定</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="notice" id="notifyNotice">
+    🔔 提醒還沒開啟！<button class="btn white" id="enableNotify" style="padding:3px 12px">開啟瀏覽器通知</button>
+    <span class="meta">（沒開也沒關係，網頁開著時會跳出畫面提示並發出提示音）</span>
+  </div>
+
+  <!-- 主頁 -->
+  <section data-page="home">
+    <div class="card hero">
+      <h2 id="greet">早安！</h2>
+      <p id="heroLine"></p>
+      <div class="hero-stats" id="heroStats"></div>
+      <div class="cdstrip" id="cdStrip"></div>
+    </div>
+
+    <div class="card">
+      <div class="row between" style="margin-bottom:4px">
+        <div class="seg" id="viewSeg">
+          <button data-view="month">月計畫</button>
+          <button data-view="week" class="on">週計畫</button>
+          <button data-view="day">日計畫</button>
+        </div>
+        <div class="navbtns">
+          <button class="round" id="prevP">‹</button>
+          <span class="period" id="periodLabel"></span>
+          <button class="round" id="nextP">›</button>
+          <button class="btn white" id="todayP" style="padding:4px 12px">今天</button>
+        </div>
+      </div>
+      <div id="planView"></div>
+    </div>
+
+    <div class="card">
+      <h2>💬 問問我</h2>
+      <div class="row">
+        <input type="text" id="askInput" placeholder="例如：今天要做什麼？這週進度如何？">
+        <button class="btn blue" id="askBtn">問</button>
+      </div>
+      <div class="chips">
+        <button data-q="今天要做什麼？">今天要做什麼？</button>
+        <button data-q="明天有什麼行程？">明天有什麼？</button>
+        <button data-q="這週要完成什麼？">這週要完成什麼？</button>
+        <button data-q="進度如何？">進度如何？</button>
+        <button data-q="有什麼逾期的？">有什麼逾期？</button>
+        <button data-q="今天完成了什麼？">今天完成了什麼？</button>
+        <button data-q="這個月花了多少？">這個月花多少？</button>
+        <button data-q="最近有什麼靈感？">最近的靈感</button>
+      </div>
+      <div class="ask-answer" id="askAnswer"></div>
+    </div>
+
+    <div class="card">
+      <h2>⚡ 快速記一筆</h2>
+      <div class="row">
+        <input type="text" id="quickInput" placeholder="想到什麼就打，按 Enter 存起來">
+        <select id="quickType">
+          <option value="idea">💡 靈感</option>
+          <option value="todo">✅ 今天的待辦</option>
+        </select>
+        <button class="btn mint" id="quickBtn">記下</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 待辦 -->
+  <section data-page="todos" class="hidden">
+    <div class="card">
+      <h2>✨ 新增待辦</h2>
+      <input type="text" id="tdTitle" placeholder="要完成的事，例如：完成期末報告" style="width:100%">
+      <div class="formgrid">
+        <label>開始</label><input type="date" id="tdStart">
+        <label>期限</label><input type="date" id="tdDue">
+        <label>優先</label>
+        <select id="tdPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select>
+        <label>提醒</label><input type="datetime-local" id="tdRemind">
+        <label>倒數</label><select id="tdCd"><option value="1">⏳ 顯示倒數小提示</option><option value="0">不顯示</option></select>
+      </div>
+      <div style="margin-top:12px">
+        <label style="font-size:13px;font-weight:700">標籤</label>
+        <div class="tagbar" id="tdTagPick" style="margin-top:4px"></div>
+      </div>
+      <div style="margin-top:10px">
+        <label style="font-size:13px;font-weight:700">拆成步驟（一行一個，選填）</label>
+        <textarea id="tdSteps" placeholder="找資料&#10;寫大綱&#10;寫初稿&#10;校稿"></textarea>
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="tdAdd">新增待辦</button></div>
+    </div>
+    <div class="card">
+      <div class="row between" style="margin-bottom:12px">
+        <h2 style="margin:0">📋 待辦清單</h2>
+        <select id="tdFilter">
+          <option value="open">未完成</option>
+          <option value="today">今天要做</option>
+          <option value="week">本週到期</option>
+          <option value="log">🏆 完成紀錄</option>
+          <option value="all">全部</option>
+        </select>
+      </div>
+      <div class="tagbar" id="tdTagFilter" style="margin-bottom:12px"></div>
+      <div id="tdList"></div>
+    </div>
+  </section>
+
+  <!-- 甘特圖 -->
+  <section data-page="gantt" class="hidden">
+    <div class="card">
+      <div class="row between">
+        <h2 style="margin:0">📊 甘特圖</h2>
+        <div class="row">
+          <div class="seg" id="gSeg">
+            <button data-gr="14">2 週</button>
+            <button data-gr="28" class="on">4 週</button>
+            <button data-gr="90">3 個月</button>
+          </div>
+          <div class="navbtns">
+            <button class="round" id="gPrev">‹</button>
+            <button class="btn white" id="gToday" style="padding:4px 12px">今天</button>
+            <button class="round" id="gNext">›</button>
+          </div>
+        </div>
+      </div>
+      <label class="meta" style="display:inline-flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="gSteps" checked> 顯示步驟</label>
+      <label class="meta" style="display:inline-flex;gap:6px;align-items:center;margin:10px 0 0 14px"><input type="checkbox" id="gDone"> 顯示已完成</label>
+      <div id="ganttView"></div>
+      <div class="legend">
+        <span><i style="background:var(--orange)"></i>已完成的部分</span>
+        <span><i style="background:var(--soft-orange)"></i>還沒做的部分</span>
+        <span><i style="background:var(--mint)"></i>全部完成</span>
+        <span><i style="border-style:dashed;border-color:#E2401C"></i>已逾期</span>
+        <span style="color:var(--orange);font-weight:700">┆ 今天</span>
+      </div>
+      <p class="meta" style="margin-bottom:0">小提示：長條從「開始日」畫到「期限」，沒填開始日就從建立那天開始。點長條可以展開它的步驟。</p>
+    </div>
+  </section>
+
+  <!-- 行程 -->
+  <section data-page="events" class="hidden">
+    <div class="card">
+      <h2>📅 新增行程</h2>
+      <input type="text" id="evTitle" placeholder="行程名稱，例如：和小明吃午餐" style="width:100%;margin-bottom:8px">
+      <div class="row">
+        <input type="date" id="evDate">
+        <input type="time" id="evTime">
+        <select id="evRemind">
+          <option value="-1">不提醒</option>
+          <option value="0">準時提醒</option>
+          <option value="10" selected>提前 10 分鐘</option>
+          <option value="30">提前 30 分鐘</option>
+          <option value="60">提前 1 小時</option>
+          <option value="1440">提前 1 天</option>
+        </select>
+        <button class="btn blue" id="evAdd">新增</button>
+      </div>
+      <input type="text" id="evNote" placeholder="備註（選填）" style="width:100%;margin-top:8px">
+    </div>
+    <div class="card">
+      <div class="row between">
+        <h2 style="margin:0">接下來的行程</h2>
+        <label class="meta" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evShowPast"> 顯示過去的</label>
+      </div>
+      <div id="evList"></div>
+    </div>
+  </section>
+
+  <!-- 靈感 -->
+  <section data-page="ideas" class="hidden">
+    <div class="card">
+      <h2>💡 記下靈感</h2>
+      <textarea id="idText" placeholder="想法、句子、點子……都可以丟進來。可以用 #標籤 分類"></textarea>
+      <div class="row" style="margin-top:8px;justify-content:flex-end"><button class="btn" id="idAdd">存起來</button></div>
+    </div>
+    <div class="card">
+      <input type="text" id="idSearch" placeholder="🔍 搜尋靈感或 #標籤" style="width:100%;margin-bottom:12px">
+      <div id="idList"></div>
+    </div>
+  </section>
+
+  <!-- 日記 -->
+  <section data-page="diary" class="hidden">
+    <div class="card">
+      <div class="row between">
+        <h2 style="margin:0">📔 日記</h2>
+        <div class="navbtns">
+          <button class="round" id="dPrev">‹</button>
+          <span class="period" id="dLabel"></span>
+          <button class="round" id="dNext">›</button>
+          <button class="btn white" id="dToday" style="padding:4px 12px">今天</button>
+        </div>
+      </div>
+      <div class="subhead">今天心情</div>
+      <div class="moods" id="dMoods"></div>
+      <div class="subhead">想記下的事</div>
+      <textarea id="dText" placeholder="今天發生了什麼？有什麼感受、學到什麼……" style="min-height:130px"></textarea>
+      <div class="meta" id="dSaved" style="text-align:right">會自動儲存</div>
+      <div class="subhead">🏆 這天完成的事</div>
+      <ul class="donelog" id="dDone" style="margin:0;padding-left:20px"></ul>
+      <div class="subhead">💰 記帳</div>
+      <div class="row">
+        <select id="mKind"><option value="out">支出</option><option value="in">收入</option></select>
+        <input type="number" id="mAmt" placeholder="金額" min="0" inputmode="decimal" style="width:100px">
+        <select id="mCat"></select>
+        <input type="text" id="mNote" placeholder="備註，例如：午餐便當">
+        <button class="btn mint" id="mAdd">記一筆</button>
+      </div>
+      <div id="mList" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2 id="mMonthTitle">📊 本月收支</h2>
+      <div id="mMonth"></div>
+    </div>
+    <div class="card">
+      <h2>📚 最近的日記</h2>
+      <div id="dEntries"></div>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section data-page="settings" class="hidden">
+    <div class="card">
+      <h2>💾 資料備份</h2>
+      <p class="meta">所有資料只存在這台電腦的這個瀏覽器裡。清除瀏覽器資料或換電腦前，記得先匯出備份。</p>
+      <div class="row">
+        <button class="btn" id="exportBtn">匯出備份檔</button>
+        <label class="btn white">匯入備份檔<input type="file" id="importFile" accept="application/json" class="hidden"></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>⏰ 固定提醒</h2>
+      <p class="meta" style="margin-top:0">時間到會跳出一份整理好的清單（行程、待辦、進度）。網頁要開著才收得到，建議把這個分頁一直留著。</p>
+      <div class="row" style="margin-bottom:8px">
+        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sDailyOn"> 每天晚上提醒「明天」</label>
+        <input type="time" id="sDailyTime">
+        <button class="btn white" id="sDailyPreview" style="padding:3px 12px">預覽</button>
+      </div>
+      <div class="row">
+        <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sWeeklyOn"> 每週日晚上提醒「下週」</label>
+        <input type="time" id="sWeeklyTime">
+        <button class="btn white" id="sWeeklyPreview" style="padding:3px 12px">預覽</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🔔 提醒測試</h2>
+      <p class="meta">按下去會馬上跳一個測試提醒，確認提醒有沒有正常運作。</p>
+      <button class="btn blue" id="testNotify">測試提醒</button>
+    </div>
+    <div class="card">
+      <h2>🧹 清空所有資料</h2>
+      <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
+    </div>
+  </section>
+</main>
+
+<div id="toasts"></div>
+<div class="modal" id="reportModal"><div class="card"><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
+
+<script>
+(function(){
+'use strict';
+const KEY = 'productivity-app-v1';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const parse = s => new Date(s + 'T00:00');
+const WD = ['日','一','二','三','四','五','六'];
+const md = s => { const d = parse(s); return (d.getMonth()+1)+'/'+d.getDate(); };
+const prettyDate = s => { const d = parse(s); return md(s)+'（'+WD[d.getDay()]+'）'; };
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const diffDays = (a,b) => Math.round((parse(b) - parse(a)) / 86400000);
+const today = () => ymd(new Date());
+const monday = d => addDays(d, -((d.getDay()+6)%7));
+function weekRange(offset){ const s = addDays(monday(new Date()), offset*7); return [ymd(s), ymd(addDays(s,6))]; }
+const PRI = {high:'🔥 高',mid:'⭐ 中',low:'🌱 低'};
+const PRI_ORDER = {high:0,mid:1,low:2};
+
+// ---------- 資料 ----------
+const DEFAULT_TAGS = [{name:'專師',color:'#FF7EB6'},{name:'體大',color:'#38B6FF'},{name:'生活',color:'#22C39A'}];
+const TAG_COLORS = ['#FF7EB6','#38B6FF','#22C39A','#FFC93C','#8B6CFF','#FF6B3D','#9AD94A','#FF9F68'];
+const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,time:'21:00'}, fired:{}});
+function makeDb(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
+  return {events:d.events||[], todos:(d.todos||[]).map(normTodo), ideas:d.ideas||[], tags:Array.isArray(d.tags)?d.tags:DEFAULT_TAGS.slice(),
+    diary:(d.diary && typeof d.diary==='object')?d.diary:{}, settings:st}; }
+let db = makeDb();
+function normTodo(t){
+  t.steps = Array.isArray(t.steps) ? t.steps : [];
+  if(t.start === undefined) t.start = '';
+  if(t.tag === undefined) t.tag = '';
+  if(t.countdown === undefined) t.countdown = false;
+  if(!t.pri) t.pri = 'mid';
+  if(!t.createdAt) t.createdAt = Date.now();
+  return t;
+}
+function load(){
+  try{ const raw = localStorage.getItem(KEY);
+    if(raw){ db = makeDb(JSON.parse(raw)); } }
+  catch(e){ console.warn('讀取失敗', e); }
+}
+function saveQuiet(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); return true; }catch(e){ toast('⚠️ 存檔失敗：' + e.message); return false; } }
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('⚠️ 存檔失敗：' + e.message); }
+  renderAll();
+}
+const progress = t => t.steps.length ? Math.round(t.steps.filter(s=>s.done).length / t.steps.length * 100) : (t.done ? 100 : 0);
+const startOf = t => t.start || (t.due && ymd(new Date(t.createdAt)) > t.due ? t.due : ymd(new Date(t.createdAt)));
+const isLate = t => !t.done && t.due && t.due < today();
+function newTodo(o){ return normTodo(Object.assign({id:uid(), title:'', tag:'', start:'', due:'', pri:'mid', remindAt:'', notified:false, done:false, doneAt:null, createdAt:Date.now(), steps:[]}, o)); }
+function setTodoDone(t, v){ t.done = v; t.doneAt = v ? Date.now() : null; }
+function cdBadge(td){
+  if(!td.countdown || td.done || !td.due) return '';
+  const n = diffDays(today(), td.due);
+  return n>0 ? `<span class="cd">⏳ 還有 ${n} 天</span>` : n===0 ? '<span class="cd today">⏰ 就是今天！</span>' : `<span class="cd past">已過期 ${-n} 天</span>`;
+}
+const tagColor = n => (db.tags.find(x=>x.name===n)||{}).color || '#ccc';
+const tagChip = n => n ? `<span class="tag" style="background:${tagColor(n)}22;border-color:${tagColor(n)}"><span class="tdot" style="background:${tagColor(n)}"></span>${esc(n)}</span> ` : '';
+const tagDot = n => n ? `<span class="tdot" style="background:${tagColor(n)}"></span>` : '';
+let pickTag = '', filterTag = '';
+function renderTagBars(){
+  $('#tdTagPick').innerHTML = `<button class="tchip ${pickTag===''?'on':''}" data-act="pickTag" data-tag="" style="${pickTag===''?'background:var(--soft-yellow)':''}">不分類</button>` +
+    db.tags.map(t=>`<button class="tchip ${pickTag===t.name?'on':''}" data-act="pickTag" data-tag="${esc(t.name)}" style="${pickTag===t.name?`background:${t.color};color:#fff`:`border-color:${t.color}`}">${esc(t.name)}<span class="x" data-act="delTag" data-tag="${esc(t.name)}" title="刪除標籤">✕</span></button>`).join('') +
+    `<input type="text" id="newTag" placeholder="＋ 新標籤" style="width:110px;min-width:0;flex:none;padding:3px 10px;font-size:13px;border-radius:999px">`;
+  const cnt = n => db.todos.filter(x=>!x.done && (n===null || x.tag===n)).length;
+  $('#tdTagFilter').innerHTML = `<span class="meta">篩選：</span><button class="tchip ${filterTag===''?'on':''}" data-act="filterTag" data-tag="" style="${filterTag===''?'background:var(--ink);color:#fff':''}">全部 ${cnt(null)}</button>` +
+    db.tags.map(t=>`<button class="tchip ${filterTag===t.name?'on':''}" data-act="filterTag" data-tag="${esc(t.name)}" style="${filterTag===t.name?`background:${t.color};color:#fff`:`border-color:${t.color}`}">${esc(t.name)} ${cnt(t.name)}</button>`).join('');
+}
+
+// ---------- 分頁 ----------
+function goTab(name){
+  $$('#nav button').forEach(x => x.classList.toggle('on', x.dataset.tab===name));
+  $$('section[data-page]').forEach(s => s.classList.toggle('hidden', s.dataset.page !== name));
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if(b) goTab(b.dataset.tab); });
+
+// ---------- 主頁：月／週／日 ----------
+let view = 'week', cursor = new Date();
+const expanded = new Set();
+$('#viewSeg').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if(!b) return; view = b.dataset.view; renderPlan(); });
+$('#prevP').onclick = () => { shift(-1); };
+$('#nextP').onclick = () => { shift(1); };
+$('#todayP').onclick = () => { cursor = new Date(); renderPlan(); };
+function shift(n){
+  if(view==='month'){ cursor = new Date(cursor.getFullYear(), cursor.getMonth()+n, 1); }
+  else cursor = addDays(cursor, view==='week' ? 7*n : n);
+  renderPlan();
+}
+const evSort = (a,b) => (a.date+(a.time||'99:99')).localeCompare(b.date+(b.time||'99:99'));
+const tdSort = (a,b) => (a.done-b.done) || (a.due||'9999').localeCompare(b.due||'9999') || PRI_ORDER[a.pri]-PRI_ORDER[b.pri];
+const eventsOn = d => db.events.filter(e => e.date===d).sort(evSort);
+const todosDue = d => db.todos.filter(t => t.due===d).sort(tdSort);
+
+function renderPlan(){
+  $$('#viewSeg button').forEach(b => b.classList.toggle('on', b.dataset.view===view));
+  const t = today();
+  let html = '';
+  if(view==='month'){
+    const y = cursor.getFullYear(), m = cursor.getMonth();
+    $('#periodLabel').textContent = `${y} 年 ${m+1} 月`;
+    const first = new Date(y, m, 1), start = addDays(first, -first.getDay());
+    html = '<div class="month">' + WD.map(w=>`<div class="wd">${w}</div>`).join('');
+    for(let i=0;i<42;i++){
+      const d = addDays(start,i), ds = ymd(d);
+      if(i===35 && d.getMonth()!==m) break;
+      const items = eventsOn(ds).map(e=>`<span class="chip ev">${e.time?e.time+' ':''}${esc(e.title)}</span>`)
+        .concat(todosDue(ds).map(td=>`<span class="chip td ${td.done?'done':''}">${tagDot(td.tag)}${td.done?'✓ ':''}${esc(td.title)}</span>`));
+      const shown = items.slice(0,3).join('') + (items.length>3 ? `<span class="chip more">還有 ${items.length-3} 項</span>` : '');
+      html += `<div class="cell ${d.getMonth()!==m?'out':''} ${ds===t?'today':''}" data-act="gotoDay" data-date="${ds}"><span class="num">${d.getDate()}</span>${shown}</div>`;
+    }
+    html += '</div><p class="meta" style="margin:8px 0 0">點任何一天可以看那天的日計畫。藍色是行程，橘色是待辦期限。</p>';
+  } else if(view==='week'){
+    const s = monday(cursor), e = addDays(s,6);
+    $('#periodLabel').textContent = `${md(ymd(s))} ～ ${md(ymd(e))}`;
+    const ws = ymd(s), we = ymd(e);
+    const wk = db.todos.filter(td => td.due && td.due>=ws && td.due<=we);
+    const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
+    html = `<div class="prog" style="margin-top:12px"><b style="font-size:14px">本週整體進度</b><div class="bar"><div style="width:${avg}%"></div></div><span class="pct">${avg}%</span></div>`;
+    html += '<div class="week">';
+    for(let i=0;i<7;i++){
+      const ds = ymd(addDays(s,i));
+      const evs = eventsOn(ds).map(ev=>`<div class="witem ev"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
+      const tds = todosDue(ds).map(td=>`<div class="witem td ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t">${tagDot(td.tag)}${esc(td.title)}${td.steps.length?` <b>${progress(td)}%</b>`:''}</span></div>`);
+      html += `<div class="wcol ${ds===t?'today':''}"><div class="wh" data-act="gotoDay" data-date="${ds}">週${WD[(i+1)%7]} <span class="meta">${md(ds)}</span></div><div class="wb">${evs.concat(tds).join('') || '<span class="meta">—</span>'}</div></div>`;
+    }
+    html += '</div>';
+    const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=we && td.due>=ws && !(td.due>=ws && td.due<=we));
+    if(active.length){ html += '<div class="subhead">🏃 本週進行中（期限在之後）</div>' + active.sort(tdSort).map(todoCard).join(''); }
+  } else {
+    const ds = ymd(cursor);
+    $('#periodLabel').textContent = prettyDate(ds) + (ds===t?' 今天':'');
+    const evs = eventsOn(ds);
+    html += '<div class="subhead">📅 行程</div>';
+    html += evs.length ? evs.map(ev=>`<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div></div>`).join('') : '<div class="empty">這天沒有行程</div>';
+    const due = db.todos.filter(td => td.due===ds || (ds===t && isLate(td))).sort(tdSort);
+    html += '<div class="subhead">🎯 這天要完成</div>' + (due.length ? due.map(todoCard).join('') : '<div class="empty">這天沒有到期的待辦</div>');
+    const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=ds && td.due>ds).sort(tdSort);
+    if(active.length) html += '<div class="subhead">🏃 進行中（還沒到期限）</div>' + active.map(todoCard).join('');
+    const doneThat = db.todos.filter(td => td.done && td.doneAt && ymd(new Date(td.doneAt))===ds && td.due!==ds);
+    if(doneThat.length) html += '<div class="subhead">🎉 這天完成的</div>' + doneThat.map(todoCard).join('');
+  }
+  $('#planView').innerHTML = html;
+}
+
+// ---------- 待辦卡片 ----------
+function todoCard(td){
+  const p = progress(td), late = isLate(td);
+  const open = expanded.has(td.id);
+  const range = td.start && td.due ? `${md(td.start)} → ${md(td.due)}` : td.due ? `期限 ${prettyDate(td.due)}` : '沒有期限';
+  const steps = open ? `<ul class="steps">${td.steps.map(s=>`<li class="${s.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleStep" data-id="${td.id}" data-sid="${s.id}" ${s.done?'checked':''}><span class="grow">${esc(s.title)}</span><button class="icon" data-act="delStep" data-id="${td.id}" data-sid="${s.id}" title="刪除步驟">✕</button></li>`).join('')}
+      <li class="add"><input type="text" placeholder="＋ 新增步驟，按 Enter" data-addstep="${td.id}"></li></ul>` : '';
+  return `<div class="todo ${td.done?'done':''}">
+    <div class="head"><input type="checkbox" class="chk" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''} title="整件完成">
+      <div class="grow"><div class="ttl">${esc(td.title)}${cdBadge(td)}</div>
+        <div class="meta">${tagChip(td.tag)}<span class="tag p-${td.pri}">${PRI[td.pri]}</span> <span class="${late?'overdue':''}">${late?'⚠️ 已逾期 · ':''}${range}</span>${td.remindAt&&!td.done?' · 🔔 '+td.remindAt.replace('T',' '):''}</div></div>
+      ${td.due&&!td.done?`<button class="icon" data-act="toggleCd" data-id="${td.id}" title="${td.countdown?'關閉':'開啟'}倒數小提示" style="${td.countdown?'':'opacity:.4'}">⏳</button>`:''}
+      <button class="icon" data-act="expand" data-id="${td.id}">${open?'收起 ▲':`步驟 ${td.steps.filter(s=>s.done).length}/${td.steps.length} ▼`}</button>
+      <button class="icon" data-act="delTodo" data-id="${td.id}" title="刪除">✕</button></div>
+    <div class="prog"><div class="bar"><div style="width:${p}%"></div></div><span class="pct">${p}%</span></div>
+    ${steps}</div>`;
+}
+
+$('#tdStart').value = today();
+$('#tdAdd').onclick = () => {
+  const title = $('#tdTitle').value.trim(); if(!title){ toast('請填寫要做的事'); return; }
+  let start = $('#tdStart').value, due = $('#tdDue').value;
+  if(start && due && start > due){ toast('開始日不能晚於期限喔'); return; }
+  const steps = $('#tdSteps').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>({id:uid(), title:s, done:false}));
+  const td = newTodo({title, tag:pickTag, countdown:$('#tdCd').value==='1', start, due, pri:$('#tdPri').value, remindAt:$('#tdRemind').value, steps});
+  db.todos.push(td); if(steps.length) expanded.add(td.id);
+  $('#tdTitle').value=''; $('#tdRemind').value=''; $('#tdSteps').value=''; $('#tdDue').value='';
+  save(); toast('已新增待辦 ✅');
+};
+$('#tdFilter').onchange = renderTodos;
+function renderTodos(){
+  const f = $('#tdFilter').value, t = today(), we = weekRange(0)[1];
+  if(f==='log'){ renderDoneLog(); renderTagBars(); return; }
+  const list = db.todos.filter(td => !filterTag || td.tag===filterTag).filter(td => f==='all' || (f==='done'&&td.done) || (f==='open'&&!td.done)
+    || (f==='today'&&!td.done&&td.due&&td.due<=t) || (f==='week'&&!td.done&&td.due&&td.due<=we)).sort(tdSort);
+  $('#tdList').innerHTML = list.length ? list.map(todoCard).join('') : '<div class="empty">這裡空空的 🎉</div>';
+  renderTagBars();
+}
+
+function doneOn(ds){ // 這天完成的待辦和步驟
+  const out = [];
+  db.todos.forEach(td => {
+    if(td.done && td.doneAt && ymd(new Date(td.doneAt))===ds) out.push({at:td.doneAt, html:`${tagChip(td.tag)}<b>${esc(td.title)}</b>`, text:td.title});
+    else td.steps.forEach(s => { if(s.done && s.doneAt && ymd(new Date(s.doneAt))===ds) out.push({at:s.doneAt, html:`${esc(s.title)} <span class="meta">（${esc(td.title)} 的步驟）</span>`, text:s.title}); });
+  });
+  return out.sort((a,b)=>a.at-b.at);
+}
+const hm = ms => { const d = new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+function renderDoneLog(){
+  const done = db.todos.filter(td => td.done && (!filterTag || td.tag===filterTag)).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  if(!done.length){ $('#tdList').innerHTML = '<div class="empty">還沒有完成的待辦，加油！💪</div>'; return; }
+  const weekStart = weekRange(0)[0], monthStart = today().slice(0,8)+'01';
+  const wk = done.filter(x=>x.doneAt && ymd(new Date(x.doneAt))>=weekStart).length, mo = done.filter(x=>x.doneAt && ymd(new Date(x.doneAt))>=monthStart).length;
+  let html = `<div class="sum3"><div><b>${wk}</b>本週完成</div><div><b>${mo}</b>本月完成</div><div><b>${done.length}</b>累計完成</div></div>`, cur = '';
+  done.forEach(td => {
+    const ds = td.doneAt ? ymd(new Date(td.doneAt)) : '';
+    if(ds!==cur){ cur = ds; html += `<div class="subhead">${ds?prettyDate(ds)+(ds===today()?' · 今天':''):'較早'}</div>`; }
+    const ontime = td.due ? (ds<=td.due ? '<span class="tag" style="background:var(--soft-mint)">準時</span>' : `<span class="tag" style="background:var(--soft-pink)">晚 ${diffDays(td.due,ds)} 天</span>`) : '';
+    html += `<div class="dayline"><span class="time">${td.doneAt?hm(td.doneAt):'—'}</span><div class="grow"><b>${esc(td.title)}</b><div class="meta">${tagChip(td.tag)}${ontime}${td.steps.length?` · ${td.steps.length} 個步驟`:''}</div></div>
+      <button class="icon" data-act="toggleTodo" data-id="${td.id}" title="改回未完成">↩︎</button></div>`;
+  });
+  $('#tdList').innerHTML = html;
+}
+
+// ---------- 日記＋記帳 ----------
+const MOODS = ['😄','🙂','😐','😢','😡','😴','🥳'];
+const CATS = {out:['餐飲','交通','購物','生活','學習','娛樂','醫療','其他'], in:['薪水','獎金','零用','其他']};
+let dDate = today(), dShownFor = null, dTimer = null;
+const entry = ds => db.diary[ds] || (db.diary[ds] = {mood:'', text:'', money:[]});
+const money = n => Number(n).toLocaleString('zh-TW');
+function fillCats(){ $('#mCat').innerHTML = CATS[$('#mKind').value].map(c=>`<option>${c}</option>`).join(''); }
+$('#mKind').onchange = fillCats; fillCats();
+$('#dPrev').onclick = () => { dDate = ymd(addDays(parse(dDate),-1)); renderDiary(); };
+$('#dNext').onclick = () => { dDate = ymd(addDays(parse(dDate),1)); renderDiary(); };
+$('#dToday').onclick = () => { dDate = today(); renderDiary(); };
+$('#dText').addEventListener('input', () => {
+  $('#dSaved').textContent = '儲存中…'; clearTimeout(dTimer);
+  dTimer = setTimeout(() => { entry(dDate).text = $('#dText').value; if(saveQuiet()) $('#dSaved').textContent = '✓ 已儲存 ' + hm(Date.now()); renderEntries(); }, 600);
+});
+function addMoney(){
+  const amt = parseFloat($('#mAmt').value);
+  if(!(amt>0)){ toast('請輸入金額'); return; }
+  entry(dDate).money.push({id:uid(), kind:$('#mKind').value, amt, cat:$('#mCat').value, note:$('#mNote').value.trim()});
+  $('#mAmt').value=''; $('#mNote').value=''; save(); toast('記好了 💰'); $('#mAmt').focus();
+}
+$('#mAdd').onclick = addMoney;
+['#mAmt','#mNote'].forEach(sel => $(sel).addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) addMoney(); }));
+function renderDiary(){
+  const e = db.diary[dDate] || {mood:'', text:'', money:[]};
+  $('#dLabel').textContent = prettyDate(dDate) + (dDate===today()?' 今天':'');
+  if(dShownFor !== dDate){ clearTimeout(dTimer); $('#dText').value = e.text || ''; $('#dSaved').textContent = '會自動儲存'; dShownFor = dDate; }
+  $('#dMoods').innerHTML = MOODS.map(m=>`<button class="${e.mood===m?'on':''}" data-act="mood" data-m="${m}">${m}</button>`).join('');
+  const dn = doneOn(dDate);
+  $('#dDone').innerHTML = dn.length ? dn.map(x=>`<li><span class="meta">${hm(x.at)}</span> ${x.html}</li>`).join('') : '<li class="empty" style="list-style:none;margin-left:-20px">這天還沒有勾掉的待辦</li>';
+  const out = e.money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = e.money.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
+  $('#mList').innerHTML = e.money.length ? e.money.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="delMoney" data-mid="${m.id}">✕</button></div>`).join('')
+    + `<div class="money" style="font-weight:900"><span class="grow">這天合計</span>${out?`<span class="amt out">支出 $${money(out)}</span>`:''}${inc?`<span class="amt in">收入 $${money(inc)}</span>`:''}</div>`
+    : '<div class="empty">這天還沒有記帳</div>';
+  // 本月
+  const ym = dDate.slice(0,7); let mo = 0, mi = 0; const byCat = {};
+  Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k => db.diary[k].money.forEach(m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; } else mi += m.amt; }));
+  $('#mMonthTitle').textContent = `📊 ${+ym.slice(5)} 月收支`;
+  const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>`
+    + (cats.length ? cats.map(([c,v])=>`<div class="catrow"><span style="width:44px;font-weight:700">${esc(c)}</span><div class="bar"><div style="width:${Math.round(v/mo*100)}%"></div></div><span style="min-width:90px;text-align:right">$${money(v)} · ${Math.round(v/mo*100)}%</span></div>`).join('') : '<div class="empty">這個月還沒有支出紀錄</div>');
+  renderEntries();
+}
+function renderEntries(){
+  const keys = Object.keys(db.diary).filter(k => { const e = db.diary[k]; return e.text || e.mood || e.money.length; }).sort().reverse().slice(0,10);
+  $('#dEntries').innerHTML = keys.length ? keys.map(k => { const e = db.diary[k], out = e.money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
+    return `<div class="entry" data-act="openDiary" data-date="${k}"><b>${e.mood||'📝'} ${prettyDate(k)}</b>${out?` <span class="meta">· 支出 $${money(out)}</span>`:''}<div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc((e.text||'').split('\n')[0])||'（沒有文字）'}</div></div>`; }).join('')
+    : '<div class="empty">還沒有日記，今天就寫第一篇吧 ✍️</div>';
+}
+
+// ---------- 甘特圖 ----------
+let gRange = 28, gStart = addDays(monday(new Date()), -7);
+$('#gSeg').addEventListener('click', e => { const b = e.target.closest('button[data-gr]'); if(!b) return; gRange = +b.dataset.gr; renderGantt(); });
+$('#gPrev').onclick = () => { gStart = addDays(gStart, -Math.round(gRange/2)); renderGantt(); };
+$('#gNext').onclick = () => { gStart = addDays(gStart, Math.round(gRange/2)); renderGantt(); };
+$('#gToday').onclick = () => { gStart = addDays(monday(new Date()), gRange>28?-14:-7); renderGantt(); };
+$('#gSteps').onchange = renderGantt; $('#gDone').onchange = renderGantt;
+function renderGantt(){
+  $$('#gSeg button').forEach(b => b.classList.toggle('on', +b.dataset.gr===gRange));
+  const rs = ymd(gStart), re = ymd(addDays(gStart, gRange-1)), N = gRange, t = today();
+  const pos = d => Math.max(0, Math.min(N, diffDays(rs, d))) / N * 100;
+  // 表頭
+  let head = '';
+  if(N<=28){ for(let i=0;i<N;i++){ const d = addDays(gStart,i); head += `<span style="${ymd(d)===t?'background:var(--orange);color:#fff':''}">${N<=14?(d.getMonth()+1)+'/':''}${d.getDate()}<br>${WD[d.getDay()]}</span>`; } }
+  else { for(let i=0;i<N;i+=7){ const d = addDays(gStart,i); head += `<span>${d.getMonth()+1}/${d.getDate()}</span>`; } }
+  let grid = ''; const step = N<=28 ? 1 : 7;
+  for(let i=step;i<N;i+=step) grid += `<div class="g-grid" style="left:${i/N*100}%"></div>`;
+  const todayLine = (t>=rs && t<=re) ? `<div class="g-today" style="left:${(diffDays(rs,t)+.5)/N*100}%"></div>` : '';
+  const list = db.todos.filter(td => (td.due || td.start) && ($('#gDone').checked || !td.done))
+    .filter(td => { const s = startOf(td), e = td.due || s; return e >= rs && s <= re; })
+    .sort((a,b) => startOf(a).localeCompare(startOf(b)) || (a.due||'').localeCompare(b.due||''));
+  let rows = `<div class="g-row g-head"><div class="g-name">待辦事項</div><div class="g-track">${head}</div></div>`;
+  if(!list.length) rows += `<div class="g-row"><div class="g-name"></div><div class="g-track"><div class="empty" style="padding:10px">這段期間沒有設定日期的待辦。到「待辦」新增時填上開始日和期限，就會出現在這裡。</div></div></div>`;
+  list.forEach(td => {
+    const s = startOf(td), e = td.due || s, p = progress(td);
+    const left = pos(s), right = pos(ymd(addDays(parse(e),1)));
+    const cls = td.done ? 'done' : isLate(td) ? 'late' : '';
+    rows += `<div class="g-row"><div class="g-name"><span class="n">${tagDot(td.tag)}${esc(td.title)}</span><span class="meta">${md(s)}→${md(e)} · ${p}%</span></div>
+      <div class="g-track">${grid}${todayLine}<div class="g-bar ${cls}" data-act="gExpand" data-id="${td.id}" style="left:${left}%;width:${Math.max(right-left,1)}%${td.tag&&!td.done?`;background:${tagColor(td.tag)}33`:''}" title="${esc(td.title)}：${p}%"><div style="width:${p}%${td.tag&&!td.done?`;background:${tagColor(td.tag)}`:''}"></div>${right-left>=6?`<label>${p}%</label>`:''}</div></div></div>`;
+    if($('#gSteps').checked && (expanded.has(td.id) || td.steps.length<=6) && td.steps.length){
+      td.steps.forEach((st,i) => {
+        // 沒有個別日期的步驟，平均分配在開始到期限之間
+        const span = Math.max(diffDays(s,e),0), at = ymd(addDays(parse(s), Math.round(span*(i+1)/td.steps.length)));
+        rows += `<div class="g-row" style="min-height:32px"><div class="g-name step"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" class="chk sm" data-act="toggleStep" data-id="${td.id}" data-sid="${st.id}" ${st.done?'checked':''}><span class="n">${esc(st.title)}</span></label></div>
+          <div class="g-track">${grid}${todayLine}${at>=rs&&at<=re?`<div class="g-dot ${st.done?'done':''}" style="left:${(diffDays(rs,at)+.5)/N*100}%;top:8px" title="${esc(st.title)}"></div>`:''}</div></div>`;
+      });
+    }
+  });
+  $('#ganttView').innerHTML = `<div class="gantt">${rows}</div>`;
+}
+
+// ---------- 行程 ----------
+$('#evDate').value = today();
+$('#evAdd').onclick = () => {
+  const title = $('#evTitle').value.trim(), date = $('#evDate').value;
+  if(!title || !date){ toast('請填行程名稱和日期'); return; }
+  db.events.push({id:uid(), title, date, time:$('#evTime').value, note:$('#evNote').value.trim(), remind:+$('#evRemind').value, notified:false});
+  $('#evTitle').value=''; $('#evNote').value=''; $('#evTime').value='';
+  save(); toast('已新增行程 📅');
+};
+$('#evShowPast').onchange = renderEvents;
+function remindText(m){ return m===0?'準時':m<60?`提前 ${m} 分`:m<1440?`提前 ${m/60} 小時`:`提前 ${m/1440} 天`; }
+function renderEvents(){
+  const showPast = $('#evShowPast').checked, t = today();
+  const list = db.events.filter(e => showPast || e.date >= t).sort(evSort);
+  if(!list.length){ $('#evList').innerHTML = '<div class="empty" style="margin-top:8px">目前沒有行程</div>'; return; }
+  let html = '', cur = '';
+  list.forEach(ev => {
+    if(ev.date !== cur){ cur = ev.date; html += `<div class="subhead">${prettyDate(cur)}${cur===t?' · 今天':''}</div>`; }
+    html += `<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>
+      <div class="meta">${ev.remind>=0?'🔔 '+remindText(ev.remind):'不提醒'}${ev.note?' · '+esc(ev.note):''}</div></div>
+      <button class="icon" data-act="delEv" data-id="${ev.id}" title="刪除">✕</button></div>`;
+  });
+  $('#evList').innerHTML = html;
+}
+
+// ---------- 靈感 ----------
+function addIdea(text){ db.ideas.push({id:uid(), text, tags:(text.match(/#[^\s#，,。]+/g)||[]).map(s=>s.slice(1)), pinned:false, createdAt:Date.now()}); }
+$('#idAdd').onclick = () => { const v = $('#idText').value.trim(); if(!v) return; addIdea(v); $('#idText').value=''; save(); toast('靈感已存 💡'); };
+$('#idSearch').oninput = renderIdeas;
+function renderIdeas(){
+  const q = $('#idSearch').value.trim().toLowerCase().replace(/^#/,'');
+  const list = db.ideas.filter(i => !q || i.text.toLowerCase().includes(q)).sort((a,b)=>(b.pinned-a.pinned)||b.createdAt-a.createdAt);
+  $('#idList').innerHTML = list.length ? list.map(i => { const d = new Date(i.createdAt);
+    return `<div class="idea ${i.pinned?'pin':''}"><div class="grow"><div style="white-space:pre-wrap">${esc(i.text)}</div>
+      <div class="meta">${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div></div>
+      <button class="icon" data-act="pin" data-id="${i.id}" title="${i.pinned?'取消置頂':'置頂'}">${i.pinned?'📌':'📍'}</button>
+      <button class="icon" data-act="toTodo" data-id="${i.id}" title="轉成待辦">➡️</button>
+      <button class="icon" data-act="delIdea" data-id="${i.id}" title="刪除">✕</button></div>`; }).join('')
+    : '<div class="empty">還沒有靈感，隨時丟進來吧</div>';
+}
+
+// ---------- 共用點擊 ----------
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const {act, id, sid, date} = b.dataset;
+  const td = id && db.todos.find(x => x.id===id);
+  switch(act){
+    case 'gotoDay': view='day'; cursor=parse(date); renderPlan(); return;
+    case 'expand': case 'gExpand': expanded.has(id) ? expanded.delete(id) : expanded.add(id); renderAll(); return;
+    case 'toggleTodo': if(td){ setTodoDone(td, !td.done); td.steps.forEach(s => { if(s.done!==td.done){ s.done = td.done; s.doneAt = td.done ? Date.now() : null; } }); if(td.done) toast('完成一件！太棒了 🎉'); } break;
+    case 'toggleStep': if(td){ const s = td.steps.find(x=>x.id===sid); if(s){ s.done = !s.done; s.doneAt = s.done ? Date.now() : null;
+        const all = td.steps.every(x=>x.done);
+        if(all && !td.done){ setTodoDone(td, true); toast('所有步驟都完成，整件事搞定！🎉'); }
+        else if(!all && td.done) setTodoDone(td, false);
+        else if(s.done) toast('又前進一步 👣'); } } break;
+    case 'pickTag': pickTag = b.dataset.tag; renderTagBars(); return;
+    case 'filterTag': filterTag = b.dataset.tag; renderTodos(); return;
+    case 'delTag': { e.stopPropagation(); const n = b.dataset.tag; if(!confirm(`刪除「${n}」標籤？使用這個標籤的待辦會變成不分類。`)) return;
+      db.tags = db.tags.filter(x=>x.name!==n); db.todos.forEach(x=>{ if(x.tag===n) x.tag=''; }); if(pickTag===n) pickTag=''; if(filterTag===n) filterTag=''; break; }
+    case 'mood': { const en = entry(dDate); en.mood = en.mood===b.dataset.m ? '' : b.dataset.m; break; }
+    case 'delMoney': { const en = entry(dDate); en.money = en.money.filter(m=>m.id!==b.dataset.mid); break; }
+    case 'openDiary': dDate = date; renderDiary(); window.scrollTo(0,0); return;
+    case 'toggleCd': if(td){ td.countdown = !td.countdown; toast(td.countdown?'已開啟倒數小提示 ⏳':'已關閉倒數小提示'); } break;
+    case 'delStep': if(td) td.steps = td.steps.filter(x=>x.id!==sid); break;
+    case 'delTodo': if(!confirm('確定刪除這個待辦？')) return; db.todos = db.todos.filter(x=>x.id!==id); break;
+    case 'delEv': db.events = db.events.filter(x=>x.id!==id); break;
+    case 'delIdea': db.ideas = db.ideas.filter(x=>x.id!==id); break;
+    case 'pin': { const i = db.ideas.find(x=>x.id===id); if(i) i.pinned = !i.pinned; break; }
+    case 'toTodo': { const i = db.ideas.find(x=>x.id===id); if(i){ db.todos.push(newTodo({title:i.text.split('\n')[0].slice(0,80)})); toast('已轉成待辦，可到「待辦」設定期限和步驟'); } break; }
+    default: return;
+  }
+  save();
+});
+document.addEventListener('keydown', e => {
+  if(e.target.id==='newTag' && e.key==='Enter' && !e.isComposing){
+    const n = e.target.value.trim().replace(/^#/,''); if(!n) return;
+    if(db.tags.some(x=>x.name===n)){ toast('已經有這個標籤了'); return; }
+    db.tags.push({name:n, color:TAG_COLORS[db.tags.length % TAG_COLORS.length]}); pickTag = n; save(); toast(`已新增標籤「${n}」`);
+    const again = $('#newTag'); if(again) again.focus(); return;
+  }
+  const el = e.target; if(!el.dataset || !el.dataset.addstep || e.key!=='Enter' || e.isComposing) return;
+  const v = el.value.trim(); if(!v) return;
+  const td = db.todos.find(x=>x.id===el.dataset.addstep); if(!td) return;
+  td.steps.push({id:uid(), title:v, done:false}); if(td.done) setTodoDone(td, false);
+  const sel = `[data-addstep="${td.id}"]`; save();
+  const again = document.querySelector(sel); if(again) again.focus();
+});
+
+// ---------- 快速記錄 ----------
+function quickAdd(){
+  const v = $('#quickInput').value.trim(); if(!v) return;
+  if($('#quickType').value==='todo'){ db.todos.push(newTodo({title:v, due:today(), start:today()})); toast('已加到今天的待辦'); }
+  else { addIdea(v); toast('靈感已存 💡'); }
+  $('#quickInput').value=''; save();
+}
+$('#quickBtn').onclick = quickAdd;
+$('#quickInput').onkeydown = e => { if(e.key==='Enter' && !e.isComposing) quickAdd(); };
+
+// ---------- 主頁頂部 ----------
+function renderHero(){
+  const now = new Date(), h = now.getHours(), t = today();
+  $('#greet').textContent = h<5?'夜深了，早點休息 🌙':h<11?'早安！今天也一起加油 ☀️':h<14?'午安！吃飽了嗎 🍱':h<18?'下午好！再衝一下 💪':'晚安！今天辛苦了 🌆';
+  const evs = eventsOn(t).length, due = db.todos.filter(x=>!x.done && x.due && x.due<=t).length;
+  const [ws,we] = weekRange(0); const wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we);
+  const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
+  $('#heroLine').textContent = (evs||due) ? `今天有 ${evs} 個行程、${due} 件事要完成。` : '今天沒有排定的事，可以從待辦清單挑一件來做！';
+  $('#heroStats').innerHTML = `<div><b>${evs}</b>今日行程</div><div><b>${due}</b>今日待辦</div><div><b>${avg}%</b>本週進度</div><div><b>${db.ideas.length}</b>靈感</div>`;
+  const cds = db.todos.filter(x=>x.countdown && !x.done && x.due).sort((a,b)=>a.due.localeCompare(b.due));
+  $('#cdStrip').innerHTML = cds.map(x => { const n = diffDays(today(), x.due);
+    return `<div class="cdcard"><span>${tagDot(x.tag)}${esc(x.title)}</span><b>${n>0?n+' 天':n===0?'今天！':'過期 '+(-n)+' 天'}</b><span class="meta">${prettyDate(x.due)}</span></div>`; }).join('');
+  $('#todayLabel').textContent = `${now.getMonth()+1}/${now.getDate()} 星期${WD[now.getDay()]}`;
+}
+
+// ---------- 問答 ----------
+const listTodos = arr => arr.map(t=>`  • ${t.tag?'['+t.tag+'] ':''}${t.title}${t.due?`（${prettyDate(t.due)}）`:''}${t.steps.length?` 進度 ${progress(t)}%`:''}${t.pri==='high'?' 🔥':''}`).join('\n');
+const listEvents = (arr, withDate) => arr.map(e=>`  • ${withDate?prettyDate(e.date)+' ':''}${e.time||'全天'} ${e.title}`).join('\n');
+function nextStep(t){ const s = t.steps.find(x=>!x.done); return s ? `「${t.title}」的下一步：${s.title}` : `「${t.title}」`; }
+function dayReport(ds, label){
+  const t = today(), evs = eventsOn(ds);
+  const tds = db.todos.filter(td => !td.done && td.due && (td.due===ds || (ds===t && td.due<t))).sort(tdSort);
+  const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=ds && td.due>ds).sort(tdSort);
+  let out = `【${label} ${prettyDate(ds)}】\n`;
+  out += evs.length ? `📅 行程 ${evs.length} 個：\n${listEvents(evs)}\n` : '📅 沒有行程\n';
+  out += tds.length ? `🎯 要完成 ${tds.length} 件：\n${listTodos(tds)}\n` : '🎯 沒有到期的待辦\n';
+  if(active.length) out += `🏃 進行中 ${active.length} 件：\n${listTodos(active)}\n`;
+  const pick = tds.find(x=>x.pri==='high') || tds[0] || active[0];
+  out += pick ? `\n建議先做：${nextStep(pick)}` : '\n很輕鬆的一天，可以整理一下靈感 ✨';
+  return out;
+}
+function weekReport(offset){
+  const [ws,we] = weekRange(offset), label = offset===0?'本週':'下週';
+  const evs = db.events.filter(e=>e.date>=ws&&e.date<=we).sort(evSort);
+  const wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we).sort(tdSort), open = wk.filter(x=>!x.done);
+  let out = `【${label} ${prettyDate(ws)} ～ ${prettyDate(we)}】\n`;
+  out += evs.length ? `📅 行程 ${evs.length} 個：\n${listEvents(evs,true)}\n` : '📅 沒有行程\n';
+  out += open.length ? `🎯 要完成 ${open.length} 件：\n${listTodos(open)}\n` : '🎯 沒有待完成的事\n';
+  if(wk.length) out += `\n整體進度：${Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length)}%（${wk.length-open.length}/${wk.length} 件全部完成）`;
+  return out;
+}
+function progressReport(){
+  const t = today(), [ws,we] = weekRange(0);
+  const wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we);
+  const od = db.todos.filter(isLate).sort(tdSort);
+  const doing = db.todos.filter(x=>!x.done && x.steps.length && progress(x)>0).sort((a,b)=>progress(b)-progress(a));
+  let out = '【進度報告】\n';
+  out += wk.length ? `本週到期 ${wk.length} 件，整體進度 ${Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length)}%\n` : '本週沒有到期的事\n';
+  if(doing.length) out += `🏃 做到一半的：\n${doing.map(x=>`  • ${x.title} ${progress(x)}%（${x.steps.filter(s=>s.done).length}/${x.steps.length} 步）`).join('\n')}\n`;
+  out += od.length ? `⚠️ 已逾期 ${od.length} 件：\n${listTodos(od)}\n` : '👍 沒有逾期的事\n';
+  const open = db.todos.filter(x=>!x.done).sort(tdSort);
+  if(open.length) out += `\n下一步建議：${nextStep(od[0] || open[0])}`; else out += '\n全部完成，太厲害了！🎉';
+  return out;
+}
+function ideaReport(){
+  const list = db.ideas.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  return list.length ? `【最近 ${list.length} 則靈感】\n` + list.map(i=>`  💡 ${i.text.split('\n')[0]}`).join('\n') : '還沒有記錄任何靈感喔。';
+}
+function answer(q){
+  q = q.replace(/\s/g,'');
+  if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k=>db.diary[k].money.forEach(m=>m.kind==='out'?o+=m.amt:i+=m.amt));
+    const td = (db.diary[today()]||{money:[]}).money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
+    return `【記帳】\n今天支出：$${money(td)}\n本月支出：$${money(o)}\n本月收入：$${money(i)}\n本月結餘：$${money(i-o)}`; }
+  if(/完成了什麼|做了什麼|完成紀錄/.test(q)){ const dn = doneOn(today()); return dn.length ? `【今天完成了 ${dn.length} 項】\n` + dn.map(x=>`  ✓ ${x.text}`).join('\n') : '今天還沒有勾掉任何事，挑一件小的開始吧！'; }
+  if(/靈感|點子|想法/.test(q)) return ideaReport();
+  if(/逾期|過期|拖延|落後/.test(q)) return progressReport();
+  if(/下週|下周|下禮拜|下星期/.test(q)) return weekReport(1);
+  if(/本週|本周|這週|這周|这周|禮拜|星期|一週|週/.test(q)) return weekReport(0);
+  if(/後天/.test(q)) return dayReport(ymd(addDays(new Date(),2)), '後天');
+  if(/明天/.test(q)) return dayReport(ymd(addDays(new Date(),1)), '明天');
+  if(/進度|完成了|做了多少|狀況/.test(q)) return progressReport();
+  if(/今天|今日|現在|待會|等等/.test(q)) return dayReport(today(), '今天');
+  return '我目前看得懂這些問題：今天／明天／後天要做什麼、這週或下週要完成什麼、進度如何、有什麼逾期、最近的靈感。\n\n先幫你看今天：\n\n' + dayReport(today(),'今天');
+}
+function ask(q){ if(!q.trim()) return; const box = $('#askAnswer'); box.textContent = answer(q); box.style.display = 'block'; }
+$('#askBtn').onclick = () => ask($('#askInput').value);
+$('#askInput').onkeydown = e => { if(e.key==='Enter' && !e.isComposing) ask(e.target.value); };
+$$('.chips button').forEach(b => b.onclick = () => { $('#askInput').value = b.dataset.q; ask(b.dataset.q); });
+
+// ---------- 提醒 ----------
+function beep(){
+  try{ const C = window.AudioContext||window.webkitAudioContext, c = new C(), o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(.15,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6); o.start(); o.stop(c.currentTime+.6); }catch(e){}
+}
+function toast(msg, sticky){
+  const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = `<span class="grow">${esc(msg)}</span>`;
+  if(sticky){ const b = document.createElement('button'); b.textContent = '知道了'; b.onclick = () => el.remove(); el.appendChild(b); }
+  $('#toasts').appendChild(el); while($('#toasts').children.length>3) $('#toasts').firstChild.remove(); if(!sticky) setTimeout(() => el.remove(), 2600);
+}
+function remind(title, body){
+  beep(); toast('🔔 ' + title + (body ? '：' + body : ''), true);
+  try{ if('Notification' in window && Notification.permission==='granted') new Notification('🔔 ' + title, {body}); }catch(e){}
+}
+function checkReminders(){
+  const now = Date.now(); let changed = false;
+  db.events.forEach(ev => {
+    if(ev.notified || ev.remind<0) return;
+    const at = new Date(ev.date+'T'+(ev.time||'09:00')).getTime(), fire = at - ev.remind*60000;
+    if(now >= fire && now < at + 3600000){ remind(ev.title, `${prettyDate(ev.date)} ${ev.time||'全天'}${ev.remind?'（'+remindText(ev.remind)+'）':''}`); ev.notified = true; changed = true; }
+    else if(now >= at + 3600000){ ev.notified = true; changed = true; }
+  });
+  db.todos.forEach(td => {
+    if(td.notified || td.done || !td.remindAt) return;
+    if(now >= new Date(td.remindAt).getTime()){ remind('待辦：' + td.title, td.due ? '期限 ' + prettyDate(td.due) : ''); td.notified = true; changed = true; }
+  });
+  const st = db.settings, d = new Date(), t = today(), nowHM = pad(d.getHours())+':'+pad(d.getMinutes());
+  const parts = [];
+  if(st.daily.on && nowHM >= st.daily.time && st.fired.daily !== t){ st.fired.daily = t; changed = true; parts.push('daily'); }
+  if(st.weekly.on && d.getDay()===0 && nowHM >= st.weekly.time && st.fired.weekly !== t){ st.fired.weekly = t; changed = true; parts.push('weekly'); }
+  if(parts.length) showReport(parts);
+  if(changed) save();
+}
+function dailyText(){ return dayReport(ymd(addDays(new Date(),1)), '明天') + '\n\n' + progressReport(); }
+function weeklyText(){ return weekReport(1) + '\n\n' + progressReport(); }
+function showReport(parts){
+  const title = parts.includes('weekly') ? '🗓️ 下週預告' : '🌙 明天預告';
+  const body = parts.includes('weekly') ? weeklyText() : dailyText();
+  $('#rTitle').textContent = title; $('#rBody').textContent = body; $('#reportModal').classList.add('on'); beep();
+  try{ if('Notification' in window && Notification.permission==='granted') new Notification(title, {body: body.split('\n').slice(0,6).join('\n')}); }catch(e){}
+}
+$('#rClose').onclick = () => $('#reportModal').classList.remove('on');
+$('#reportModal').onclick = e => { if(e.target.id==='reportModal') $('#reportModal').classList.remove('on'); };
+$('#sDailyPreview').onclick = () => showReport(['daily']);
+$('#sWeeklyPreview').onclick = () => showReport(['weekly']);
+function renderSettings(){
+  const st = db.settings;
+  $('#sDailyOn').checked = st.daily.on; $('#sDailyTime').value = st.daily.time;
+  $('#sWeeklyOn').checked = st.weekly.on; $('#sWeeklyTime').value = st.weekly.time;
+}
+[['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time']].forEach(([sel,k,f]) =>
+  $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : e.target.value; if(f==='time' && !v) return;
+    db.settings[k][f] = v; if(f==='time') delete db.settings.fired[k]; saveQuiet(); toast('提醒設定已更新'); }));
+function updateNotice(){
+  const ok = 'Notification' in window && Notification.permission==='granted';
+  const can = 'Notification' in window && Notification.permission!=='denied';
+  $('#notifyNotice').style.display = (!ok && can) ? 'block' : 'none';
+}
+$('#enableNotify').onclick = async () => { try{ await Notification.requestPermission(); }catch(e){} updateNotice(); };
+$('#testNotify').onclick = () => remind('測試提醒', '如果你看到這個，提醒功能正常 👍');
+
+// ---------- 備份 ----------
+$('#exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '生產力備份-' + today() + '.json'; a.click();
+};
+$('#importFile').onchange = e => {
+  const f = e.target.files[0]; if(!f) return; const r = new FileReader();
+  r.onload = () => { try{ const d = JSON.parse(r.result); if(!d.events||!d.todos||!d.ideas) throw new Error('格式不對');
+    if(confirm('匯入會覆蓋目前的資料，確定嗎？')){ db = makeDb(d); save(); toast('匯入完成'); } }
+    catch(err){ toast('匯入失敗：' + err.message); } };
+  r.readAsText(f); e.target.value = '';
+};
+$('#wipeBtn').onclick = () => { if(confirm('真的要清空所有行程、待辦、靈感和日記嗎？這無法復原。')){ db = makeDb(); save(); toast('已清空'); } };
+
+function renderAll(){ renderHero(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); }
+
+load(); renderAll(); updateNotice(); checkReminders();
+setInterval(checkReminders, 20000);
+setInterval(renderHero, 60000);
+})();
+</script>
+</body>
+</html>
