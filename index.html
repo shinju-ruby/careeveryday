@@ -333,6 +333,10 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+.reload{border:2px solid var(--ink);background:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;line-height:1;cursor:pointer;padding:0;box-shadow:1.5px 1.5px 0 var(--ink);flex:none}
+.trow{display:flex;align-items:center;gap:6px}
+.reload.spin{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .remrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:2px dashed #EEE3CC}
 .remrow b{font-size:15px;white-space:nowrap}
 .remrow .tsel{padding:4px 6px;border-radius:10px;font-size:14px;width:auto}
@@ -484,7 +488,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <div class="wrap">
     <div class="top">
       <div class="logo"><img src="icons/icon-192.png" alt=""><div><span class="kr">갓생 살자!</span><small>認真過好每一天</small></div></div>
-      <div class="toprt"><span class="today-label" id="syncBadge" style="background:#fff;display:none"></span><span class="today-label" id="todayLabel"></span></div>
+      <div class="toprt"><span class="today-label" id="syncBadge" style="background:#fff;display:none"></span><span class="trow"><span class="today-label" id="todayLabel"></span><button class="reload" id="reloadBtn" title="重新整理" aria-label="重新整理">🔄</button></span></div>
     </div>
     <nav id="nav">
       <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
@@ -888,7 +892,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 介面整理版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 介面整理版 2</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -2468,6 +2472,12 @@ function updateNotice(){
   $('#notifyNotice').style.display = (!ok && can) ? 'block' : 'none';
 }
 $('#enableNotify').onclick = async () => { try{ await Notification.requestPermission(); }catch(e){} updateNotice(); };
+$('#reloadBtn').onclick = async () => {
+  $('#reloadBtn').classList.add('spin');
+  await new Promise(r => setTimeout(r, 1200)); // 讓剛改的資料先同步上去
+  try{ await fetch(location.pathname, {cache:'reload'}); }catch(e){}
+  location.reload();
+};
 $('#testNotify').onclick = () => remind('測試提醒', '如果你看到這個，提醒功能正常 👍');
 
 // ---------- 備份 ----------
