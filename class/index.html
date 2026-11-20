@@ -73,7 +73,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--orange);flex:none
 .pick.dis{opacity:.5;cursor:not-allowed}
 .pick .hint{margin-left:auto;font-size:12.5px;font-weight:700;white-space:nowrap}
 .slot{display:grid;grid-template-columns:1fr 12px 1fr 30px;gap:6px;align-items:center;margin-bottom:10px}.slot .lb{grid-column:1/4}
-.kid{display:grid;grid-template-columns:1fr 92px 34px;gap:6px;margin-bottom:6px}
+.kid{display:grid;grid-template-columns:1fr 84px 34px;gap:6px;margin-bottom:6px}
 .list{margin:6px 0 0;padding:0;list-style:none}
 .list li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1.5px dashed #c9cbd6;font-size:14.5px;flex-wrap:wrap}
 .list li:last-child{border-bottom:0}
@@ -124,6 +124,7 @@ const FIREBASE_CONFIG = {
 
 // ===== 小工具 =====
 const $ = s => document.querySelector(s);
+const jsq = v => esc(JSON.stringify(String(v ?? '')));   // 安全地把值放進 onclick 屬性
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WD = '日一二三四五六';
 const pad = n => String(n).padStart(2, '0');
@@ -175,8 +176,8 @@ const FB = {
   onCourses(cb){ return this.db.collection('cl_courses').onSnapshot(q => cb(q.docs.map(d => ({ id:d.id, ...d.data() }))), e => { S.err = '讀取課程失敗：' + e.message; render(); }); },
   onSignups(cid, cb){
     return this.db.collection('cl_signups').where('courseId', '==', cid).onSnapshot(q => cb(q.docs.map(d => {
-      const x = d.data({ serverTimestamps:'estimate' }); return { id:d.id, ...x, t: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
-    })), e => console.warn(e));
+      const x = d.data({ serverTimestamps:'estimate' }); if(!/^[\w-]{1,40}$/.test(d.id)) return null; return { id:d.id, ...x, t: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
+    }).filter(Boolean)), e => console.warn(e));
   },
   onPays(cid, cb){
     let q = this.db.collection('cl_pay').where('courseId', '==', cid);
@@ -200,7 +201,12 @@ const FB = {
     ids.forEach(id => b.set(this.db.collection('cl_pay').doc(id), { ...patch, courseId, updatedAt:this.ts(), ...(S.admin ? {} : { uid:S.user.uid }) }, { merge:true }));
     await b.commit();
   },
-  async saveCourse(id, data){ const ref = id ? this.db.collection('cl_courses').doc(id) : this.db.collection('cl_courses').doc(); await ref.set({ ...data, updatedAt:this.ts() }, { merge:true }); return ref.id; },
+  async setCleared(ids, tag){
+    for(let i = 0; i < ids.length; i += 400){ const b = this.db.batch(); ids.slice(i, i + 400).forEach(id => b.update(this.db.collection('cl_signups').doc(id), { cleared: tag || null })); await b.commit(); }
+  },
+  async saveCourse(id, data){ const ref = id ? this.db.collection('cl_courses').doc(id) : this.db.collection('cl_courses').doc();
+    if('openAt' in data) data = { ...data, openAt: data.openAt ? firebase.firestore.Timestamp.fromMillis(data.openAt) : null };
+    await ref.set({ ...data, updatedAt:this.ts() }, { merge:true }); return ref.id; },
   delCourse(id){ return this.db.collection('cl_courses').doc(id).delete(); },
   signIn(){
     const p = new firebase.auth.GoogleAuthProvider();
@@ -222,10 +228,10 @@ const DEMO = {
     const sat = []; const t = new Date(); t.setDate(t.getDate() + ((6 - t.getDay() + 7) % 7 || 7));
     for(let i = 0; i < 4; i++){ const x = new Date(t); x.setDate(t.getDate() + i * 7); sat.push(ymd(x)); }
     const sessions = []; sat.forEach((dt, i) => { sessions.push({ id:dt + '_1000', date:dt, start:'10:00', end:'11:00', label:'小班' }); if(i % 2) sessions.push({ id:dt + '_1100', date:dt, start:'11:00', end:'12:00', label:'大班' }); });
-    d.courses[cid] = { title:'芒果老師🥭 週六體能課', teacher:'芒果老師', location:'皇翔歡喜城教室', age:'1.5y–5y（最低需滿 1.5y）', capacity:8, feeMode:'split', teacherFee:2000, venueFee:300, fixedFee:0,
-      remindNotes:'👉 多功能教室（彩虹島幼兒園對面）\n➡️ 一樓大門進來後右邊電梯上⭐2樓⭐就可以看到了\n➡️ 記得攜帶水壺，怕流汗吹風可攜帶小手帕', payInfo:'郵局 700 帳號 0000000-0000000（範例）', payDeadline:'報名截止後 3 天內', open:true, sessions,
+    d.courses[cid] = { title:'🎵 週六親子律動課（範例）', teacher:'小星老師', location:'陽光社區活動中心', age:'1.5～5 歲', capacity:8, feeMode:'split', teacherFee:2000, venueFee:300, fixedFee:0,
+      remindNotes:'👉 活動中心 3 樓大教室\n➡️ 一樓大門進來搭電梯到 3 樓\n➡️ 記得帶水壺和小毛巾', payInfo:'範例銀行（000）帳號 0000-0000-0000，戶名 範例', payDeadline:'報名截止後 3 天內', open:true, sessions,
       notes:'⭐ 注意事項 ⭐\n滿班後會提醒繳費，期限內請完成繳費以確保名額，超時未繳納則釋出名額。\n☺︎ 找代課，請假無退費補課\n☺︎ 帶水壺補充水分，教室內請勿飲食\n☺︎ 有缺額依候補名單順序遞補', updatedAt:Date.now() };
-    const fam = [['喬','布丁','2y'],['欣穎','擠擠','3y7m'],['欣穎','蕾蕾','2y'],['의정','藤藤','1y9m'],['吳宜蓉','媽媽','1y11m'],['Li Chi','Elio','1y11m'],['Rosie','恩恩','2y'],['ANGELA','Angela','3y'],['PEGGY','書宇','1y8m']];
+    const fam = [['小熊媽媽','小草莓','2歲'],['兔兔爸爸','小餅乾','3.5歲'],['兔兔爸爸','小布丁','2歲'],['企鵝媽咪','小湯圓','1.5歲'],['長頸鹿媽媽','小芒果','2歲'],['貓頭鷹爸比','小饅頭','2歲'],['小象媽媽','小豆芽','2歲'],['松鼠媽媽','小麻糬','3歲'],['海豚媽媽','小蘋果','1.5歲']];
     let ms = Date.now() - 86400000 * 3;
     fam.forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[0].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status: Math.random() < .5 ? 'confirmed' : 'unpaid', note:'' }; });
     fam.slice(0, 5).forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[1].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status:'unpaid', note:'' }; });
@@ -247,6 +253,7 @@ const DEMO = {
   async setPays(ids, patch, courseId){ const d = this.load(); ids.forEach(id => { d.pays[id] = { ...(d.pays[id] || { uid:S.user.uid, courseId }), ...patch }; }); this.save(d); },
   async saveCourse(id, data){ const d = this.load(); id = id || rid(); d.courses[id] = { ...(d.courses[id] || {}), ...data, updatedAt:Date.now() }; this.save(d); return id; },
   async delCourse(id){ const d = this.load(); delete d.courses[id]; this.save(d); },
+  async setCleared(ids, tag){ const d = this.load(); ids.forEach(id => { if(d.signups[id]) d.signups[id].cleared = tag || null; }); this.save(d); },
   signIn(){ store.set('cl-demo-role', 'admin'); location.reload(); },
   signOut(){ store.set('cl-demo-role', 'parent'); location.reload(); }
 };
@@ -266,10 +273,15 @@ function ensureNeeded(){
 
 // ===== 正取 / 備取 / 費用計算 =====
 const getCourse = id => S.courses.find(c => c.id === id);
+const openMs = c => c.openAt ? (c.openAt.toMillis ? c.openAt.toMillis() : Number(c.openAt)) : 0;
+const regState = c => !c.open ? 'closed' : Date.now() < openMs(c) ? 'soon' : 'open';
+function fmtTime(ms){ const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function stateTag(c){ const st = regState(c); return st === 'open' ? '<span class="tag ok">報名中</span>' : st === 'soon' ? `<span class="tag wait">${esc(fmtTime(openMs(c)))} 開放</span>` : '<span class="tag off">暫停報名</span>'; }
 const sortedSessions = c => [...(c.sessions || [])].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
 const upcoming = (c, days) => sortedSessions(c).filter(s => s.date >= today(0) && s.date <= today(days));
+const live = cid => (S.signups[cid] || []).filter(x => !x.cleared);
 function roster(c, sid){
-  const all = (S.signups[c.id] || []).filter(x => x.sessionId === sid).sort((a, b) => a.t - b.t);
+  const all = live(c.id).filter(x => x.sessionId === sid).sort((a, b) => a.t - b.t);
   const act = all.filter(x => !x.cancelled), cap = Number(c.capacity) || 8;
   return { ok:act.slice(0, cap), wait:act.slice(cap), cancelled:all.filter(x => x.cancelled), cap };
 }
@@ -334,7 +346,8 @@ function txtPayOne(c, g){
 }
 
 // ===== 路由 =====
-function route(){ const h = location.hash.replace(/^#/, ''), p = new URLSearchParams(h); if(p.get('c')) return { v:'course', c:p.get('c') }; if(p.has('edit')) return { v:'edit', id:p.get('edit'), from:p.get('from') }; if(h === 'admin') return { v:'admin' }; return { v:'home' }; }
+function route(){ const h = location.hash.replace(/^#/, ''), q = new URLSearchParams(h), ok = v => v && /^[\w-]{1,40}$/.test(v) ? v : null;
+  const p = { get:k => ok(q.get(k)), has:k => q.has(k) }; if(p.get('c')) return { v:'course', c:p.get('c') }; if(p.has('edit')) return { v:'edit', id:p.get('edit') || 'new', from:p.get('from') }; if(h === 'admin') return { v:'admin' }; return { v:'home' }; }
 function go(h){ location.hash = h; }
 window.addEventListener('hashchange', () => { lastKey = ''; S.parentView = false; ensureNeeded(); render(); window.scrollTo(0, 0); });
 
@@ -352,10 +365,11 @@ function render(){
     const c = getCourse(r.c); if(!c){ app.innerHTML = top + `<div class="card"><h2>找不到這堂課 🥲</h2><div class="empty">可能已被主揪刪除。</div><div class="btns"><button class="btn" onclick="go('')">回首頁</button></div></div>`; return; }
     const adminMode = S.admin && !S.parentView, key = 'course:' + c.id + ':' + adminMode;
     if(lastKey !== key){ lastKey = key;
-      app.innerHTML = top + (adminMode ? `<div class="row" style="margin-bottom:12px"><h2 class="grow" style="margin:0;font-size:19px">${esc(c.title)}</h2><button class="btn sm white" onclick="S.parentView=true;render()">👀 看家長畫面</button></div><div id="cAdmin"></div>`
+      app.innerHTML = top + (adminMode ? `<div class="row" style="margin-bottom:12px"><h2 class="grow" style="margin:0;font-size:19px">${esc(c.title)} ${stateTag(c)}</h2><button class="btn sm white" onclick="S.parentView=true;render()">👀 看家長畫面</button></div><div id="cAdmin"></div>`
         : (S.admin ? `<div class="demo">👀 你正在預覽家長看到的畫面 <button class="btn sm white" onclick="S.parentView=false;render()">回主揪工具</button></div>` : '') + `<div id="cInfo"></div><div id="cMine"></div><div id="cForm"></div><div id="cSess"></div>`);
       if(!adminMode) renderForm(c); }
     if(adminMode){ $('#cAdmin').innerHTML = adminCourseCard(c); return; }
+    if(regState(c) !== S.formState) renderForm(c);
     $('#cInfo').innerHTML = infoCard(c); $('#cMine').innerHTML = mineCard(c); $('#cSess').innerHTML = sessCard(c);
     updatePicks(c); return;
   }
@@ -367,7 +381,7 @@ function courseRow(c){
   const ss = sortedSessions(c), fut = ss.filter(s => s.date >= today());
   const dates = [...new Set(ss.map(s => fmtDate(s.date).replace(/（.）/, '')))];
   return `<div class="card course" onclick="go('c=${c.id}')">
-    <div class="row"><div class="t grow">${esc(c.title)}</div>${c.open && fut.length ? '<span class="tag ok">報名中</span>' : '<span class="tag off">' + (fut.length ? '暫停報名' : '已結束') + '</span>'}</div>
+    <div class="row"><div class="t grow">${esc(c.title)}</div>${fut.length ? stateTag(c) : '<span class="tag off">已結束</span>'}</div>
     <div class="meta">📍 ${esc(c.location || '')}　👩‍🏫 ${esc(c.teacher || '')}</div>
     <div class="meta">📅 ${esc(dates.join('、'))}</div></div>`;
 }
@@ -380,7 +394,7 @@ function homeView(){
 }
 
 function infoCard(c){
-  return `<div class="card"><h2>${esc(c.title)} ${c.open ? '<span class="tag ok">報名中</span>' : '<span class="tag off">暫停報名</span>'}</h2>
+  return `<div class="card"><h2>${esc(c.title)} ${stateTag(c)}</h2>
     <div class="kv"><b>👩‍🏫 老師</b><span>${esc(c.teacher || '')}</span><b>📍 地點</b><span>${esc(c.location || '')}</span>
     <b>👶 年齡</b><span>${esc(c.age || '不限')}</span><b>🙋 名額</b><span>每場 ${esc(c.capacity || 8)} 位，額滿列備取</span>
     <b>💰 費用</b><span style="white-space:pre-wrap">${esc(feeText(c))}</span>${c.payDeadline ? `<b>⏳ 繳費</b><span>${esc(c.payDeadline)}</span>` : ''}</div>
@@ -401,23 +415,36 @@ function sessCard(c){
 }
 
 function renderForm(c){
-  const el = $('#cForm'); if(!c.open){ el.innerHTML = ''; return; }
+  const el = $('#cForm'); S.formState = regState(c);
+  if(S.formState === 'closed'){ el.innerHTML = ''; return; }
+  if(S.formState === 'soon'){ el.innerHTML = `<div class="card" style="background:var(--soft-yellow);text-align:center"><h2 style="justify-content:center">⏰ 還沒開放報名</h2>
+    <div style="font-weight:900;font-size:17px">${esc(fmtTime(openMs(c)))} 開始報名</div><div class="meta" style="margin-top:4px">倒數 <b id="cd" style="font-size:20px;color:var(--orange)"></b></div>
+    <div class="meta" style="margin-top:6px">時間到會自動出現報名表，不用重新整理。名額依送出的先後排序。</div></div>`; tickCountdown(); return; }
   const pf = store.get('cl-profile', { parentName:'', kids:[{ name:'', age:'' }], companions:1 });
   el.innerHTML = `<div class="card"><h2>✍️ 我要報名</h2>
-    <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：Rosie">
-    <label>LINE ID <span class="meta">（只有主揪看得到，方便私訊聯絡）</span></label><input id="fLine" maxlength="40" autocapitalize="off" autocomplete="off" value="${esc(pf.lineId || '')}" placeholder="例如：rosie5473">
+    <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：小熊媽媽">
+    <label>LINE ID <span class="meta">（只有主揪看得到，方便私訊聯絡）</span></label><input id="fLine" maxlength="40" autocapitalize="off" autocomplete="off" value="${esc(pf.lineId || '')}" placeholder="例如：bear_mama">
     <label>寶貝名字與年紀（兄弟姊妹可以一起報）</label><div id="fKids"></div>
     <button class="btn sm white" type="button" onclick="addKid()">＋ 再加一位寶貝</button>
     <label>陪同家長人數</label><select id="fComp">${[1, 2, 3].map(n => `<option ${n == pf.companions ? 'selected' : ''}>${n}</option>`).join('')}</select>
     <label>選擇要報名的日期場次</label><div id="fPicks"></div>
     <label>想跟主揪說的話（選填）</label><input id="fNote" maxlength="100" placeholder="例如：第一次參加">
-    <div class="btns"><button class="btn big" id="fSubmit" onclick="submitSignup('${c.id}')">送出報名 🙌</button></div>
+    <div class="btns"><button class="btn big" id="fSubmit" onclick="submitSignup(${jsq(c.id)})">送出報名 🙌</button></div>
     <div class="meta" style="margin-top:8px">送出後會依報名先後自動排正取／備取，可以在上面「我的報名」看到結果。</div></div>`;
   (pf.kids && pf.kids.length ? pf.kids : [{ name:'', age:'' }]).forEach(k => addKid(k));
 }
+function tickCountdown(){
+  clearInterval(S.cdTimer);
+  const f = () => { const r = route(), c = r.c && getCourse(r.c), el = $('#cd'); if(!c || !el){ clearInterval(S.cdTimer); return; }
+    const left = openMs(c) - Date.now(); if(left <= 0){ clearInterval(S.cdTimer); renderForm(c); updatePicks(c); return; }
+    const h = Math.floor(left / 3600000), m = Math.floor(left % 3600000 / 60000), sec = Math.floor(left % 60000 / 1000);
+    el.textContent = (h ? h + ' 小時 ' : '') + pad(m) + ' 分 ' + pad(sec) + ' 秒'; };
+  f(); S.cdTimer = setInterval(f, 1000);
+}
+const ageStr = v => { const n = parseFloat(v); return n >= 0 && n <= 12 ? n + '歲' : ''; };
 function addKid(k = { name:'', age:'' }){
   const d = document.createElement('div'); d.className = 'kid';
-  d.innerHTML = `<input class="kName" maxlength="20" placeholder="寶貝名字" value="${esc(k.name)}"><input class="kAge" maxlength="10" placeholder="年紀 3y" value="${esc(k.age)}"><button class="icon" type="button" title="移除" onclick="if(document.querySelectorAll('.kid').length>1)this.parentNode.remove()">✕</button>`;
+  d.innerHTML = `<input class="kName" maxlength="20" placeholder="例如：小草莓" value="${esc(k.name)}"><input class="kAge" type="number" inputmode="decimal" min="0" max="12" step="0.5" placeholder="幾歲" value="${esc(parseFloat(k.age) || '')}"><button class="icon" type="button" title="移除" onclick="if(document.querySelectorAll('.kid').length>1)this.parentNode.remove()">✕</button>`;
   $('#fKids').appendChild(d);
 }
 function updatePicks(c){
@@ -430,23 +457,23 @@ function updatePicks(c){
 }
 async function submitSignup(cid){
   const c = getCourse(cid), parentName = $('#fParent').value.trim(), lineId = $('#fLine').value.trim();
-  const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:d.querySelector('.kAge').value.trim() })).filter(k => k.name);
+  const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:ageStr(d.querySelector('.kAge').value) })).filter(k => k.name);
   const sids = [...document.querySelectorAll('#fPicks input:checked')].map(i => i.value), companions = Number($('#fComp').value) || 1, note = $('#fNote').value.trim();
   if(!parentName) return toast('請填家長名稱'); if(!lineId) return toast('請填 LINE ID，主揪才聯絡得到你'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
   if(!S.user) return toast('還在連線，請稍等一下再按');
-  const mine = (S.signups[cid] || []).filter(x => !x.cancelled && x.uid === S.user.uid);
+  const mine = live(cid).filter(x => !x.cancelled && x.uid === S.user.uid);
   const items = []; sids.forEach(sid => kids.forEach(k => { if(!mine.some(x => x.sessionId === sid && x.childName === k.name)) items.push({ courseId:cid, sessionId:sid, parentName, childName:k.name, childAge:k.age, companions, note, lineId }); }));
   if(!items.length) return toast('這些場次你都報過了喔');
   store.set('cl-profile', { parentName, lineId, kids, companions });
   $('#fSubmit').disabled = true;
   try{ await API.addSignups(items); toast(`報名成功！共 ${items.length} 筆 🎉`); document.querySelectorAll('#fPicks input:checked').forEach(i => { i.checked = false; i.parentNode.classList.remove('on'); }); $('#fNote').value = ''; setTimeout(() => $('#cMine').scrollIntoView({ behavior:'smooth' }), 300); }
-  catch(e){ toast('報名失敗：' + (e.message || e)); }
+  catch(e){ toast(regState(c) === 'soon' || /permission/i.test(e.message || '') ? '報名失敗：可能還沒到開放時間或已暫停報名，請稍後再試' : '報名失敗：' + (e.message || e)); }
   $('#fSubmit').disabled = false;
 }
 
 function mineCard(c){
   if(!S.user) return '';
-  const mine = (S.signups[c.id] || []).filter(x => x.uid === S.user.uid && !x.cancelled && x.note !== '主揪代報');
+  const mine = live(c.id).filter(x => x.uid === S.user.uid && !x.cancelled && x.note !== '主揪代報');
   if(!mine.length) return '';
   const ss = sortedSessions(c), byS = id => ss.find(s => s.id === id) || { date:'1970-01-01', start:'', end:'', id };
   mine.sort((a, b) => (byS(a.sessionId).date + byS(a.sessionId).start).localeCompare(byS(b.sessionId).date + byS(b.sessionId).start));
@@ -456,14 +483,14 @@ function mineCard(c){
     return `<li><span class="grow"><b>${esc(sessLabel(s))}</b><br>${esc(x.childName)} ${st.k === 'ok' ? '<span class="tag ok">正取 ✅</span>' : `<span class="tag wait">備取第 ${st.pos} 位</span>`}
       ${st.k === 'ok' ? (p.status === 'confirmed' ? '<span class="tag ok">已收款</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳費</span>') : ''}
       ${fee ? `<span class="meta">${money(fee)} 元</span>` : ''}</span>
-      ${s.date >= today() ? `<button class="btn sm white" onclick="cancelMine('${c.id}','${x.id}')">取消</button>` : ''}</li>`; }).join('');
+      ${s.date >= today() ? `<button class="btn sm white" onclick="cancelMine(${jsq(c.id)},${jsq(x.id)})">取消</button>` : ''}</li>`; }).join('');
   const pays = okIds.map(id => payOf(c, id)), allPaid = okIds.length && pays.every(p => p.status === 'confirmed'), reported = pays.find(p => p.status === 'reported');
   return `<div class="card" style="background:var(--soft-mint)"><h2>🧸 我的報名</h2><ul class="list">${rows}</ul>
     ${okIds.length ? `<hr class="sep"><div class="row"><b class="grow">正取應繳合計</b><b style="font-size:20px">${money(total)} 元</b></div>
     <div class="meta">${c.feeMode === 'fixed' ? '' : '費用會依正取人數均分，人數有變動時金額會自動更新。'}</div>
     ${c.payInfo ? `<div class="info">🏦 ${esc(c.payInfo)}${c.payDeadline ? `\n⏳ ${esc(c.payDeadline)}` : ''}</div>` : ''}
     ${allPaid ? '<div style="margin-top:10px;font-weight:900">✅ 主揪已確認收款，謝謝！</div>' :
-      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：12345" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay('${c.id}')">${reported ? '更新' : '回報'}</button></div>
+      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：00000" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay(${jsq(c.id)})">${reported ? '更新' : '回報'}</button></div>
        ${reported ? '<div class="meta">已回報，等主揪確認中 🙏</div>' : ''}`}` : '<div class="meta" style="margin-top:8px">目前都在備取，輪到你遞補時這裡會變成「正取」，到時再繳費就好。</div>'}</div>`;
 }
 async function cancelMine(cid, id){
@@ -472,7 +499,7 @@ async function cancelMine(cid, id){
 }
 async function reportPay(cid){
   const c = getCourse(cid), note = $('#payNote').value.trim(); if(!note) return toast('請填末五碼');
-  const ids = (S.signups[cid] || []).filter(x => x.uid === S.user.uid && !x.cancelled && statusOf(c, x).k === 'ok' && payOf(c, x.id).status !== 'confirmed').map(x => x.id);
+  const ids = live(cid).filter(x => x.uid === S.user.uid && !x.cancelled && statusOf(c, x).k === 'ok' && payOf(c, x.id).status !== 'confirmed').map(x => x.id);
   try{ await API.setPays(ids, { status:'reported', note }, cid); toast('已回報，謝謝！'); }catch(e){ toast('回報失敗：' + (e.message || e)); }
 }
 
@@ -481,36 +508,54 @@ function adminCourseCard(c){
   const ss = sortedSessions(c), bill = billing(c), paid = bill.filter(g => g.status === 'confirmed').length;
   return `<div class="card" style="background:var(--soft-purple)"><h2>🔑 主揪工具</h2>
     <div class="btns">
-      <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse('${c.id}')))">📣 開課公告</button>
-      <button class="btn blue" onclick="showCopy('報名結果', txtResult(getCourse('${c.id}')))">📋 報名結果</button>
-      <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse('${c.id}')))">💰 催繳訊息</button>
-      <button class="btn yellow" onclick="copyText(link(getCourse('${c.id}'))).then(()=>toast('已複製報名連結'))">🔗 報名連結</button>
+      <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse(${jsq(c.id)})))">📣 開課公告</button>
+      <button class="btn blue" onclick="showCopy('報名結果', txtResult(getCourse(${jsq(c.id)})))">📋 報名結果</button>
+      <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse(${jsq(c.id)})))">💰 催繳訊息</button>
+      <button class="btn yellow" onclick="copyText(link(getCourse(${jsq(c.id)}))).then(()=>toast('已複製報名連結'))">🔗 報名連結</button>
     </div>
     <div class="btns">
-      <button class="btn white" onclick="toggleOpen('${c.id}')">${c.open ? '⏸ 暫停報名' : '▶️ 開放報名'}</button>
+      <button class="btn white" onclick="toggleOpen(${jsq(c.id)})">${c.open ? '⏸ 暫停報名' : '▶️ 開放報名'}</button>
       <button class="btn white" onclick="go('edit=${c.id}')">✏️ 編輯課程</button>
       <button class="btn white" onclick="go('edit=new&from=${c.id}')">📄 複製成新課程</button>
+      <button class="btn white" style="color:#c33" onclick="clearSignups(${jsq(c.id)})">🗑 清空報名名單</button>
+      ${lastCleared(c) ? `<button class="btn yellow" onclick="restoreSignups(${jsq(c.id)})">↩️ 復原清空的 ${lastCleared(c).length} 筆</button>` : ''}
     </div></div>
 
     <div class="card"><h2>💰 繳費追蹤 <span class="tag ok">已收 ${paid}/${bill.length} 位家長</span></h2>
     <div class="meta">只計算正取。家長回報末五碼後會顯示「已回報」，你對完帳按「確認收款」。</div>
     ${bill.map((g, i) => `<div class="paygrp ${g.status === 'confirmed' ? 'done' : ''}"><div class="row"><b class="grow">${esc(g.name)}</b><b>${money(g.total)} 元</b></div>
-      ${g.lineId ? `<div class="meta">LINE ID：<b>${esc(g.lineId)}</b> <button class="icon" onclick="copyText('${esc(g.lineId).replace(/'/g, '')}').then(()=>toast('已複製 LINE ID'))">📋</button></div>` : ''}<div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
-      <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid('${c.id}',${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid('${c.id}',${i},'unpaid')">改回未繳</button>`}
-      <button class="btn sm white" onclick="showCopy('個別私訊：${esc(g.name).replace(/'/g, '')}', txtPayOne(getCourse('${c.id}'), billing(getCourse('${c.id}'))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
+      ${g.lineId ? `<div class="meta">LINE ID：<b>${esc(g.lineId)}</b> <button class="icon" onclick="copyText(billing(getCourse(${jsq(c.id)}))[${i}].lineId).then(()=>toast('已複製 LINE ID'))">📋</button></div>` : ''}<div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
+      <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid(${jsq(c.id)},${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid(${jsq(c.id)},${i},'unpaid')">改回未繳</button>`}
+      <button class="btn sm white" onclick="showCopy('個別私訊', txtPayOne(getCourse(${jsq(c.id)}), billing(getCourse(${jsq(c.id)}))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
 
     <div class="card"><h2>🗂 各場次管理</h2>
     ${ss.map(s => { const r = roster(c, s.id);
       const li = (x, i, w) => { const p = payOf(c, x.id);
         return `<li class="${x.cancelled ? 'x' : ''}"><span class="no ${w ? 'w' : ''}">${x.cancelled ? '✕' : i + 1}</span><span class="grow">${esc(x.parentName)}・<b>${esc(x.childName)}</b> <span class="meta">${esc(x.childAge || '')}${p.lineId ? '・LINE ' + esc(p.lineId) : ''}${x.companions > 1 ? `・陪同 ${x.companions}` : ''}${x.note ? '・' + esc(x.note) : ''}</span>
           ${!x.cancelled && !w ? (p.status === 'confirmed' ? '<span class="tag ok">已收</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳</span>') : ''}</span>
-          ${x.cancelled ? `<button class="icon" onclick="adminCancel('${x.id}',false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup('${c.id}','${s.id}','${x.id}',-1)">↑</button><button class="icon" title="往後" onclick="moveSignup('${c.id}','${s.id}','${x.id}',1)">↓</button><button class="icon" onclick="adminCancel('${x.id}',true)">取消</button>`}</li>`; };
+          ${x.cancelled ? `<button class="icon" onclick="adminCancel(${jsq(x.id)},false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup(${jsq(c.id)},${jsq(s.id)},${jsq(x.id)},-1)">↑</button><button class="icon" title="往後" onclick="moveSignup(${jsq(c.id)},${jsq(s.id)},${jsq(x.id)},1)">↓</button><button class="icon" onclick="adminCancel(${jsq(x.id)},true)">取消</button>`}</li>`; };
       return `<div class="sess"><div class="hd">${esc(sessLabel(s))} <span class="tag ${r.ok.length >= r.cap ? 'pay' : 'ok'}">${r.ok.length}/${r.cap}</span>${r.wait.length ? `<span class="tag wait">備取 ${r.wait.length}</span>` : ''}</div>
         <div class="meta" style="margin-top:6px">正取</div><ul class="list">${r.ok.map((x, i) => li(x, i, false)).join('') || '<li class="empty">沒有人</li>'}</ul>
         ${r.wait.length ? `<div class="meta" style="margin-top:6px">備取</div><ul class="list">${r.wait.map((x, i) => li(x, i, true)).join('')}</ul>` : ''}
         ${r.cancelled.length ? `<details><summary class="meta">已取消 ${r.cancelled.length} 筆</summary><ul class="list">${r.cancelled.map((x, i) => li(x, i, false)).join('')}</ul></details>` : ''}
-        <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse('${c.id}'), '${s.date}'))">📢 這天的上課提醒</button>
-        <button class="btn sm white" onclick="manualAdd('${c.id}','${s.id}')">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
+        <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse(${jsq(c.id)}), ${jsq(s.date)}))">📢 這天的上課提醒</button>
+        <button class="btn sm white" onclick="manualAdd(${jsq(c.id)},${jsq(s.id)})">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
+}
+function lastCleared(c){
+  const cl = (S.signups[c.id] || []).filter(x => x.cleared); if(!cl.length) return null;
+  const tag = cl.map(x => x.cleared).sort().pop(); return cl.filter(x => x.cleared === tag);
+}
+async function clearSignups(cid){
+  const c = getCourse(cid), ids = live(cid).map(x => x.id);
+  if(!ids.length) return toast('目前沒有報名資料');
+  if(!confirm(`確定要清空「${c.title}」的 ${ids.length} 筆報名嗎？\n清空後名單會變空白，但資料先收起來，之後可以按「復原」拿回來。`)) return;
+  try{ await API.setCleared(ids, 't' + Date.now()); toast(`已清空 ${ids.length} 筆，可按「復原」拿回來`); }catch(e){ toast('清空失敗：' + e.message); }
+}
+async function restoreSignups(cid){
+  const c = getCourse(cid), back = lastCleared(c); if(!back) return;
+  const now = live(cid).filter(x => !x.cancelled).length;
+  if(!confirm(`要把上次清空的 ${back.length} 筆報名復原嗎？` + (now ? `\n注意：復原的人會回到原本的順位，排在目前 ${now} 筆新報名的前面。` : ''))) return;
+  try{ await API.setCleared(back.map(x => x.id), null); toast(`已復原 ${back.length} 筆`); }catch(e){ toast('復原失敗：' + e.message); }
 }
 async function toggleOpen(cid){ const c = getCourse(cid); try{ await API.saveCourse(cid, { open:!c.open }); toast(c.open ? '已暫停報名' : '已開放報名'); }catch(e){ toast('失敗：' + e.message); } }
 async function markPaid(cid, i, status){ const c = getCourse(cid), g = billing(c)[i]; try{ await API.setPays(g.items.map(it => it.x.id), { status }, cid); toast(status === 'confirmed' ? `已確認 ${g.name} 收款 ✅` : '已改回未繳'); }catch(e){ toast('失敗：' + e.message); } }
@@ -523,12 +568,12 @@ async function moveSignup(cid, sid, id, dir){
 function manualAdd(cid, sid){
   const c = getCourse(cid), ss = sortedSessions(c);
   openModal(`<h2>＋ 代家長報名</h2><div class="meta">幫在 LINE 留言報名的家長登記，順位排在目前最後面。</div>
-    <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
+    <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" type="number" inputmode="decimal" min="0" max="12" step="0.5" placeholder="幾歲"><span></span></div>
     <label>場次（可複選）</label>${ss.filter(s => s.date >= today()).map(s => `<label class="pick ${s.id === sid ? 'on' : ''}"><input type="checkbox" class="mS" value="${s.id}" ${s.id === sid ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${esc(sessLabel(s))}</span></label>`).join('')}
-    <div class="btns"><button class="btn big" onclick="doManualAdd('${cid}')">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
+    <div class="btns"><button class="btn big" onclick="doManualAdd(${jsq(cid)})">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
 }
 async function doManualAdd(cid){
-  const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
+  const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = ageStr($('#mA').value), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
   if(!p || !k || !sids.length) return toast('請填家長、寶貝名字並選場次');
   try{ await API.addSignups(sids.map(sid => ({ courseId:cid, sessionId:sid, parentName:p, childName:k, childAge:a, companions:1, note:'主揪代報', lineId }))); closeModal(); toast('已登記'); }catch(e){ toast('失敗：' + e.message); }
 }
@@ -550,7 +595,7 @@ function adminView(){
   return `<div class="card remind"><h2>⏰ 上課提醒（今天～後天）</h2>
     ${rem.map(({ c, d, ss }) => `<div class="sess"><div class="hd"><span class="tag mine">${dayName(d)}</span>${esc(fmtDate(d))}</div>
       <div class="meta">${esc(c.title)}</div>${ss.map(s => { const r = roster(c, s.id); return `<div class="meta">${s.start}–${s.end}${s.label ? ' ' + esc(s.label) : ''}・正取 ${r.ok.length}/${r.cap}${r.wait.length ? `・備取 ${r.wait.length}` : ''}</div>`; }).join('')}
-      <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse('${c.id}'), '${d}'))">📢 複製上課提醒</button></div></div>`).join('') || '<div class="empty">最近兩天沒有課，放鬆一下 ☕</div>'}</div>
+      <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse(${jsq(c.id)}), ${jsq(d)}))">📢 複製上課提醒</button></div></div>`).join('') || '<div class="empty">最近兩天沒有課，放鬆一下 ☕</div>'}</div>
     <button class="btn big" style="margin-bottom:18px" onclick="go('edit=new')">＋ 開新課程</button>
     ${S.courses.map(courseRow).join('')}
     <div class="card"><div class="meta">${S.demo ? '試玩模式' : '已登入：' + esc(S.user.email || '')}</div><div class="btns"><button class="btn white sm" onclick="API.signOut()">登出主揪</button></div></div>`;
@@ -567,9 +612,9 @@ function editView(r){
   const def = { title:'', teacher:'', location:'', age:'', capacity:8, teacherFee:2000, venueFee:300, fixedFee:300 };
   const val = k => esc(base ? (base[k] ?? def[k]) : def[k]);
   return `<div class="card"><h2>${r.id === 'new' ? (copy ? '📄 複製成新課程' : '＋ 開新課程') : '✏️ 編輯課程'}</h2>
-    <label>課程名稱</label><input id="eTitle" maxlength="60" value="${val('title')}" placeholder="例如：芒果老師🥭 11、12月週六體能課">
+    <label>課程名稱</label><input id="eTitle" maxlength="60" value="${val('title')}" placeholder="例如：🎵 12月週六親子律動課">
     <div class="row"><div class="grow"><label>授課老師</label><input id="eTeacher" maxlength="30" value="${val('teacher')}"></div><div class="grow"><label>地點</label><input id="eLoc" maxlength="60" value="${val('location')}"></div></div>
-    <div class="row"><div class="grow"><label>寶貝年齡</label><input id="eAge" maxlength="40" value="${val('age')}" placeholder="1.5y–5y"></div><div style="width:100px"><label>每場名額</label><input id="eCap" type="number" min="1" max="50" value="${val('capacity')}"></div></div>
+    <div class="row"><div class="grow"><label>寶貝年齡</label><input id="eAge" maxlength="40" value="${val('age')}" placeholder="例如：1.5～5 歲"></div><div style="width:100px"><label>每場名額</label><input id="eCap" type="number" min="1" max="50" value="${val('capacity')}"></div></div>
     <label>收費方式</label><select id="eMode" onchange="document.getElementById('eSplit').hidden=this.value!=='split';document.getElementById('eFixed').hidden=this.value!=='fixed'">
       <option value="split" ${(base?.feeMode || 'split') === 'split' ? 'selected' : ''}>老師費＋場地費，由正取人數均分</option><option value="fixed" ${base?.feeMode === 'fixed' ? 'selected' : ''}>每人固定金額</option></select>
     <div id="eSplit" class="row" ${base?.feeMode === 'fixed' ? 'hidden' : ''}><div class="grow"><label>老師費／堂</label><input id="eTF" type="number" min="0" value="${val('teacherFee')}"></div><div class="grow"><label>場地費／堂</label><input id="eVF" type="number" min="0" value="${val('venueFee')}"></div></div>
@@ -577,7 +622,7 @@ function editView(r){
     <label>匯款資訊（家長在「我的報名」看得到）</label><input id="ePay" maxlength="120" value="${v('payInfo')}" placeholder="銀行代碼、帳號、戶名">
     <label>繳費期限</label><input id="eDeadline" maxlength="40" value="${v('payDeadline')}" placeholder="例如：11/1 前，或 確認正取後 3 天內">
     <label>注意事項／說明（放在開課公告裡）</label><textarea id="eNotes" maxlength="1500">${v('notes')}</textarea>
-    <label>上課提醒補充說明（教室怎麼走、要帶什麼，會接在上課提醒的地點下面）</label><textarea id="eRemind" maxlength="800" placeholder="例如：&#10;👉 多功能教室（彩虹島幼兒園對面）&#10;➡️ 一樓大門進來後右邊電梯上 2 樓&#10;➡️ 記得攜帶水壺、小手帕">${v('remindNotes')}</textarea></div>
+    <label>上課提醒補充說明（教室怎麼走、要帶什麼，會接在上課提醒的地點下面）</label><textarea id="eRemind" maxlength="800" placeholder="例如：&#10;👉 活動中心 3 樓大教室&#10;➡️ 一樓大門進來搭電梯到 3 樓&#10;➡️ 記得帶水壺和小毛巾">${v('remindNotes')}</textarea></div>
 
     <div class="card"><h2>📅 場次</h2>
     <div class="meta">先設定時段，再加日期，按「產生場次」就會把每個日期 × 每個時段排好。不要的場次可以單獨刪掉。</div>
@@ -586,9 +631,11 @@ function editView(r){
     <div class="btns"><button class="btn mint" onclick="genSessions()">⬇️ 產生場次</button></div>
     <hr class="sep"><b>目前場次（<span id="eCount">0</span>）</b><ul class="list" id="eSess"></ul></div>
 
-    <div class="card"><label class="row" style="margin:0"><input type="checkbox" id="eOpen" ${!base || copy || base.open ? 'checked' : ''}> 存檔後馬上開放報名</label>
-    <div class="btns"><button class="btn big" onclick="saveCourse('${r.id}')">💾 儲存課程</button></div>
-    <div class="btns"><button class="btn white" onclick="history.back()">取消</button>${r.id !== 'new' ? `<button class="btn white" style="margin-left:auto;color:#c33" onclick="delCourse('${r.id}')">刪除課程</button>` : ''}</div></div>`;
+    <div class="card"><label class="row" style="margin:0"><input type="checkbox" id="eOpen" ${!base || copy || base.open ? 'checked' : ''}> 開放報名</label>
+    <label>開放報名時間（選填，留空＝存檔後馬上可以報名）</label><div class="row"><input type="datetime-local" id="eOpenAt" class="grow" value="${base && !copy && openMs(base) ? (d => `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`)(new Date(openMs(base))) : ''}"><button class="btn sm white" onclick="$('#eOpenAt').value=''">清除</button></div>
+    <div class="meta">例如設定今天 22:00，家長在那之前只會看到倒數，時間到才能送出（資料庫也會擋）。</div>
+    <div class="btns"><button class="btn big" onclick="saveCourse(${jsq(r.id)})">💾 儲存課程</button></div>
+    <div class="btns"><button class="btn white" onclick="history.back()">取消</button>${r.id !== 'new' ? `<button class="btn white" style="margin-left:auto;color:#c33" onclick="delCourse(${jsq(r.id)})">刪除課程</button>` : ''}</div></div>`;
 }
 function bindEdit(){ drawEd(); }
 function drawEd(){
@@ -606,7 +653,7 @@ function genSessions(){
 }
 function delSess(i){
   const s = ED.sessions[i], r = route(), c = r.id !== 'new' && getCourse(r.id);
-  const cnt = c ? (S.signups[c.id] || []).filter(x => x.sessionId === s.id && !x.cancelled).length : 0;
+  const cnt = c ? live(c.id).filter(x => x.sessionId === s.id && !x.cancelled).length : 0;
   if(cnt && !confirm(`這場已有 ${cnt} 人報名，刪掉後他們會看不到這場，確定嗎？`)) return;
   ED.sessions.splice(i, 1); drawEd();
 }
@@ -614,7 +661,7 @@ async function saveCourse(id){
   const num = (sel, d) => { const n = Number($(sel).value); return isNaN(n) ? d : n; };
   const data = { title:$('#eTitle').value.trim(), teacher:$('#eTeacher').value.trim(), location:$('#eLoc').value.trim(), age:$('#eAge').value.trim(),
     capacity:Math.max(1, num('#eCap', 8)), feeMode:$('#eMode').value, teacherFee:num('#eTF', 0), venueFee:num('#eVF', 0), fixedFee:num('#eFF', 0),
-    payInfo:$('#ePay').value.trim(), payDeadline:$('#eDeadline').value.trim(), notes:$('#eNotes').value.trim(), remindNotes:$('#eRemind').value.trim(), open:$('#eOpen').checked, sessions:ED.sessions };
+    payInfo:$('#ePay').value.trim(), payDeadline:$('#eDeadline').value.trim(), notes:$('#eNotes').value.trim(), remindNotes:$('#eRemind').value.trim(), open:$('#eOpen').checked, openAt:$('#eOpenAt').value ? new Date($('#eOpenAt').value).getTime() : null, sessions:ED.sessions };
   if(!data.title) return toast('請填課程名稱'); if(!data.sessions.length) return toast('請至少產生一個場次');
   try{ const nid = await API.saveCourse(id === 'new' ? null : id, data); toast('已儲存 🎉'); go('c=' + nid); }catch(e){ toast('儲存失敗：' + e.message); }
 }
