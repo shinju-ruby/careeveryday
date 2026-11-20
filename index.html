@@ -221,7 +221,20 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .dash .span2{grid-column:1/-1}
 .dash > .card{margin-top:40px}
 .dash > .card.peek{margin-top:40px}
-nav button{padding:6px 13px;font-size:14.5px}
+nav#nav button{padding:5px 14px;font-size:14px;display:flex;align-items:center;gap:6px}
+nav#nav button i{font-style:normal;font-size:20px;line-height:1}
+nav#nav button span{display:none}
+nav#nav button.on span{display:inline}
+.bnav button i{font-style:normal;display:block}
+/* hero ideas */
+.ideabox{background:rgba(255,255,255,.18);border:2px solid var(--ink);border-radius:16px;padding:10px;margin-top:12px;max-width:640px}
+.ideabox input{flex:1;min-width:0;border-radius:999px}
+.mic{width:52px;height:52px;flex:none;border-radius:50%;border:3px solid var(--ink);background:#fff;font-size:24px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.mic.on{background:#E2401C;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(226,64,28,.7)}100%{box-shadow:0 0 0 16px rgba(226,64,28,0)}}
+.ichips{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.ichip{background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:4px 10px;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ilink{color:#fff;font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;background:none;border:0;padding:4px 0}
 .w h2{justify-content:space-between}
 .w h2 .act{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--ink);background:var(--soft-yellow);border-radius:999px;padding:2px 12px;cursor:pointer;color:var(--ink)}
 .mini{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1.5px dashed #E6DFCC;font-size:14.5px}
@@ -276,7 +289,8 @@ nav button{padding:6px 13px;font-size:14.5px}
   .logo .kr{font-size:24px}
   .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;background:#fff;border-top:3px solid var(--ink);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
   .bnav button{flex:1;border:0;background:transparent;font:inherit;font-size:22px;line-height:1.1;cursor:pointer;color:var(--ink);padding:4px 0;border-radius:12px}
-  .bnav button span{display:block;font-size:11.5px;font-weight:700}
+  .bnav button span{display:none}
+  .bnav button.on span{display:block;font-size:11px;font-weight:700}
   .bnav button.on{background:var(--yellow)}
   main{padding:14px 0 110px}
   .card{padding:14px;border-radius:16px;margin-bottom:14px;box-shadow:3px 3px 0 var(--ink)}
@@ -347,16 +361,13 @@ nav button{padding:6px 13px;font-size:14.5px}
       <div class="row" style="gap:6px"><span class="today-label" id="syncBadge" style="background:#fff;display:none"></span><span class="today-label" id="todayLabel"></span></div>
     </div>
     <nav id="nav">
-      <button data-tab="home" class="on">🏠 主頁</button>
-      <button data-tab="calendar">📅 行事曆</button>
-      <button data-tab="todos">✅ 待辦</button>
-      <button data-tab="habits">💧 習慣</button>
-      <button data-tab="trips">🏕️ 旅行露營</button>
-      <button data-tab="gantt">📊 甘特圖</button>
-      <button data-tab="events">🗓️ 行程列表</button>
-      <button data-tab="diary">📔 日記</button>
-      <button data-tab="ideas">💡 靈感</button>
-      <button data-tab="settings">⚙️ 設定</button>
+      <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
+      <button data-tab="calendar" title="行事曆" aria-label="行事曆"><i>📅</i><span>行事曆</span></button>
+      <button data-tab="todos" title="待辦" aria-label="待辦"><i>✅</i><span>待辦</span></button>
+      <button data-tab="habits" title="習慣" aria-label="習慣"><i>💧</i><span>習慣</span></button>
+      <button data-tab="trips" title="旅行" aria-label="旅行"><i>🏕️</i><span>旅行</span></button>
+      <button data-tab="diary" title="日記" aria-label="日記"><i>📔</i><span>日記</span></button>
+      <button data-tab="settings" title="設定" aria-label="設定"><i>⚙️</i><span>設定</span></button>
     </nav>
   </div>
 </header>
@@ -373,6 +384,10 @@ nav button{padding:6px 13px;font-size:14.5px}
       <h2 id="greet">좋은 아침!</h2>
       <p id="heroLine"></p>
       <span class="cheer" id="cheer" title="點一下換一句"></span>
+      <div class="ideabox">
+        <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="mic" id="micBtn" title="用說的記靈感" aria-label="語音記靈感">🎤</button><input type="text" id="heroIdea" placeholder="💡 想到什麼？按麥克風用說的"><button class="btn white" id="heroIdeaSave" style="padding:7px 14px">記</button></div>
+        <div class="ichips" id="heroIdeas"></div>
+      </div>
       <div class="cdstrip" id="cdStrip"></div>
       <div class="hero-pets"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/tabby.svg" alt=""><img src="icons/pets/shiba.svg" alt=""></div>
     </div>
@@ -404,17 +419,6 @@ nav button{padding:6px 13px;font-size:14.5px}
       <div class="ask-answer" id="askAnswer"></div>
     </div>
 
-    <div class="card peek w span2"><img class="pet left" src="icons/pets/tabby.svg" alt="">
-      <h2>⚡ 快速記一筆</h2>
-      <div class="row">
-        <input type="text" id="quickInput" placeholder="想到什麼就打，按 Enter 存起來">
-        <select id="quickType">
-          <option value="idea">💡 靈感</option>
-          <option value="todo">✅ 今天的待辦</option>
-        </select>
-        <button class="btn mint" id="quickBtn">記下</button>
-      </div>
-    </div>
     </div>
   </section>
 
@@ -423,9 +427,10 @@ nav button{padding:6px 13px;font-size:14.5px}
     <div class="card peek"><img class="pet left" src="icons/pets/shiba.svg" alt="">
       <div class="row between" style="margin-bottom:4px">
         <div class="seg" id="viewSeg">
-          <button data-view="month">月計畫</button>
-          <button data-view="week" class="on">週計畫</button>
-          <button data-view="day">日計畫</button>
+          <button data-view="month">月</button>
+          <button data-view="week" class="on">週</button>
+          <button data-view="day">日</button>
+          <button data-view="list">清單</button>
         </div>
         <div class="navbtns">
           <button class="round" id="prevP">‹</button>
@@ -437,12 +442,24 @@ nav button{padding:6px 13px;font-size:14.5px}
       </div>
       <div id="planView"></div>
     </div>
+    <div class="card peek" id="icsCard"><img class="pet right" src="icons/pets/calico.svg" alt="">
+      <h2>📥 匯入 Google 日曆</h2>
+      <ol class="meta" style="padding-left:20px;margin:0 0 10px">
+        <li>用<b>電腦</b>打開 Google 日曆 → 右上角齒輪「設定」→ 左邊「匯入和匯出」→ 按「匯出」，會下載一個 .zip 檔</li>
+        <li>回到這裡，按下面的按鈕選那個 .zip 檔（或解壓縮後的 .ics 檔）</li>
+      </ol>
+      <div class="row"><span class="meta">匯入的行程</span><select id="icsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10">提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option></select>
+        <label class="btn blue">選擇檔案<input type="file" id="icsFile" accept=".ics,.zip,text/calendar,application/zip" multiple class="hidden"></label></div>
+      <div id="icsResult" style="margin-top:10px;font-size:14px"></div>
+      <p class="meta" style="margin-bottom:0">會匯入過去一年和未來的行程，重複行程也會保留。重複匯入同一份檔案不會變成兩份。</p>
+    </div>
 
   </section>
 
   <!-- 待辦 -->
   <section data-page="todos" class="hidden">
-    <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
+    <div class="row" style="justify-content:center;margin-bottom:6px"><div class="seg" id="tdMode"><button data-m="list" class="on">📋 清單</button><button data-m="gantt">📊 甘特圖</button></div></div>
+    <div class="card peek" id="tdFormCard"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <h2>✨ 新增待辦</h2>
       <input type="text" id="tdTitle" placeholder="要完成的事，例如：完成期末報告" style="width:100%">
       <div class="formgrid">
@@ -463,7 +480,7 @@ nav button{padding:6px 13px;font-size:14.5px}
       </div>
       <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="tdAdd">新增待辦</button></div>
     </div>
-    <div class="card peek"><img class="pet left" src="icons/pets/shiba.svg" alt="">
+    <div class="card" id="tdListCard" peek"><img class="pet left" src="icons/pets/shiba.svg" alt="">
       <div class="row between" style="margin-bottom:12px">
         <h2 style="margin:0">📋 待辦清單</h2>
         <select id="tdFilter">
@@ -477,11 +494,7 @@ nav button{padding:6px 13px;font-size:14.5px}
       <div class="tagbar" id="tdTagFilter" style="margin-bottom:12px"></div>
       <div id="tdList"></div>
     </div>
-  </section>
-
-  <!-- 甘特圖 -->
-  <section data-page="gantt" class="hidden">
-    <div class="card peek"><img class="pet right" src="icons/pets/tabby.svg" alt="">
+    <div class="card peek hidden" id="ganttCard"><img class="pet right" src="icons/pets/tabby.svg" alt="">
       <div class="row between">
         <h2 style="margin:0">📊 甘特圖</h2>
         <div class="row">
@@ -508,47 +521,6 @@ nav button{padding:6px 13px;font-size:14.5px}
         <span style="color:var(--orange);font-weight:700">┆ 今天</span>
       </div>
       <p class="meta" style="margin-bottom:0">小提示：長條從「開始日」畫到「期限」，沒填開始日就從建立那天開始。點長條可以展開它的步驟。</p>
-    </div>
-  </section>
-
-  <!-- 行程 -->
-  <section data-page="events" class="hidden">
-    <div class="card peek"><img class="pet right" src="icons/pets/shiba.svg" alt="">
-      <h2>📅 新增行程</h2>
-      <input type="text" id="evTitle" placeholder="行程名稱，例如：和小明吃午餐" style="width:100%;margin-bottom:8px">
-      <div class="row">
-        <input type="date" id="evDate">
-        <input type="time" id="evTime">
-        <select id="evRemind">
-          <option value="-1">不提醒</option>
-          <option value="0">準時提醒</option>
-          <option value="10" selected>提前 10 分鐘</option>
-          <option value="30">提前 30 分鐘</option>
-          <option value="60">提前 1 小時</option>
-          <option value="1440">提前 1 天</option>
-        </select>
-        <button class="btn blue" id="evAdd">新增</button>
-      </div>
-      <div class="row" style="margin-top:8px"><span class="meta">🔁 重複</span><select id="evRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta" id="evUntilWrap" style="display:none">到 <input type="date" id="evUntil"> 為止（可不填）</span></div>
-      <input type="text" id="evNote" placeholder="備註（選填）" style="width:100%;margin-top:8px">
-    </div>
-    <div class="card peek" id="icsCard"><img class="pet right" src="icons/pets/calico.svg" alt="">
-      <h2>📥 匯入 Google 日曆</h2>
-      <ol class="meta" style="padding-left:20px;margin:0 0 10px">
-        <li>用<b>電腦</b>打開 Google 日曆 → 右上角齒輪「設定」→ 左邊「匯入和匯出」→ 按「匯出」，會下載一個 .zip 檔</li>
-        <li>回到這裡，按下面的按鈕選那個 .zip 檔（或解壓縮後的 .ics 檔）</li>
-      </ol>
-      <div class="row"><span class="meta">匯入的行程</span><select id="icsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10">提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option></select>
-        <label class="btn blue">選擇檔案<input type="file" id="icsFile" accept=".ics,.zip,text/calendar,application/zip" multiple class="hidden"></label></div>
-      <div id="icsResult" style="margin-top:10px;font-size:14px"></div>
-      <p class="meta" style="margin-bottom:0">會匯入過去一年和未來的行程，重複行程也會保留。重複匯入同一份檔案不會變成兩份。</p>
-    </div>
-    <div class="card">
-      <div class="row between">
-        <h2 style="margin:0">接下來的行程</h2>
-        <label class="meta" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="evShowPast"> 顯示過去的</label>
-      </div>
-      <div id="evList"></div>
     </div>
   </section>
 
@@ -702,7 +674,7 @@ nav button{padding:6px 13px;font-size:14.5px}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 重複行程版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 整合版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -727,27 +699,18 @@ nav button{padding:6px 13px;font-size:14.5px}
   <div id="dsList" style="margin:8px 0"></div>
   <div class="seg" id="dsKind"><button data-k="ev" class="on">📅 行程</button><button data-k="td">✅ 待辦</button></div>
   <input type="text" id="dsText" placeholder="要做什麼？" style="width:100%">
-  <div class="row" id="dsEvOpts" style="margin-top:8px"><input type="time" id="dsTime"><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select></div>
+  <div class="row" id="dsEvOpts" style="margin-top:8px"><input type="time" id="dsTime"><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
   <div class="row hidden" id="dsTdOpts" style="margin-top:8px"><select id="dsPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select><select id="dsTag"></select></div>
   <div class="row between" style="margin-top:12px"><button class="btn white" id="dsGoDay">看這天的日計畫</button><button class="btn" id="dsAdd">新增</button></div>
 </div></div>
-<div class="modal" id="moreSheet"><div class="card">
-  <div class="row between" style="margin-bottom:12px"><h2 style="margin:0">更多功能</h2><button class="icon" data-act="closeMore" style="font-size:20px">✕</button></div>
-  <div class="moregrid">
-    <button data-act="tab" data-tab="habits"><span>💧</span>習慣</button>
-    <button data-act="tab" data-tab="diary"><span>📔</span>日記記帳</button>
-    <button data-act="tab" data-tab="gantt"><span>📊</span>甘特圖</button>
-    <button data-act="tab" data-tab="events"><span>🗓️</span>行程列表</button>
-    <button data-act="tab" data-tab="ideas"><span>💡</span>靈感</button>
-    <button data-act="tab" data-tab="settings"><span>⚙️</span>設定</button>
-  </div>
-</div></div>
 <nav class="bnav" id="bnav">
-  <button data-tab="home" class="on">🏠<span>主頁</span></button>
-  <button data-tab="calendar">📅<span>行事曆</span></button>
-  <button data-tab="todos">✅<span>待辦</span></button>
-  <button data-tab="trips">🏕️<span>旅行</span></button>
-  <button data-tab="more">☰<span>更多</span></button>
+      <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
+      <button data-tab="calendar" title="行事曆" aria-label="行事曆"><i>📅</i><span>行事曆</span></button>
+      <button data-tab="todos" title="待辦" aria-label="待辦"><i>✅</i><span>待辦</span></button>
+      <button data-tab="habits" title="習慣" aria-label="習慣"><i>💧</i><span>習慣</span></button>
+      <button data-tab="trips" title="旅行" aria-label="旅行"><i>🏕️</i><span>旅行</span></button>
+      <button data-tab="diary" title="日記" aria-label="日記"><i>📔</i><span>日記</span></button>
+      <button data-tab="settings" title="設定" aria-label="設定"><i>⚙️</i><span>設定</span></button>
 </nav>
 <div class="modal" id="reportModal"><div class="card peek" style="margin-top:50px"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
 
@@ -995,17 +958,14 @@ function renderTagBars(){
 
 // ---------- 分頁 ----------
 function goTab(name){
-  if(name==='more'){ $('#moreSheet').classList.add('on'); return; }
-  $('#moreSheet').classList.remove('on');
   $$('#nav button').forEach(x => x.classList.toggle('on', x.dataset.tab===name));
-  const main5 = ['home','calendar','todos','trips'];
-  $$('#bnav button').forEach(x => x.classList.toggle('on', x.dataset.tab===name || (x.dataset.tab==='more' && !main5.includes(name))));
+  $$('#bnav button').forEach(x => x.classList.toggle('on', x.dataset.tab===name));
   $$('section[data-page]').forEach(s => s.classList.toggle('hidden', s.dataset.page !== name));
   window.scrollTo(0,0);
 }
 $('#nav').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if(b) goTab(b.dataset.tab); });
 $('#bnav').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if(b) goTab(b.dataset.tab); });
-$('#moreSheet').addEventListener('click', e => { if(e.target.id==='moreSheet') $('#moreSheet').classList.remove('on'); });
+
 
 // ---------- 主頁：月／週／日 ----------
 let view = 'week', cursor = new Date();
@@ -1015,6 +975,7 @@ $('#prevP').onclick = () => { shift(-1); };
 $('#nextP').onclick = () => { shift(1); };
 $('#todayP').onclick = () => { cursor = new Date(); renderPlan(); };
 function shift(n){
+  if(view==='list') return;
   if(view==='month'){ cursor = new Date(cursor.getFullYear(), cursor.getMonth()+n, 1); }
   else cursor = addDays(cursor, view==='week' ? 7*n : n);
   renderPlan();
@@ -1084,7 +1045,7 @@ function renderPlan(){
     html += '</div>';
     const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=we && td.due>=ws && !(td.due>=ws && td.due<=we));
     if(active.length){ html += '<div class="subhead">🏃 本週進行中（期限在之後）</div>' + active.sort(tdSort).map(todoCard).join(''); }
-  } else {
+  } else if(view==='day'){
     const ds = ymd(cursor);
     $('#periodLabel').textContent = prettyDate(ds) + (ds===t?' 今天':'');
     html += `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn mint" data-act="openDay" data-date="${ds}" style="padding:5px 14px">＋ 在這天新增</button></div>`;
@@ -1098,7 +1059,13 @@ function renderPlan(){
     const doneThat = db.todos.filter(td => td.done && td.doneAt && ymd(new Date(td.doneAt))===ds && td.due!==ds);
     if(doneThat.length) html += '<div class="subhead">🎉 這天完成的</div>' + doneThat.map(todoCard).join('');
   }
+  if(view==='list'){
+    $('#periodLabel').textContent = '所有行程';
+    html = `<label class="meta" style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="evShowPast" ${evShowPast?'checked':''}> 也顯示過去 90 天</label><div id="evList"></div>`;
+  }
   $('#planView').innerHTML = html;
+  $('#prevP').style.visibility = $('#nextP').style.visibility = view==='list' ? 'hidden' : '';
+  if(view==='list') renderEvents();
 }
 
 // ---------- 待辦卡片 ----------
@@ -1131,6 +1098,9 @@ $('#tdAdd').onclick = () => {
   save(); toast('已新增待辦 ✅');
 };
 $('#tdFilter').onchange = renderTodos;
+$('#tdMode').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if(!b) return; const g = b.dataset.m==='gantt';
+  $$('#tdMode button').forEach(x=>x.classList.toggle('on', x===b));
+  $('#ganttCard').classList.toggle('hidden', !g); $('#tdFormCard').classList.toggle('hidden', g); $('#tdListCard').classList.toggle('hidden', g); });
 function renderTodos(){
   const f = $('#tdFilter').value, t = today(), we = weekRange(0)[1];
   if(f==='log'){ renderDoneLog(); renderTagBars(); return; }
@@ -1257,21 +1227,12 @@ function renderGantt(){
 }
 
 // ---------- 行程 ----------
-$('#evDate').value = today();
-$('#evAdd').onclick = () => {
-  const title = $('#evTitle').value.trim(), date = $('#evDate').value;
-  if(!title || !date){ toast('請填行程名稱和日期'); return; }
-  const repeat = $('#evRepeat').value, until = $('#evUntil').value;
-  if(repeat && until && until < date){ toast('結束日期不能早於開始日期'); return; }
-  db.events.push({id:uid(), title, date, time:$('#evTime').value, note:$('#evNote').value.trim(), remind:+$('#evRemind').value, notified:false, repeat, until:repeat?until:''});
-  $('#evTitle').value=''; $('#evNote').value=''; $('#evTime').value=''; $('#evRepeat').value=''; $('#evUntil').value=''; $('#evUntilWrap').style.display='none';
-  save(); toast('已新增行程 📅');
-};
-$('#evShowPast').onchange = renderEvents;
-$('#evRepeat').onchange = e => { $('#evUntilWrap').style.display = e.target.value ? '' : 'none'; };
+let evShowPast = false;
+document.addEventListener('change', e => { if(e.target.id==='evShowPast'){ evShowPast = e.target.checked; renderEvents(); } });
 function remindText(m){ return m===0?'準時':m<60?`提前 ${m} 分`:m<1440?`提前 ${m/60} 小時`:`提前 ${m/1440} 天`; }
 function renderEvents(){
-  const showPast = $('#evShowPast').checked, t = today();
+  if(!$('#evList')) return;
+  const showPast = evShowPast, t = today();
   const from = showPast ? ymd(addDays(new Date(),-90)) : t, to = ymd(addDays(new Date(),30));
   const list = eventsBetween(from, to).concat(db.events.filter(e => !e.repeat && e.date > to)).sort(evSort);
   const series = db.events.filter(e => e.repeat && (!e.until || e.until >= t));
@@ -1371,12 +1332,41 @@ function renderIdeas(){
   const list = db.ideas.filter(i => !q || i.text.toLowerCase().includes(q)).sort((a,b)=>(b.pinned-a.pinned)||b.createdAt-a.createdAt);
   $('#idList').innerHTML = list.length ? list.map(i => { const d = new Date(i.createdAt);
     return `<div class="idea ${i.pinned?'pin':''}"><div class="grow"><div style="white-space:pre-wrap">${esc(i.text)}</div>
-      <div class="meta">${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div></div>
+      <div class="meta">${i.voice?'🎤 語音 · ':''}${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div></div>
       <button class="icon" data-act="pin" data-id="${i.id}" title="${i.pinned?'取消置頂':'置頂'}">${i.pinned?'📌':'📍'}</button>
       <button class="icon" data-act="toTodo" data-id="${i.id}" title="轉成待辦">➡️</button>
       <button class="icon" data-act="delIdea" data-id="${i.id}" title="刪除">✕</button></div>`; }).join('')
     : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/calico.svg" alt="">還沒有靈感，三花在等你分享點子喔</div>';
 }
+
+// ---------- 主頁靈感＋語音 ----------
+function heroIdeaSave(text, voice){
+  text = (text||'').trim(); if(!text) return false;
+  addIdea(text); if(voice) db.ideas[db.ideas.length-1].voice = true;
+  save(); return true;
+}
+$('#heroIdeaSave').onclick = () => { if(heroIdeaSave($('#heroIdea').value)){ $('#heroIdea').value = ''; toast('靈感已存 💡'); } };
+$('#heroIdea').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) $('#heroIdeaSave').click(); });
+function renderHeroIdeas(){
+  const list = db.ideas.slice().sort((a,b)=>(b.pinned-a.pinned)||b.createdAt-a.createdAt).slice(0,3);
+  $('#heroIdeas').innerHTML = list.map(i=>`<div class="ichip">${i.pinned?'📌 ':i.voice?'🎤 ':'💡 '}${esc(i.text.split('\n')[0])}</div>`).join('')
+    + (db.ideas.length ? `<button class="ilink" data-act="tab" data-tab="ideas">看全部 ${db.ideas.length} 則靈感 ›</button>` : '');
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+function speak(t){ try{ const u = new SpeechSynthesisUtterance(t); u.lang = 'zh-TW'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+function micUi(){ $('#micBtn').classList.toggle('on', listening); $('#micBtn').textContent = listening ? '⏹' : '🎤'; $('#heroIdea').placeholder = listening ? '🎙️ 請說，說完會自動記下…' : '💡 想到什麼？按麥克風用說的'; }
+$('#micBtn').onclick = () => {
+  if(!SR){ toast('這個瀏覽器不支援語音輸入，可以點輸入框、用鍵盤上的麥克風說話 🎤'); $('#heroIdea').focus(); return; }
+  if(listening){ rec.stop(); return; }
+  let text = '';
+  rec = new SR(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onresult = e => { text = Array.from(e.results).map(r => r[0].transcript).join(''); $('#heroIdea').value = text; };
+  rec.onerror = e => { toast(e.error==='not-allowed' || e.error==='service-not-allowed' ? '請允許這個網站使用麥克風' : e.error==='no-speech' ? '沒有聽到聲音，再按一次試試' : '語音辨識失敗，再試一次'); };
+  rec.onend = () => { listening = false; micUi();
+    if(heroIdeaSave(text, true)){ $('#heroIdea').value = ''; toast('🎤 已記下：' + text); speak('記下了'); } };
+  try{ rec.start(); listening = true; micUi(); }catch(e){ toast('無法開始錄音：' + e.message); }
+};
 
 // ---------- 共用點擊 ----------
 document.addEventListener('click', e => {
@@ -1388,7 +1378,6 @@ document.addEventListener('click', e => {
     case 'openDay': openDay(date || today(), b.dataset.k); return;
     case 'openDayBg': if(e.target === b) openDay(date); return;
     case 'tab': goTab(b.dataset.tab); return;
-    case 'closeMore': $('#moreSheet').classList.remove('on'); return;
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
     case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
     case 'hEmoji': hEmoji = b.dataset.e; renderHabits(); return;
@@ -1439,16 +1428,6 @@ document.addEventListener('keydown', e => {
   const again = document.querySelector(sel); if(again) again.focus();
 });
 
-// ---------- 快速記錄 ----------
-function quickAdd(){
-  const v = $('#quickInput').value.trim(); if(!v) return;
-  if($('#quickType').value==='todo'){ db.todos.push(newTodo({title:v, due:today(), start:today()})); toast('已加到今天的待辦'); }
-  else { addIdea(v); toast('靈感已存 💡'); }
-  $('#quickInput').value=''; save();
-}
-$('#quickBtn').onclick = quickAdd;
-$('#quickInput').onkeydown = e => { if(e.key==='Enter' && !e.isComposing) quickAdd(); };
-
 const TW_MAP={"宜蘭縣":"M288,93.2L288.1,94.1L287,94.1L285.8,93.2L286.5,93.3L286.9,92.6ZM288.5,80.1L287.8,80.1L285,81.5L284.2,83.1L283.3,83.6L283.2,84.2L282.4,84.1L281.8,84.7L281.6,86.2L279.4,88.5L278.6,88.9L276.8,92.7L276.3,94.8L275.8,97.7L275.8,100.8L276,102.5L276.7,104.4L277.5,105.3L277.3,106L277.5,109.6L278.1,112.2L279.3,114.9L279.9,115.5L281.5,116.1L280.5,116.8L281,117.3L280.5,117.9L281.1,118.4L280.2,118.7L280.5,122.7L280.2,123.3L277.8,124L277.7,126.1L278.5,126.4L278.6,127.4L279.4,127.5L277.7,128.2L275.9,129.6L276.1,130.1L274.4,132.2L273.4,134.6L273.1,138L271.9,140.7L271.7,141.8L272,143.4L270.7,143.5L269.4,142.7L266.8,142.3L265.3,141.6L264.7,141.7L264.2,141L263.5,141.3L262.5,140.2L261.2,140.2L259.6,138.2L258.8,138.6L258.9,139.5L259.7,140.7L259.8,141.6L258.5,140.6L258.3,141.7L257.6,141.5L256.7,142.2L257.6,143.7L256,143.5L253.5,142.7L253.2,141.9L251.8,141.5L248.7,140.8L248.2,141.2L247.1,140.3L245.3,139.6L244.2,138.7L243.9,137.8L243,137L240.4,137.5L239.9,137.3L238.1,138.5L237.4,138.4L236.7,136.4L235.9,136.1L234.4,136.4L233.5,135.6L233.5,132.2L232.6,131.5L233.2,130L234.2,129L234.8,127.7L236.1,127.2L237.2,126.1L237.4,125L238.3,125L239,123.7L239.9,123.2L239.3,120.7L240.1,119.4L240.8,119L240,117.3L240.8,116.1L242.1,115.9L242.7,114.1L244.1,111.6L244,110.6L244.8,109.5L246.6,109.5L247.7,109.5L249.4,108.5L250.4,108.6L251.5,108.1L252.1,106.4L254.4,105.7L254.8,106L255,104.9L255.9,105.1L256.7,104.4L256.1,102.1L256.7,100.1L256.3,98.7L257.8,98.1L259.1,98L259.2,96.7L260.8,96.6L261,96.2L262.2,96.5L262.9,95.8L263.3,96.1L264.7,95.8L264.5,95.2L267.5,92.8L268.4,92.2L269.2,92.5L270.8,92.1L271.5,91.2L272.1,91.3L272.9,90.5L272.6,89L275.2,87.4L275.8,87.7L276.9,87.5L278.7,85.7L278.2,84.4L277.6,84L278.3,82.3L279.5,81.9L280.4,82.2L281.8,82L283.1,80.9L286.3,80L286.6,79.6L288.2,79.7Z","彰化縣":"M158.4,153.6L162.5,155.2L162.9,155.5L164.3,158.8L164.2,159.9L164.9,161.2L166.4,162.5L168.4,163L171.8,163.5L172.1,165.2L173,166.7L172.8,168.2L173.2,169.6L172.9,170.4L173.9,170.3L174.6,170.8L174.8,170L175.6,170.3L177.5,171.9L177,172.7L174.4,172.4L174,173.8L175.1,174.6L174.8,176.7L173.9,177.7L173.1,177.7L173.9,179.1L173.2,179.8L174,180.3L173.4,181.8L173.8,182.8L172.5,185.9L173.2,186.6L172.4,188.1L174.2,189.5L174.2,190.1L175.1,190.9L177.2,190.2L178,191.9L176.5,192.7L174.3,193.4L172.1,192.9L170.1,192.9L166.5,191.9L163.1,192L160.7,191.4L158,190.4L156.4,189.2L154.4,189.6L151,189.4L150.1,189.9L145.6,190.1L141,188.8L139.4,187.5L138.1,185.8L139.3,184L140.4,183.7L141.3,182.7L141.1,181.9L142.3,179.7L143.2,179.3L143.5,177.4L145.6,175.7L145.7,174.4L146.3,173.3L147.9,171.9L148.5,169.5L148.5,167.5L149.2,166.5L150.4,165.6L152.2,164.9L152,164.1L153.3,162.1L153.5,160.4L154.1,160L154.8,158.3L154.9,157.2L155.7,155.9L157.3,155.4Z","南投縣":"M174.3,193.4L176.5,192.7L178,191.9L177.2,190.2L175.1,190.9L174.2,190.1L174.2,189.5L172.4,188.1L173.2,186.6L172.5,185.9L173.8,182.8L173.4,181.8L174,180.3L173.2,179.8L173.9,179.1L173.1,177.7L173.9,177.7L174.8,176.7L175.1,174.6L174,173.8L174.4,172.4L177,172.7L177.5,171.9L179.9,172.7L181,172.3L182.1,172.4L183.4,173.3L185.5,172.3L185.5,171.8L186.7,170.9L188.3,168.2L188.6,167.1L190.5,166.5L190.5,164.3L191.1,162.2L191.9,161.5L192.7,161.5L192.9,162.1L194.2,162.2L195,163.7L194.7,165.2L195.9,163.9L195.9,162.3L197,162.4L198.3,163.1L199.4,162.6L200.9,161.1L201.9,161.9L203.1,162.2L204.5,161.8L205.1,161.2L205.9,159.5L207,158.2L207.8,158.3L207.9,159.1L208.5,158.3L209.3,158.1L209.8,158.6L213.1,156L213.5,155.1L214.4,154.6L217,154.7L218,153.1L219.1,152.9L219.7,151.9L220.8,153.2L222.2,152.1L223.2,152.3L224.2,151.6L225.8,152.5L226.3,152.2L227.2,150.2L228.1,150L229.4,151.5L230.5,151.6L231,150.9L233.2,151.2L234.8,152.1L235.4,154.3L233.3,154.7L231.6,156.2L229.9,156.5L230.1,158.4L229.5,160.4L230.7,160.7L232.5,162.2L233.5,162.4L232.8,164.2L233.1,165.2L231.8,166.3L231,167.4L229.7,168.1L229.9,169.5L228.5,172.6L227.7,173.9L228.1,175.5L228.8,175.5L229.2,176.4L228.7,179L229.1,180.4L228.9,181.9L227.7,182.4L228.2,182.8L228.4,184.2L228.1,185.2L227.1,185.7L226.7,187.1L225.9,188.2L225.5,190.9L224.9,191.2L224.9,193.5L222.9,194.7L223,195.6L225.3,197L225,197.3L226,200.6L225.9,202.7L225.3,203.7L225.5,205.1L224.6,207.2L224.6,208.4L223.6,210.9L223,211.3L222,210.8L220.7,211.8L220.7,212.5L218.5,212.1L218.3,213.3L219.1,213.7L218.8,214.7L217.8,215.2L218.2,216L217.9,217.1L218.2,217.6L216.9,218.9L215.6,218.3L213.2,218.9L211.2,218.5L210.6,220.3L208.6,222.7L210.3,223.9L209.7,224.9L208.1,225.4L206.6,226.4L206.2,225.3L206.6,224.8L206,223.8L205.2,223.8L202.5,223L201.6,223.2L200.7,223.4L199.9,222.8L199.3,223L198.1,222.6L195.5,222.6L195,223.3L193.5,222.8L191.4,223L190.3,221.8L190,219.3L188.7,216.9L188.8,216L189.8,214.4L189.7,213.2L190.2,212.1L189.2,210.8L188.3,211.2L186.2,210.7L184.9,209.7L182,209.9L182,209.2L181,208.1L180.6,208.9L179.8,209.3L178.7,209L178,209.9L176,209.9L175.2,209.4L175.4,208.2L174.7,208L173.8,209L173.3,207.6L173.8,206L174.8,204.1L174.9,203.1L174.1,200.5L174.2,199L174.6,198L175.6,198.2L175.6,196.2Z","雲林縣":"M126,218L126.9,218.4L127.3,219.3L126.1,219.2L125.2,220.8L123.7,221.1L124.6,221.5L124.4,222.1L123.7,221.4L123.3,222.5L122.8,221.8L121.6,222.2L121,223.1L121.2,224L119.7,223.9L120.8,225.5L120.7,226.3L119.4,224L118.8,223.5L120.4,221.8ZM127.6,216.4L128.1,216.9L127.3,218.2L126.9,217.3ZM130.5,215.9L130.8,216.2L130.1,217.2ZM130.5,214.3L129,216L128,216.2L128.7,215L129.5,215ZM130.3,213.8L130.3,213.8L130.3,213.8ZM138.1,185.8L139.4,187.5L141,188.8L145.6,190.1L150.1,189.9L151,189.4L154.4,189.6L156.4,189.2L158,190.4L160.7,191.4L163.1,192L166.5,191.9L170.1,192.9L172.1,192.9L174.3,193.4L175.6,196.2L175.6,198.2L174.6,198L174.2,199L174.1,200.5L174.9,203.1L174.8,204.1L173.8,206L173.3,207.6L173.8,209L174.7,208L175.4,208.2L175.2,209.4L176,209.9L178,209.9L178.7,209L179.8,209.3L180.6,208.9L181,208.1L182,209.2L182,209.9L181.5,210.5L182.2,211.2L182.2,213L182.5,213.7L180.9,213.8L180.2,213.2L178.9,213.1L177.3,213.6L176.9,212.9L175.2,213.5L174.5,212.9L175,212.5L174.7,211.5L172.9,211.8L171.6,212.5L169.8,212.2L168.8,212.4L167,211.6L165.3,211.4L163.7,209.8L162.7,208.4L162.5,207.6L160.9,208L160.3,207.8L158.8,208.1L157.3,208L156.1,209.2L153.8,208.3L152.4,208.9L151.8,209.9L150.6,210.1L150.1,211.3L147.8,211.7L147.8,212.8L146.7,213.5L145.5,213.6L145.8,214.2L144,214.5L144.1,215.5L142.9,216.2L142.5,217.4L141.8,217.1L141.1,216L139.9,216.4L140.4,218.8L139.7,219.6L138.3,219.9L136.7,219.2L134.7,219.4L133.4,218.7L131.6,218.3L132,217.3L131.1,215.6L131.4,213.5L130.9,209L131,207.9L129.7,208.8L129,207.5L129.7,206.8L130.7,204.6L131.1,203L131.6,202.2L131.7,200.8L132.5,199.6L133.3,197.5L133.6,195.9L132.6,193.5L134.7,191.1L134.8,190.6L135.7,190.2L137,188.5L136.7,187.5L137.5,187.3Z","基隆市":"M274.5,65.5L274.4,66.9L273.7,66.5L274,67.6L273.3,67.8L271.9,67.1L270.4,68.2L270.7,68.9L270.7,70.5L272.1,71.8L270.9,73.1L268.3,73.5L266.6,72L265.5,72.1L261.8,69.6L261.2,68.8L260.7,66.3L259.3,65.2L262,64L263.6,63.7L264.8,62.7L265.5,62.6L266.4,61.7L266.2,62.7L267.6,62.8L269.8,63.6L270.9,62.9L272.5,63.4L271.9,63.6L273.6,64.5L274.8,64.3ZM273.2,59.9L273.2,59.9L273.2,59.9Z","台北市":"M254.5,59.7L255.6,60L255.5,61.6L255.1,62.7L256.1,62.9L256.1,64L257.3,65.5L256.6,67.7L259.2,69.3L259.4,70.3L258.3,72.4L259,73.2L258.4,73.7L259.1,74.9L261.3,75.9L262.6,75.6L262.5,76.3L260.9,76.4L259.6,76.1L258.9,76.8L257.8,76.6L256.7,77.1L256.6,78.1L257.1,79.4L257,80.7L258.7,81.4L256.7,82.2L255.1,81.7L253.6,81.8L253,80L251.1,79.4L251.3,78.1L250,76.6L249.1,76.5L248.1,77.5L247.4,77L246.9,75.1L247.4,74.4L248.5,74.1L248.9,73.4L248.9,71.8L248.6,70.6L247.4,69.3L245.4,68.8L244.7,68.3L244.8,66.8L246.9,64.2L247.2,64.1L248.6,62L250.1,62.4L250.2,61.5L252,60.5L252.9,59.6L253.1,58.7L253.7,58.6Z","新北市":"M288.5,80.1L288.2,79.7L286.6,79.6L286.3,80L283.1,80.9L281.8,82L280.4,82.2L279.5,81.9L278.3,82.3L277.6,84L278.2,84.4L278.7,85.7L276.9,87.5L275.8,87.7L275.2,87.4L272.6,89L272.9,90.5L272.1,91.3L271.5,91.2L270.8,92.1L269.2,92.5L268.4,92.2L267.5,92.8L264.5,95.2L264.7,95.8L263.3,96.1L262.9,95.8L262.2,96.5L261,96.2L260.8,96.6L259.2,96.7L259.1,98L257.8,98.1L256.3,98.7L256.7,100.1L256.1,102.1L256.7,104.4L255.9,105.1L255,104.9L254.8,106L254.4,105.7L252.1,106.4L251.5,108.1L250.4,108.6L249.4,108.5L247.7,109.5L246.6,109.5L246,108L246.1,107.4L244.1,106.5L242.8,103.9L241.7,101L244,98.8L243,97.9L242.9,96.3L241.7,95.1L241.2,95.1L241.1,94.1L240,93.4L239.2,93.3L237.8,94.2L236.1,93.7L234.3,92.9L236.1,92.4L235.1,91L235.8,90.5L235,89.9L234.7,88.7L234,88.8L232.9,88L233.4,87.1L232.6,86.4L234.1,85.2L233,85.3L232.5,84.3L233.8,83.6L233.5,83.4L233.4,80.6L234.8,80.2L237,80.7L238.5,79.8L238.4,78.9L239.2,79.1L240,78.6L239.1,77L240.8,76.7L239.6,75.6L239.7,74.2L239,72.6L237.7,72.2L235.8,72.3L234.9,71.4L235.4,70.8L234.4,70.5L233.2,69.7L231.3,69.3L231,68.5L230.4,68.7L229.6,68L229.7,67.3L231.9,66.5L232.8,66.7L235.7,66L238.8,64.4L239,62.5L239.9,63.4L241.3,61.6L240.1,61.1L240.1,60.4L241.3,60.3L241.4,59.5L242.4,57.9L242.9,57.6L244.3,54.4L245.9,54.1L246.7,52.7L249.1,51.6L249.4,50.7L249.8,51.4L251.2,50.9L251.5,49.9L251.9,50.4L253.5,50.7L255,50L256.7,50.7L257.6,51.7L259,52.4L259.9,53.7L259.9,55.6L260.6,56.5L261.5,56.3L261.3,57.3L261.8,58.2L263,59.2L264.5,59L265.2,58.1L265.2,59.1L264.4,60.5L264.9,61.3L266.4,61.7L265.5,62.6L264.8,62.7L263.6,63.7L262,64L259.3,65.2L260.7,66.3L261.2,68.8L261.8,69.6L265.5,72.1L266.6,72L268.3,73.5L270.9,73.1L272.1,71.8L270.7,70.5L270.7,68.9L270.4,68.2L271.9,67.1L273.3,67.8L274,67.6L273.7,66.5L274.4,66.9L274.5,65.5L275.1,65.8L276.5,65.6L275.9,66.2L276.1,66.9L276.6,66.4L277.7,66.3L280.1,66.8L280.7,66.5L282.1,67.1L285.1,66.2L284.3,67.4L285.1,68.2L284.1,69.9L284.1,71.1L285.3,71.7L285.5,72.5L285.4,74.7L286.9,76.5L289.2,76L291.2,76.6L292,77.4L291.9,78.3L291.1,78.4L290,79.4ZM254.5,59.7L253.7,58.6L253.1,58.7L252.9,59.6L252,60.5L250.2,61.5L250.1,62.4L248.6,62L247.2,64.1L246.9,64.2L244.8,66.8L244.7,68.3L245.4,68.8L247.4,69.3L248.6,70.6L248.9,71.8L248.9,73.4L248.5,74.1L247.4,74.4L246.9,75.1L247.4,77L248.1,77.5L249.1,76.5L250,76.6L251.3,78.1L251.1,79.4L253,80L253.6,81.8L255.1,81.7L256.7,82.2L258.7,81.4L257,80.7L257.1,79.4L256.6,78.1L256.7,77.1L257.8,76.6L258.9,76.8L259.6,76.1L260.9,76.4L262.5,76.3L262.6,75.6L261.3,75.9L259.1,74.9L258.4,73.7L259,73.2L258.3,72.4L259.4,70.3L259.2,69.3L256.6,67.7L257.3,65.5L256.1,64L256.1,62.9L255.1,62.7L255.5,61.6L255.6,60Z","台中市":"M232.6,131.5L233.5,132.2L233.5,135.6L234.4,136.4L235.9,136.1L236.7,136.4L237.4,138.4L238.1,138.5L239.9,137.3L240.4,137.5L243,137L243.9,137.8L244.2,138.7L243.3,139.3L242.8,140.4L242.5,142.1L242.7,142.7L241.6,144.2L240.2,144.1L240,145.3L238,146.8L238.4,149.1L236.9,149.4L236.3,150.2L235.6,150.2L235.6,151.1L234.8,152.1L233.2,151.2L231,150.9L230.5,151.6L229.4,151.5L228.1,150L227.2,150.2L226.3,152.2L225.8,152.5L224.2,151.6L223.2,152.3L222.2,152.1L220.8,153.2L219.7,151.9L219.1,152.9L218,153.1L217,154.7L214.4,154.6L213.5,155.1L213.1,156L209.8,158.6L209.3,158.1L208.5,158.3L207.9,159.1L207.8,158.3L207,158.2L205.9,159.5L205.1,161.2L204.5,161.8L203.1,162.2L201.9,161.9L200.9,161.1L199.4,162.6L198.3,163.1L197,162.4L195.9,162.3L195.9,163.9L194.7,165.2L195,163.7L194.2,162.2L192.9,162.1L192.7,161.5L191.9,161.5L191.1,162.2L190.5,164.3L190.5,166.5L188.6,167.1L188.3,168.2L186.7,170.9L185.5,171.8L185.5,172.3L183.4,173.3L182.1,172.4L181,172.3L179.9,172.7L177.5,171.9L175.6,170.3L174.8,170L174.6,170.8L173.9,170.3L172.9,170.4L173.2,169.6L172.8,168.2L173,166.7L172.1,165.2L171.8,163.5L168.4,163L166.4,162.5L164.9,161.2L164.2,159.9L164.3,158.8L162.9,155.5L162.5,155.2L158.4,153.6L159.5,153L160.1,152L161.3,149.1L161.6,148.1L162,148.3L163.1,145.6L163.6,145L164.2,143.4L164.9,142.9L165.7,141.5L166.1,141.6L167.3,140.2L167.5,139.1L169.9,135.5L170.7,134.7L172.7,131.6L174.2,132.8L175,134.5L176.3,135.2L178.7,138.4L180,139.4L182,140L184.4,142.2L186.6,143.1L188.5,143.4L189.5,144.2L190.9,145.8L192.9,145.9L194.5,145.4L197,145.6L198.6,144.5L198,141.6L199.7,140.8L201.5,141.2L201.8,141.6L203.7,141.5L204.5,142.1L205.7,141.8L206.8,143.8L208.3,145.1L209.7,145L210,143.9L212.3,142.6L212.7,143.2L214.6,141.9L215.7,142L216,140.9L217.4,139.2L219.7,139.1L220.2,138L221.6,137.1L222.2,135.7L223.1,135.6L223.9,137.4L225.2,137L225.5,135.7L226.2,134.9L226.3,133.5L227.4,133L227.6,131.8L227.7,132.7L231.6,132.3Z","台南市":"M175.4,246.1L175.6,246.8L174.5,248.1L173.9,249.4L174.3,250L172.8,251.8L172.2,251.9L171.8,253L170.9,253.7L169.8,255.7L169.8,256.5L168.5,258.3L168.6,258.6L166.8,260.7L165.4,261.5L162.5,264.5L160.7,265.7L160.4,266.9L158.8,266.8L158.7,268.1L158.3,268L158.1,269.3L157.4,269.1L156.4,271.3L156,272.8L155,275L154.4,275.3L153.5,274.5L152,274.6L151.2,275.7L150,276.4L149.6,277.5L147.7,277.5L147,276.5L146.3,276.6L143,276.1L143.1,276.9L141.5,276.4L141,277.1L140,276.2L139.2,276L139,275.1L138,275.6L135.6,274.6L134.1,275.4L134.2,273.5L133.9,271.9L133.1,270.5L132.5,270.5L132.7,269.5L131,267.5L128.6,265.4L126.6,264.1L124.4,263L124.1,263.1L122.4,260.8L121.5,261L121.5,260.1L122.1,257.6L122.8,256L123.6,255.4L124.5,251.2L125.7,248.4L126.1,246.4L126,244.9L126.8,243.8L127.1,242.3L127.4,239.1L128.6,238.1L128.6,236.1L129.2,235.3L131.9,237.2L131.9,237.7L133.4,238.3L134.2,239.6L135.4,240L135.3,238.9L136.7,239.8L138.1,239.4L139.6,236.5L141.1,236.2L142.1,235.2L141.5,234.9L142,234.2L142.9,234.5L143.7,234.4L143.7,232.8L144.3,232L145.9,232L145.9,231L147.8,231L149.2,229.6L151.9,229.4L154.7,228.6L155.2,229.3L156.8,228.4L159.8,229.8L160.4,230.8L161.4,230.1L162.1,230.8L160.8,231.6L161.1,232.2L163.1,233L163.2,233.8L162.5,234.3L162.8,235L163.5,235L165.1,235.6L165.6,236.5L164.1,237.9L164.4,239.8L164.1,241.5L164.9,243.3L163.8,244.8L164.5,245.5L165.7,245.8L166.9,246.8L167.8,246.5L168.9,247.1L169.6,246.2L170.1,244.7L170.6,245.7L171.6,246.3L173.2,245.7Z","桃園市":"M246.6,109.5L244.8,109.5L244,110.6L244.1,111.6L242.7,114.1L242.1,115.9L240.8,116.1L240,117.3L238.6,117.7L237.4,117.1L236.6,116.2L236.2,114.8L236.8,113.5L236.1,113.3L235.6,112.3L235.7,110L234.6,110.2L234.5,109L233.6,107.8L232.7,107.2L231.4,107.7L231.1,107.4L231.8,105.1L230.9,103.8L231.8,101.8L231.2,101L229.2,100.3L227.7,99.2L227.8,98.4L226.6,97.8L226.2,96.7L224.3,97.5L224,96.3L223.1,96.8L223,96.3L221,95.1L220.4,94.5L218.2,93.3L219.2,91.8L218.7,89.8L217.2,89.7L216.9,90.1L214.6,89.3L214.6,88.2L213.1,88.6L212.4,88.1L211.4,88L210.2,87.4L210.5,86.1L210.3,84.5L208.5,83.6L206.9,84.2L205.9,83.6L204.6,84.7L203.7,84.2L206.1,80.9L206.1,79.4L206.6,78.9L207,77.7L207.7,76.5L209.7,74.3L212.7,73.1L213,72.5L216,71.2L218.8,70.5L221.1,69.4L223.5,68L225.9,67.5L227.6,66.7L229.7,67.3L229.6,68L230.4,68.7L231,68.5L231.3,69.3L233.2,69.7L234.4,70.5L235.4,70.8L234.9,71.4L235.8,72.3L237.7,72.2L239,72.6L239.7,74.2L239.6,75.6L240.8,76.7L239.1,77L240,78.6L239.2,79.1L238.4,78.9L238.5,79.8L237,80.7L234.8,80.2L233.4,80.6L233.5,83.4L233.8,83.6L232.5,84.3L233,85.3L234.1,85.2L232.6,86.4L233.4,87.1L232.9,88L234,88.8L234.7,88.7L235,89.9L235.8,90.5L235.1,91L236.1,92.4L234.3,92.9L236.1,93.7L237.8,94.2L239.2,93.3L240,93.4L241.1,94.1L241.2,95.1L241.7,95.1L242.9,96.3L243,97.9L244,98.8L241.7,101L242.8,103.9L244.1,106.5L246.1,107.4L246,108Z","苗栗縣":"M227.6,131.8L227.4,133L226.3,133.5L226.2,134.9L225.5,135.7L225.2,137L223.9,137.4L223.1,135.6L222.2,135.7L221.6,137.1L220.2,138L219.7,139.1L217.4,139.2L216,140.9L215.7,142L214.6,141.9L212.7,143.2L212.3,142.6L210,143.9L209.7,145L208.3,145.1L206.8,143.8L205.7,141.8L204.5,142.1L203.7,141.5L201.8,141.6L201.5,141.2L199.7,140.8L198,141.6L198.6,144.5L197,145.6L194.5,145.4L192.9,145.9L190.9,145.8L189.5,144.2L188.5,143.4L186.6,143.1L184.4,142.2L182,140L180,139.4L178.7,138.4L176.3,135.2L175,134.5L174.2,132.8L172.7,131.6L176.4,127.5L176.7,126L178.1,123.9L178.8,121.3L179.5,120.1L180.2,117.3L180.8,116.4L182,115.4L182.7,114.5L183.3,114.4L184.2,113.5L184.4,112.5L186,110.7L187,110.1L190,109.6L192.8,106.7L193.3,104.9L194.4,103.3L195,103.8L196.4,103.8L197.1,103.1L198,104.9L197.8,105.3L199.7,105.8L200.2,106.3L200.9,105.9L201.2,106.6L202,105.9L203,105.9L203.2,106.4L202.2,108.5L203,108.3L203.2,109.3L205,111.3L206.1,111.1L206,112.3L207.4,112.6L207.8,113.4L209,113.9L209.8,115L210.5,114.4L211.6,115.2L212.4,117.4L211.7,118.3L211.3,119.9L210.6,120.5L212.2,122L211.9,123.3L211,123.8L211.4,126.1L212.6,125.8L213.7,126.3L215.9,125L217.1,125.3L217.7,124.8L219.8,125.7L220.6,125.2L221.3,125.4L222.5,124.9L224,124.6L224.4,125.2L224.1,126.1L225.5,127.1L226.3,128.8L227.5,129.4L227.9,130.2Z","嘉義市":"M157.6,218.6L158.4,218.8L158.9,220.2L159.9,219.6L160.8,220.2L161.2,221.1L162.2,221.2L162.3,222.1L163,222.6L162.1,223.6L161.7,224.7L160.2,223.9L159.5,223.9L158.1,225.5L156.9,226L156.1,223.9L154.8,224L154.5,223.6L153,223.8L153.5,222.3L152.6,220.4L154.3,219.7L154.3,220.4L155,219.8L156.4,219.4L156.4,218.7Z","嘉義縣":"M132.2,230.4L132.2,230.4L132.2,230.4ZM182,209.9L184.9,209.7L186.2,210.7L188.3,211.2L189.2,210.8L190.2,212.1L189.7,213.2L189.8,214.4L188.8,216L188.7,216.9L190,219.3L190.3,221.8L191.4,223L193.5,222.8L195,223.3L195.5,222.6L198.1,222.6L199.3,223L199.9,222.8L200.7,223.4L201.6,223.2L199.8,223.7L199.1,224.3L197.7,224.2L195.9,225.3L195.5,226.4L194.5,226.6L193.6,227.4L192.2,227.8L192.3,228.5L190.7,230.9L190.5,232L188.4,232.8L187,234.1L186.6,235.1L184.4,234.9L184.4,235.7L183.5,237L182.2,237.8L182,238.5L180.4,238.2L179.8,238.9L179.4,240.5L176.9,240L174.8,239.3L174.4,240.2L174.5,241.3L174.1,242L175,244L175.4,246.1L173.2,245.7L171.6,246.3L170.6,245.7L170.1,244.7L169.6,246.2L168.9,247.1L167.8,246.5L166.9,246.8L165.7,245.8L164.5,245.5L163.8,244.8L164.9,243.3L164.1,241.5L164.4,239.8L164.1,237.9L165.6,236.5L165.1,235.6L163.5,235L162.8,235L162.5,234.3L163.2,233.8L163.1,233L161.1,232.2L160.8,231.6L162.1,230.8L161.4,230.1L160.4,230.8L159.8,229.8L156.8,228.4L155.2,229.3L154.7,228.6L151.9,229.4L149.2,229.6L147.8,231L145.9,231L145.9,232L144.3,232L143.7,232.8L143.7,234.4L142.9,234.5L142,234.2L141.5,234.9L142.1,235.2L141.1,236.2L139.6,236.5L138.1,239.4L136.7,239.8L135.3,238.9L135.4,240L134.2,239.6L133.4,238.3L131.9,237.7L131.9,237.2L129.2,235.3L130.1,233.1L130.4,231.1L132.6,231.1L133.2,230.3L132.8,229.1L132.1,229.7L131.8,228.3L132.1,227.2L131.6,227L132.4,225.2L132.1,224.4L130.5,224.8L131.5,224.1L131.5,223.1L132.5,221.8L132.7,220.7L130.6,221.4L129.4,220.7L129.3,218.9L130,218.4L131.3,218.6L131.6,218.3L133.4,218.7L134.7,219.4L136.7,219.2L138.3,219.9L139.7,219.6L140.4,218.8L139.9,216.4L141.1,216L141.8,217.1L142.5,217.4L142.9,216.2L144.1,215.5L144,214.5L145.8,214.2L145.5,213.6L146.7,213.5L147.8,212.8L147.8,211.7L150.1,211.3L150.6,210.1L151.8,209.9L152.4,208.9L153.8,208.3L156.1,209.2L157.3,208L158.8,208.1L160.3,207.8L160.9,208L162.5,207.6L162.7,208.4L163.7,209.8L165.3,211.4L167,211.6L168.8,212.4L169.8,212.2L171.6,212.5L172.9,211.8L174.7,211.5L175,212.5L174.5,212.9L175.2,213.5L176.9,212.9L177.3,213.6L178.9,213.1L180.2,213.2L180.9,213.8L182.5,213.7L182.2,213L182.2,211.2L181.5,210.5ZM157.6,218.6L156.4,218.7L156.4,219.4L155,219.8L154.3,220.4L154.3,219.7L152.6,220.4L153.5,222.3L153,223.8L154.5,223.6L154.8,224L156.1,223.9L156.9,226L158.1,225.5L159.5,223.9L160.2,223.9L161.7,224.7L162.1,223.6L163,222.6L162.3,222.1L162.2,221.2L161.2,221.1L160.8,220.2L159.9,219.6L158.9,220.2L158.4,218.8Z","高雄市":"M201.6,223.2L202.5,223L205.2,223.8L206,223.8L206.6,224.8L206.2,225.3L206.6,226.4L206.5,226.8L207.8,227.5L207.5,229.1L206.5,230L205.3,230.5L205.9,231.1L205.3,231.3L204.2,232.4L204.1,233.6L205.2,233.8L206.1,234.8L207,234.3L207.4,235.3L209.5,236.7L209.3,238.2L208,238.7L207.7,239.3L206.2,239.7L204,240.9L202.7,240.9L199.9,244.2L199,244.3L198,244.9L197.6,245.8L197.6,247.5L197.2,248.8L197.7,249.7L197.4,250.3L196.5,250.7L196.2,252.1L194.6,253L195.6,254.4L195.3,255.9L195.7,257.8L195.1,259.4L194,261.6L195,263L194.9,263.9L193.5,264.2L193.2,266.4L191.6,268L191.6,268.7L190.8,269.1L190.6,270L189.8,270.8L190.1,271.6L189.9,273.3L190.9,275.4L190.5,276.1L191.4,278L193.6,279.1L193.1,280L194,280.5L193.6,281.9L192.6,280.5L192.1,281L190.9,279.7L190,279.7L188.1,281.1L187.4,281L187.4,281.9L186.2,282.6L184.9,281.3L184.7,280.6L183.1,279L181.2,278.2L180.1,278.3L177.4,280.5L176,280.3L175.8,278.4L174.9,278.7L174.7,277.9L172.5,278.8L171.3,279L168.6,281.4L166.8,283.2L165.3,283.2L164.8,282.8L163,283.2L161.5,282.6L160.1,282.3L159.5,283L159.1,285.9L158.5,287.3L158.2,290L158.3,293.5L157.6,296.3L157,297.2L156.7,298.5L156.6,301.7L156.4,302.9L157.5,304.7L157.6,305.9L157.2,308.1L156.7,309.5L156.2,309.7L155.5,312.2L155.8,314.1L155.6,316.8L153.7,316.3L151.2,314.7L147.8,311.9L147.8,311.2L146,312.5L144.4,310.3L145.6,310.6L146.4,311.7L146.8,311.3L145.6,309.7L144.8,309.5L145.2,308.5L141.8,304.4L142,303.6L141.1,302.9L141.8,302.3L140.6,299.8L140.7,298.8L141.9,297.6L141.7,295.4L141.2,293.5L140.6,292.7L137.4,285.2L136.1,285.4L135.5,284.5L136.8,284L136.2,281.8L135.4,280.2L135.7,279.8L134.1,275.4L135.6,274.6L138,275.6L139,275.1L139.2,276L140,276.2L141,277.1L141.5,276.4L143.1,276.9L143,276.1L146.3,276.6L147,276.5L147.7,277.5L149.6,277.5L150,276.4L151.2,275.7L152,274.6L153.5,274.5L154.4,275.3L155,275L156,272.8L156.4,271.3L157.4,269.1L158.1,269.3L158.3,268L158.7,268.1L158.8,266.8L160.4,266.9L160.7,265.7L162.5,264.5L165.4,261.5L166.8,260.7L168.6,258.6L168.5,258.3L169.8,256.5L169.8,255.7L170.9,253.7L171.8,253L172.2,251.9L172.8,251.8L174.3,250L173.9,249.4L174.5,248.1L175.6,246.8L175.4,246.1L175,244L174.1,242L174.5,241.3L174.4,240.2L174.8,239.3L176.9,240L179.4,240.5L179.8,238.9L180.4,238.2L182,238.5L182.2,237.8L183.5,237L184.4,235.7L184.4,234.9L186.6,235.1L187,234.1L188.4,232.8L190.5,232L190.7,230.9L192.3,228.5L192.2,227.8L193.6,227.4L194.5,226.6L195.5,226.4L195.9,225.3L197.7,224.2L199.1,224.3L199.8,223.7Z","台東縣":"M258,365.8L257.3,365L258.2,364.7ZM248.7,352.6L249.5,353L254.1,352.6L254.4,354.5L254.9,354.9L253.8,355.4L254.2,356.7L255.1,357.5L256.7,358.1L257.1,359.1L256.4,360.3L255.2,360L254.4,360.3L253.7,358.9L252.5,358.1L251.7,358.2L249.3,356.1L249.1,353.9L248.3,353ZM247.6,297.3L249.2,297.4L249.3,298.1L248.3,300.3L248.8,301.2L247.9,301.5L247.1,300.5L246.1,300.2L246.2,299.1L245.3,298L245.4,297.4L246.6,297.7ZM193.6,281.9L194,280.5L193.1,280L193.6,279.1L191.4,278L190.5,276.1L190.9,275.4L189.9,273.3L190.1,271.6L189.8,270.8L190.6,270L190.8,269.1L191.6,268.7L191.6,268L193.2,266.4L193.5,264.2L194.9,263.9L195,263L194,261.6L195.1,259.4L195.7,257.8L195.3,255.9L195.6,254.4L194.6,253L196.2,252.1L196.5,250.7L197.4,250.3L197.7,249.7L197.2,248.8L197.6,247.5L197.6,245.8L198,244.9L199,244.3L199.9,244.2L202.7,240.9L204,240.9L206.2,239.7L207.7,239.3L208.6,239L210.1,240L210.6,241L210.6,242.3L212.1,245.4L213.2,245.3L214.6,246.2L216.4,246.3L217.3,248.3L218.6,248.5L219.1,247.9L220.4,247.5L221.7,248.2L222.3,249.5L222.4,250.8L223.6,252.7L223.5,253.7L225.2,254.1L225.8,255.1L226.7,254.9L228.3,256.5L228,257.5L228.7,258L229.8,257.2L231.4,256.8L232.5,256.8L233,256.2L232.9,254.3L233.4,252.9L232.6,251.8L233.2,250.5L234.1,250.5L234.7,248.8L235.1,246.8L236,246.2L235.6,245.5L236.4,244L236.2,243.5L237.8,241.9L237.7,239.5L238.7,238.1L238.9,237.1L239.5,237L240.6,234.8L241.7,233.4L240.2,232.9L239.7,231.1L240.6,229.8L241.4,227.9L242.6,226.6L243.3,226.5L243.7,225.6L245.1,226L246,225.9L246.8,226.8L248,226.4L246.5,230.1L245.9,232.4L245.9,234.1L245.5,234.8L245.6,236.1L245.1,237.9L243.8,238.2L242.3,240.8L242.1,242.3L241.5,243L241,245.2L241.5,246L240.5,247.2L239.6,247.7L239.6,249.8L240.4,252L239.7,254.5L240.9,255.6L240.3,256.3L239.3,256.6L238.3,258.2L236.9,258.1L235.8,259.7L234.4,264L234.3,265.3L233.1,266.7L233.1,267.8L232.5,268.9L230.7,271.4L229.7,271.9L229.3,273.6L228.4,275.5L227.8,275.9L226.5,278.3L225.9,278.5L225.2,279.9L224.7,279.6L223.3,280L221.7,281.3L221.3,282.8L221.8,283.5L222.6,286L222.1,286.8L220.9,287.5L220.5,289.6L218.8,290.8L216.3,293.4L214,294.8L212.3,295.4L210,297.5L208.6,298L207.5,299.4L206.3,302.8L206,305.6L204,307.4L203.3,308.9L201.7,313.5L200.6,317.9L199.5,321.1L197.9,324.6L197.4,327L196.2,329.3L196,331.1L195.9,334.6L196.3,337.5L195,338.6L193.8,339.1L193.1,338.1L191.4,337.8L189.3,336L188,336.5L187.9,334.7L188.5,334.1L187.4,333.9L187,333.1L186.1,332.7L186.1,331.8L186.9,331.7L187.7,330.9L187.4,329.2L186.7,328.3L185.2,328.1L184.8,327.1L183.1,326.3L183.9,324L184.4,323.4L184,322.8L185.7,322.6L187.1,321.6L185.9,319.1L185.9,318.5L183.8,317.8L184.1,316.5L183.8,315.9L184.9,314.7L184.8,313.8L184,312.9L183.7,310.7L182.8,309.1L183,307.5L183.5,307.3L183.3,305.7L184.1,304.4L183.9,303.5L184.7,301.8L186.8,298.7L187.3,297.2L186.9,295.9L187.8,296.3L189.6,296.1L189.7,295.7L191.3,295.3L192.2,293.7L195.2,293.6L196.2,291.7L196.1,289L197,288.2L196.9,285.9L195.9,284.8L193.9,284.3L193.3,283.4Z","花蓮縣":"M244.2,138.7L245.3,139.6L247.1,140.3L248.2,141.2L248.7,140.8L251.8,141.5L253.2,141.9L253.5,142.7L256,143.5L257.6,143.7L256.7,142.2L257.6,141.5L258.3,141.7L258.5,140.6L259.8,141.6L259.7,140.7L258.9,139.5L258.8,138.6L259.6,138.2L261.2,140.2L262.5,140.2L263.5,141.3L264.2,141L264.7,141.7L265.3,141.6L266.8,142.3L269.4,142.7L270.7,143.5L272,143.4L271.6,144.6L269.7,146.8L269.4,148.5L268,150L266.9,150.4L266.1,151.9L263.3,153.6L262.4,154.9L262,157L262.5,158.5L262.5,160.5L261.7,161.7L259.9,163.1L258.6,164.7L258.4,167.4L259.6,170.3L260.7,171.4L261.1,172.4L260.4,173.6L259.4,176.1L258.9,175.3L257.6,177L258,179.5L257.4,181.6L257.4,182.7L256.8,186.7L254.9,191L254.4,193.7L254.6,195.6L253.5,198.7L252.8,199.3L252.6,200.4L252.9,201.6L252.3,203.8L252.1,205.6L251.4,206.6L251,208.4L250.9,211.1L250.6,213.1L249.3,215.4L248.6,218.6L249,221.1L249.5,221.5L248.3,224.4L248,226.4L246.8,226.8L246,225.9L245.1,226L243.7,225.6L243.3,226.5L242.6,226.6L241.4,227.9L240.6,229.8L239.7,231.1L240.2,232.9L241.7,233.4L240.6,234.8L239.5,237L238.9,237.1L238.7,238.1L237.7,239.5L237.8,241.9L236.2,243.5L236.4,244L235.6,245.5L236,246.2L235.1,246.8L234.7,248.8L234.1,250.5L233.2,250.5L232.6,251.8L233.4,252.9L232.9,254.3L233,256.2L232.5,256.8L231.4,256.8L229.8,257.2L228.7,258L228,257.5L228.3,256.5L226.7,254.9L225.8,255.1L225.2,254.1L223.5,253.7L223.6,252.7L222.4,250.8L222.3,249.5L221.7,248.2L220.4,247.5L219.1,247.9L218.6,248.5L217.3,248.3L216.4,246.3L214.6,246.2L213.2,245.3L212.1,245.4L210.6,242.3L210.6,241L210.1,240L208.6,239L207.7,239.3L208,238.7L209.3,238.2L209.5,236.7L207.4,235.3L207,234.3L206.1,234.8L205.2,233.8L204.1,233.6L204.2,232.4L205.3,231.3L205.9,231.1L205.3,230.5L206.5,230L207.5,229.1L207.8,227.5L206.5,226.8L206.6,226.4L208.1,225.4L209.7,224.9L210.3,223.9L208.6,222.7L210.6,220.3L211.2,218.5L213.2,218.9L215.6,218.3L216.9,218.9L218.2,217.6L217.9,217.1L218.2,216L217.8,215.2L218.8,214.7L219.1,213.7L218.3,213.3L218.5,212.1L220.7,212.5L220.7,211.8L222,210.8L223,211.3L223.6,210.9L224.6,208.4L224.6,207.2L225.5,205.1L225.3,203.7L225.9,202.7L226,200.6L225,197.3L225.3,197L223,195.6L222.9,194.7L224.9,193.5L224.9,191.2L225.5,190.9L225.9,188.2L226.7,187.1L227.1,185.7L228.1,185.2L228.4,184.2L228.2,182.8L227.7,182.4L228.9,181.9L229.1,180.4L228.7,179L229.2,176.4L228.8,175.5L228.1,175.5L227.7,173.9L228.5,172.6L229.9,169.5L229.7,168.1L231,167.4L231.8,166.3L233.1,165.2L232.8,164.2L233.5,162.4L232.5,162.2L230.7,160.7L229.5,160.4L230.1,158.4L229.9,156.5L231.6,156.2L233.3,154.7L235.4,154.3L234.8,152.1L235.6,151.1L235.6,150.2L236.3,150.2L236.9,149.4L238.4,149.1L238,146.8L240,145.3L240.2,144.1L241.6,144.2L242.7,142.7L242.5,142.1L242.8,140.4L243.3,139.3Z","澎湖縣":"M70.8,246.4L71,248.4L69.9,248.7L70,249.7L68.9,248.8L69.1,248.1L68.3,247.4L68.6,246.8ZM86,243.4L86,244.3L85.3,243.6ZM91.3,242.4L90.8,244.3L90.2,243.7L90.3,242.7ZM89.8,242.4L89.8,242.4L89.8,242.4ZM77.7,242.4L77.7,242.4L77.7,242.4ZM76.6,241.6L76.6,241.6L76.6,241.6ZM61.9,237L61.9,237L61.9,237ZM79.2,232L79.7,233L78.8,232.8L77.7,233.3L77.6,232.8ZM75.4,229.9L76.1,230.7L76.7,230.6L76.7,232.3L77.4,232.7L76.6,233L77.1,234.1L74.8,233.8L75.5,232.9L75.3,231.6ZM60.4,228.6L61.4,229.2L60,229.7ZM79.5,220.7L78.5,221.5L76.9,221.9L77.8,221ZM77.7,218.9L77.7,218.9L77.7,218.9ZM82.1,209.2L82.1,209.2L82.1,209.2ZM87.6,206L87.6,206L87.6,206ZM90.1,204.3L90.3,205.3L89.4,205.1ZM80.8,203.7L80.8,203.7L80.8,203.7ZM83.2,203.7L84.6,203.9L85.7,205.9L84.4,207L85.1,208.9L85.8,209.1L85.4,209.9L85.7,210.7L86.7,210.1L86.7,212.7L87.1,212.7L88,211L88.2,211.9L89,210L90,211.7L90.6,210.7L91.5,212.3L91.5,213.4L92.7,215.1L91.3,215.5L91.1,214.7L88.6,214.6L85.7,216.8L85.1,217.6L85.6,218.5L85.1,219.5L83.7,219.1L82.2,219.5L82.3,218.6L81.8,217.9L80.9,218.1L80.3,216.8L79.5,216.6L79.6,215.8L80.4,215.7L80.9,216.7L80.7,217.5L82.2,217.3L82.4,218.4L82.9,217.3L84.2,217.8L84.1,216.8L84.9,216.5L84.5,215.6L83.9,215.3L82.3,215.9L81.3,215.6L81.4,214.9L82.1,215.3L82.8,214.3L82.4,213.9L81.1,214.4L81.7,213.4L81.3,212.3L82.4,212.3L83.1,211.7L83.5,213.5L84.4,213.8L84.6,212.3L85.2,212.3L84.8,210.8L85.4,209.9L84.4,209.4L85.1,209L84.1,208.5L84.1,207L83.1,205.9L83,205.1L82.1,205L81.4,206L80.7,205.5L79.6,206.8L79.4,207.7L77.5,208.4L78,210.7L77,211.6L77.3,214.3L75.8,213.9L75.1,214.4L73.2,214.5L74.5,213.2L75.4,213.7L76.3,212.8L76.4,212.1L75.1,211.3L76.7,209.6L75.9,209L77,206.4L77.6,206.4L77.2,205.6L78.1,205.6L77.6,206.7L78.6,207.2L79.4,207.1L80.6,205.5L80.7,204.4ZM85.4,200.5L85.4,200.5L85.4,200.5ZM80.5,199.5L80.5,199.5L80.5,199.5ZM85.7,196.2L86.6,197.4L85.6,197.5L84.9,198.5L84.2,197.9ZM85.1,194.3L84.5,196L84.6,194.9Z","新竹市":"M199.7,105.8L197.8,105.3L198,104.9L197.1,103.1L196.4,103.8L195,103.8L194.4,103.3L196.4,100.8L196,100.4L195.9,98.3L196.9,95.2L198,93.6L198,92.5L198.8,92.3L200.1,92.7L200.5,93.6L201.4,94.2L205.3,95.4L207.1,97.3L207.4,99.4L208.1,101.1L207,101.6L206.4,100.3L204.6,99.3L203.9,99.8L204.1,100.5L203.5,101L202.6,100.8L201.3,102.9L200.6,102.7L199.9,104.2Z","新竹縣":"M240,117.3L240.8,119L240.1,119.4L239.3,120.7L239.9,123.2L239,123.7L238.3,125L237.4,125L237.2,126.1L236.1,127.2L234.8,127.7L234.2,129L233.2,130L232.6,131.5L231.6,132.3L227.7,132.7L227.6,131.8L227.9,130.2L227.5,129.4L226.3,128.8L225.5,127.1L224.1,126.1L224.4,125.2L224,124.6L222.5,124.9L221.3,125.4L220.6,125.2L219.8,125.7L217.7,124.8L217.1,125.3L215.9,125L213.7,126.3L212.6,125.8L211.4,126.1L211,123.8L211.9,123.3L212.2,122L210.6,120.5L211.3,119.9L211.7,118.3L212.4,117.4L211.6,115.2L210.5,114.4L209.8,115L209,113.9L207.8,113.4L207.4,112.6L206,112.3L206.1,111.1L205,111.3L203.2,109.3L203,108.3L202.2,108.5L203.2,106.4L203,105.9L202,105.9L201.2,106.6L200.9,105.9L200.2,106.3L199.7,105.8L199.9,104.2L200.6,102.7L201.3,102.9L202.6,100.8L203.5,101L204.1,100.5L203.9,99.8L204.6,99.3L206.4,100.3L207,101.6L208.1,101.1L207.4,99.4L207.1,97.3L205.3,95.4L201.4,94.2L200.5,93.6L200.1,92.7L198.8,92.3L200,91.1L201.2,88.4L201.7,87.7L202.6,85.3L203.7,84.2L204.6,84.7L205.9,83.6L206.9,84.2L208.5,83.6L210.3,84.5L210.5,86.1L210.2,87.4L211.4,88L212.4,88.1L213.1,88.6L214.6,88.2L214.6,89.3L216.9,90.1L217.2,89.7L218.7,89.8L219.2,91.8L218.2,93.3L220.4,94.5L221,95.1L223,96.3L223.1,96.8L224,96.3L224.3,97.5L226.2,96.7L226.6,97.8L227.8,98.4L227.7,99.2L229.2,100.3L231.2,101L231.8,101.8L230.9,103.8L231.8,105.1L231.1,107.4L231.4,107.7L232.7,107.2L233.6,107.8L234.5,109L234.6,110.2L235.7,110L235.6,112.3L236.1,113.3L236.8,113.5L236.2,114.8L236.6,116.2L237.4,117.1L238.6,117.7Z","屏東縣":"M151.8,327.3L152.5,327.8L152.4,328.7L150.7,330.1L149.6,330.4L149.5,329.8L150.4,328.8L150.2,328.3ZM155.6,316.8L155.8,314.1L155.5,312.2L156.2,309.7L156.7,309.5L157.2,308.1L157.6,305.9L157.5,304.7L156.4,302.9L156.6,301.7L156.7,298.5L157,297.2L157.6,296.3L158.3,293.5L158.2,290L158.5,287.3L159.1,285.9L159.5,283L160.1,282.3L161.5,282.6L163,283.2L164.8,282.8L165.3,283.2L166.8,283.2L168.6,281.4L171.3,279L172.5,278.8L174.7,277.9L174.9,278.7L175.8,278.4L176,280.3L177.4,280.5L180.1,278.3L181.2,278.2L183.1,279L184.7,280.6L184.9,281.3L186.2,282.6L187.4,281.9L187.4,281L188.1,281.1L190,279.7L190.9,279.7L192.1,281L192.6,280.5L193.6,281.9L193.3,283.4L193.9,284.3L195.9,284.8L196.9,285.9L197,288.2L196.1,289L196.2,291.7L195.2,293.6L192.2,293.7L191.3,295.3L189.7,295.7L189.6,296.1L187.8,296.3L186.9,295.9L187.3,297.2L186.8,298.7L184.7,301.8L183.9,303.5L184.1,304.4L183.3,305.7L183.5,307.3L183,307.5L182.8,309.1L183.7,310.7L184,312.9L184.8,313.8L184.9,314.7L183.8,315.9L184.1,316.5L183.8,317.8L185.9,318.5L185.9,319.1L187.1,321.6L185.7,322.6L184,322.8L184.4,323.4L183.9,324L183.1,326.3L184.8,327.1L185.2,328.1L186.7,328.3L187.4,329.2L187.7,330.9L186.9,331.7L186.1,331.8L186.1,332.7L187,333.1L187.4,333.9L188.5,334.1L187.9,334.7L188,336.5L189.3,336L191.4,337.8L193.1,338.1L193.8,339.1L195,338.6L196.3,337.5L196.6,338.7L196.2,339.7L196.3,341.5L195.8,342.3L196.1,344L196,346.5L196.3,347.4L195.5,348.4L196,350.3L196.8,350.6L196.1,352.2L196.1,355.8L196.7,357.4L195.7,358.1L195.5,358.9L194.8,359.5L194.5,360.6L193.3,361.3L192.2,361.6L191.6,364.2L192.2,366.6L193.4,368.1L193.8,369.5L192.4,370.1L192,368.5L191.2,368.3L189.9,366.6L189.1,366.6L187.7,365.8L186.5,365.7L185,364.3L184,364.6L183.4,365.7L183.4,366.6L182.8,368L181.9,368.1L180.3,366.6L180.6,362.3L179.9,361.1L178.9,360.2L178.1,358.2L178.9,356.5L179.2,355.4L179.8,355.3L179.9,353.9L179.3,352.8L180.8,351.8L180.2,349.1L179.2,347.4L179.3,346.5L178.4,343L178,342L178.1,340.9L177,339.4L177,338.8L175.8,337.9L175,336.7L175.3,335.5L174.5,333.4L174.5,332.4L173.9,331.4L171.2,328.6L170.7,327.4L169.5,326.1L166.4,323.9L162.9,322.1L158.6,319.6L156.6,317.7L156.4,316.9Z","連江縣":"M13.6,54.1L13.9,54.3L13.2,55.2L11.9,55.7L12.6,54.3ZM10.6,53.1L10.9,53.4L9.9,54.3L9.1,53.3ZM8.6,37.3L9.4,37.6L9.1,38.2L10,39L10.3,38.1L12.1,38L11.4,39.3L10.4,39.9L9.7,39.8L9.2,40.4L8,39.7L8.6,38.7ZM14.4,32.1L15.7,32.9L15.4,33.7L14.6,33.4L12.7,34.3L12.6,35.7L12.2,34.9L12.6,34.2L12.3,33.5L13.5,33.2ZM13.9,28.6L13.8,29.8L13.3,29.8L13.4,28.8ZM50,20.3L50.1,21.2L52,21.1L51,22.4L50.2,22.2L50.4,21.4L49.9,21.5Z","金門縣":"M13.9,113.5L17.3,115.4L16.3,119.7L15.1,119.2L12.7,121.8L11.1,121.5L10.1,122.9L8,122.1L8.6,118.7L10.8,114.3ZM41.1,99.5L44.9,100.8L45.2,102.8L47.6,103.4L47.5,104.6L49.6,108.3L51,113.7L52,114.1L51.1,116.4L49.4,117.2L50.4,118L48.8,119.1L48.6,120.6L45.2,122.4L43.6,122.6L44.8,120.8L43.8,119.5L41,118.6L39.7,117.4L36.9,117.4L31.5,119.6L29.4,122.2L28.2,125.5L25.8,126.5L23.3,124.6L21.8,124.6L18.8,121.5L21,120.4L22.9,117.2L22.9,115.4L21.7,112.4L20.2,110.1L21.3,107.3L23.7,106.2L25.5,106.7L27.7,109.3L30.9,110.7L33.1,110.7L36.8,106.6L36.6,104L39.4,101.4L38.7,100.7Z"};
 const TW_CEN={"宜蘭縣":[260,119],"彰化縣":[159,177],"南投縣":[204,188],"雲林縣":[151,203],"基隆市":[267,67],"台北市":[253,71],"新北市":[257,80],"台中市":[196,151],"台南市":[147,253],"桃園市":[227,88],"苗栗縣":[199,127],"嘉義市":[158,222],"嘉義縣":[164,225],"高雄市":[172,267],"台東縣":[209,280],"花蓮縣":[238,196],"澎湖縣":[82,216],"新竹市":[201,99],"新竹縣":[219,109],"屏東縣":[177,315],"連江縣":[16,38],"金門縣":[33,114]};
 const COUNTIES = ['基隆市','台北市','新北市','桃園市','新竹市','新竹縣','苗栗縣','台中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','台南市','高雄市','屏東縣','宜蘭縣','花蓮縣','台東縣','澎湖縣','金門縣','連江縣'];
@@ -1473,11 +1452,12 @@ function renderDaySheet(){
 $('#dsKind').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if(!b) return; dsKind = b.dataset.k; renderDaySheet(); $('#dsText').focus(); });
 function dsAdd(){
   const v = $('#dsText').value.trim(); if(!v){ toast('請輸入內容'); return; }
-  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsDate, time:$('#dsTime').value, note:'', remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:''});
+  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsDate, time:$('#dsTime').value, note:$('#dsNote').value.trim(), remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:$('#dsRepeat').value ? $('#dsUntil').value : ''});
   else db.todos.push(newTodo({title:v, due:dsDate, start:dsDate<today()?dsDate:today(), pri:$('#dsPri').value, tag:$('#dsTag').value}));
-  $('#dsText').value = ''; $('#dsTime').value = ''; $('#dsRepeat').value = ''; save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
+  $('#dsText').value = ''; $('#dsTime').value = ''; $('#dsRepeat').value = ''; $('#dsUntil').value = ''; $('#dsNote').value = ''; $('#dsUntilWrap').classList.add('hidden'); save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
 }
 $('#dsAdd').onclick = dsAdd;
+$('#dsRepeat').onchange = e => $('#dsUntilWrap').classList.toggle('hidden', !e.target.value);
 $('#dsText').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) dsAdd(); });
 $('#dsClose').onclick = () => $('#daySheet').classList.remove('on');
 $('#daySheet').addEventListener('click', e => { if(e.target.id==='daySheet') $('#daySheet').classList.remove('on'); });
@@ -1787,7 +1767,7 @@ $('#importFile').onchange = e => {
 };
 $('#wipeBtn').onclick = () => { if(confirm('真的要清空所有行程、待辦、靈感、日記、習慣和旅行紀錄嗎？這無法復原。')){ db = makeDb(); save(); toast('已清空'); } };
 
-function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); }
+function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderHeroIdeas(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); }
 
 load(); renderAll(); updateNotice(); checkReminders(); Sync.init();
 setInterval(checkReminders, 20000);
