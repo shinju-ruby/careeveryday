@@ -63,7 +63,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .hero h2{font-size:26px;margin:0 0 4px;color:#fff}
 .hero p{margin:0;font-weight:500}
 .hero::after{content:"";position:absolute;right:-30px;top:-40px;width:170px;height:170px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink)}
-.hero::before{content:"";position:absolute;right:110px;bottom:-50px;width:100px;height:100px;border-radius:50%;background:var(--blue);border:3px solid var(--ink)}
+.hero::before{content:"";position:absolute;left:-40px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:var(--blue);border:3px solid var(--ink);opacity:.9}
 .hero > *{position:relative;z-index:1}
 .hero-stats{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
 .hero-stats div{background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:14px;padding:6px 14px;font-weight:700;font-size:14px}
@@ -201,6 +201,21 @@ textarea{width:100%;min-height:70px;resize:vertical}
 .entry{border:2px solid var(--ink);border-radius:12px;padding:8px 12px;margin-bottom:8px;cursor:pointer;background:var(--soft-yellow)}
 .entry:hover{transform:translateY(-1px)}
 .donelog li{padding:4px 0;font-size:14px}
+/* pets */
+.card.peek{position:relative;margin-top:44px}
+.card .pet{position:absolute;top:-47px;width:72px;z-index:2;pointer-events:none}
+.card .pet.right{right:26px} .card .pet.left{left:26px}
+.pets3{position:absolute;top:-47px;right:22px;display:flex;gap:2px;z-index:2;pointer-events:none}
+.pets3 img{width:64px}
+.hero{padding-bottom:70px}
+.hero-pets{position:absolute !important;right:14px;bottom:-14px;display:flex;gap:4px;z-index:2}
+.hero-pets img{width:82px;transition:transform .2s}
+.hero-pets img:hover{transform:translateY(-8px) rotate(-4deg)}
+.gate-box{position:relative;margin-top:50px}
+.gate-pets{position:absolute;top:-55px;left:0;right:0;display:flex;justify-content:center;gap:8px}
+.gate-box .gate-pets img{width:84px;height:auto;border:0;box-shadow:none;border-radius:0}
+.toast img{width:34px;flex:none}
+.empty-pet{display:block;width:70px;margin:6px auto 0;opacity:.9}
 /* login gate */
 #gate{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px;
   background-image:radial-gradient(circle at 12% 18%, #FFE0A8 0 90px, transparent 91px),radial-gradient(circle at 90% 25%, #CDEBFF 0 110px, transparent 111px),radial-gradient(circle at 15% 88%, #FFD3E6 0 80px, transparent 81px),radial-gradient(circle at 88% 85%, #D8F6EC 0 100px, transparent 101px)}
@@ -260,9 +275,10 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <span class="cheer" id="cheer" title="點一下換一句"></span>
       <div class="hero-stats" id="heroStats"></div>
       <div class="cdstrip" id="cdStrip"></div>
+      <div class="hero-pets"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/tabby.svg" alt=""><img src="icons/pets/shiba.svg" alt=""></div>
     </div>
 
-    <div class="card">
+    <div class="card peek"><img class="pet left" src="icons/pets/shiba.svg" alt="">
       <div class="row between" style="margin-bottom:4px">
         <div class="seg" id="viewSeg">
           <button data-view="month">月計畫</button>
@@ -279,7 +295,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <div id="planView"></div>
     </div>
 
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <h2>💬 問問我</h2>
       <div class="row">
         <input type="text" id="askInput" placeholder="例如：今天要做什麼？這週進度如何？">
@@ -298,7 +314,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <div class="ask-answer" id="askAnswer"></div>
     </div>
 
-    <div class="card">
+    <div class="card peek"><img class="pet left" src="icons/pets/tabby.svg" alt="">
       <h2>⚡ 快速記一筆</h2>
       <div class="row">
         <input type="text" id="quickInput" placeholder="想到什麼就打，按 Enter 存起來">
@@ -313,7 +329,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 待辦 -->
   <section data-page="todos" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <h2>✨ 新增待辦</h2>
       <input type="text" id="tdTitle" placeholder="要完成的事，例如：完成期末報告" style="width:100%">
       <div class="formgrid">
@@ -334,7 +350,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
       </div>
       <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="tdAdd">新增待辦</button></div>
     </div>
-    <div class="card">
+    <div class="card peek"><img class="pet left" src="icons/pets/shiba.svg" alt="">
       <div class="row between" style="margin-bottom:12px">
         <h2 style="margin:0">📋 待辦清單</h2>
         <select id="tdFilter">
@@ -352,7 +368,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 甘特圖 -->
   <section data-page="gantt" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/tabby.svg" alt="">
       <div class="row between">
         <h2 style="margin:0">📊 甘特圖</h2>
         <div class="row">
@@ -384,7 +400,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 行程 -->
   <section data-page="events" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/shiba.svg" alt="">
       <h2>📅 新增行程</h2>
       <input type="text" id="evTitle" placeholder="行程名稱，例如：和小明吃午餐" style="width:100%;margin-bottom:8px">
       <div class="row">
@@ -413,7 +429,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 靈感 -->
   <section data-page="ideas" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet left" src="icons/pets/calico.svg" alt="">
       <h2>💡 記下靈感</h2>
       <textarea id="idText" placeholder="想法、句子、點子……都可以丟進來。可以用 #標籤 分類"></textarea>
       <div class="row" style="margin-top:8px;justify-content:flex-end"><button class="btn" id="idAdd">存起來</button></div>
@@ -426,7 +442,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 日記 -->
   <section data-page="diary" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/tabby.svg" alt="">
       <div class="row between">
         <h2 style="margin:0">📔 日記</h2>
         <div class="navbtns">
@@ -465,7 +481,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
   <!-- 設定 -->
   <section data-page="settings" class="hidden">
-    <div class="card">
+    <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <h2>☁️ 雲端同步</h2>
       <p class="meta" style="margin-top:0" id="syncInfo">還沒設定雲端同步，目前資料只存在這個瀏覽器。</p>
       <div class="row">
@@ -473,7 +489,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
         <button class="btn white hidden" id="syncLogout">登出</button>
       </div>
     </div>
-    <div class="card">
+    <div class="card peek"><div class="pets3"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/tabby.svg" alt=""><img src="icons/pets/shiba.svg" alt=""></div>
       <h2>👨‍👩‍👧 家庭共用</h2>
       <div id="familyBox"><p class="meta">登入後才能使用家庭共用。</p></div>
     </div>
@@ -505,7 +521,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭共用版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 毛孩版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -514,6 +530,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
 
 <div id="gate">
   <div class="gate-box">
+    <div class="gate-pets"><img src="icons/pets/calico.svg" alt=""><img src="icons/pets/shiba.svg" alt=""><img src="icons/pets/tabby.svg" alt=""></div>
     <img src="icons/icon-192.png" alt="">
     <div class="kr">갓생 살자!</div>
     <div class="sub">認真過好每一天</div>
@@ -524,7 +541,7 @@ textarea{width:100%;min-height:70px;resize:vertical}
   </div>
 </div>
 <div id="toasts"></div>
-<div class="modal" id="reportModal"><div class="card"><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
+<div class="modal" id="reportModal"><div class="card peek" style="margin-top:50px"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
 
 <script>
 (function(){
@@ -858,7 +875,7 @@ function renderTodos(){
   if(f==='log'){ renderDoneLog(); renderTagBars(); return; }
   const list = db.todos.filter(td => !filterTag || td.tag===filterTag).filter(td => f==='all' || (f==='done'&&td.done) || (f==='open'&&!td.done)
     || (f==='today'&&!td.done&&td.due&&td.due<=t) || (f==='week'&&!td.done&&td.due&&td.due<=we)).sort(tdSort);
-  $('#tdList').innerHTML = list.length ? list.map(todoCard).join('') : '<div class="empty">這裡空空的 🎉</div>';
+  $('#tdList').innerHTML = list.length ? list.map(todoCard).join('') : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/shiba.svg" alt="">這裡空空的，柴柴陪你休息一下 🎉</div>';
   renderTagBars();
 }
 
@@ -934,7 +951,7 @@ function renderEntries(){
   const keys = Object.keys(db.diary).filter(k => { const e = db.diary[k]; return e.text || e.mood || e.money.length; }).sort().reverse().slice(0,10);
   $('#dEntries').innerHTML = keys.length ? keys.map(k => { const e = db.diary[k], out = e.money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
     return `<div class="entry" data-act="openDiary" data-date="${k}"><b>${e.mood||'📝'} ${prettyDate(k)}</b>${out?` <span class="meta">· 支出 $${money(out)}</span>`:''}<div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc((e.text||'').split('\n')[0])||'（沒有文字）'}</div></div>`; }).join('')
-    : '<div class="empty">還沒有日記，今天就寫第一篇吧 ✍️</div>';
+    : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/tabby.svg" alt="">還沒有日記，虎斑想聽你今天的故事 ✍️</div>';
 }
 
 // ---------- 甘特圖 ----------
@@ -1016,7 +1033,7 @@ function renderIdeas(){
       <button class="icon" data-act="pin" data-id="${i.id}" title="${i.pinned?'取消置頂':'置頂'}">${i.pinned?'📌':'📍'}</button>
       <button class="icon" data-act="toTodo" data-id="${i.id}" title="轉成待辦">➡️</button>
       <button class="icon" data-act="delIdea" data-id="${i.id}" title="刪除">✕</button></div>`; }).join('')
-    : '<div class="empty">還沒有靈感，隨時丟進來吧</div>';
+    : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/calico.svg" alt="">還沒有靈感，三花在等你分享點子喔</div>';
 }
 
 // ---------- 共用點擊 ----------
@@ -1170,7 +1187,7 @@ function beep(){
     g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6); o.start(); o.stop(c.currentTime+.6); }catch(e){}
 }
 function toast(msg, sticky){
-  const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = `<span class="grow">${esc(msg)}</span>`;
+  const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = `<img src="icons/pets/${['calico','tabby','shiba'][Math.floor(Math.random()*3)]}.svg" alt=""><span class="grow">${esc(msg)}</span>`;
   if(sticky){ const b = document.createElement('button'); b.textContent = '知道了'; b.onclick = () => el.remove(); el.appendChild(b); }
   $('#toasts').appendChild(el); while($('#toasts').children.length>3) $('#toasts').firstChild.remove(); if(!sticky) setTimeout(() => el.remove(), 2600);
 }
