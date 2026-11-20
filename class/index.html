@@ -187,8 +187,9 @@ const FB = {
     const b = this.db.batch();
     for(const it of items){
       const ref = this.db.collection('cl_signups').doc();
-      b.set(ref, { ...it, uid:S.user.uid, cancelled:false, createdAt:this.ts() });
-      b.set(this.db.collection('cl_pay').doc(ref.id), { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'', updatedAt:this.ts() });
+      const { lineId = '', ...pub } = it;
+      b.set(ref, { ...pub, uid:S.user.uid, cancelled:false, createdAt:this.ts() });
+      b.set(this.db.collection('cl_pay').doc(ref.id), { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'', lineId, updatedAt:this.ts() });
     }
     await b.commit();
   },
@@ -240,7 +241,7 @@ const DEMO = {
   onCourses(cb){ return this.watch(() => { const d = this.load(); cb(Object.entries(d.courses).map(([id, c]) => ({ id, ...c }))); }); },
   onSignups(cid, cb){ return this.watch(() => { const d = this.load(); cb(Object.entries(d.signups).filter(([, s]) => s.courseId === cid).map(([id, s]) => ({ id, ...s }))); }); },
   onPays(cid, cb){ return this.watch(() => { const d = this.load(); cb(Object.fromEntries(Object.entries(d.pays).filter(([, p]) => p.courseId === cid && (S.admin || p.uid === S.user.uid)))); }); },
-  async addSignups(items){ const d = this.load(); let ms = Date.now(); items.forEach(it => { const id = rid(); d.signups[id] = { ...it, uid:S.user.uid, cancelled:false, t:ms++ }; d.pays[id] = { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'' }; }); this.save(d); },
+  async addSignups(items){ const d = this.load(); let ms = Date.now(); items.forEach(it => { const id = rid(), { lineId = '', ...pub } = it; d.signups[id] = { ...pub, uid:S.user.uid, cancelled:false, t:ms++ }; d.pays[id] = { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'', lineId }; }); this.save(d); },
   async cancel(id, v = true){ const d = this.load(); d.signups[id].cancelled = v; this.save(d); },
   async setOrder(id, ms){ const d = this.load(); d.signups[id].t = ms; this.save(d); },
   async setPays(ids, patch, courseId){ const d = this.load(); ids.forEach(id => { d.pays[id] = { ...(d.pays[id] || { uid:S.user.uid, courseId }), ...patch }; }); this.save(d); },
@@ -292,7 +293,7 @@ function billing(c){
   const res = new Map(), sess = sortedSessions(c);
   sess.forEach(s => { const r = roster(c, s.id), fee = perHead(c, r.ok.length);
     r.ok.forEach(x => { const k = (x.parentName || '').trim(); if(!res.has(k)) res.set(k, { name:k, items:[], total:0 }); const g = res.get(k); g.items.push({ x, s, fee }); g.total += fee; }); });
-  res.forEach(g => { const st = g.items.map(i => payOf(c, i.x.id)); g.status = st.every(p => p.status === 'confirmed') ? 'confirmed' : st.some(p => p.status === 'reported') ? 'reported' : 'unpaid'; g.note = (st.find(p => p.note) || {}).note || ''; });
+  res.forEach(g => { const st = g.items.map(i => payOf(c, i.x.id)); g.status = st.every(p => p.status === 'confirmed') ? 'confirmed' : st.some(p => p.status === 'reported') ? 'reported' : 'unpaid'; g.note = (st.find(p => p.note) || {}).note || ''; g.lineId = (st.find(p => p.lineId) || {}).lineId || ''; });
   return [...res.values()];
 }
 
@@ -401,6 +402,7 @@ function renderForm(c){
   const pf = store.get('cl-profile', { parentName:'', kids:[{ name:'', age:'' }], companions:1 });
   el.innerHTML = `<div class="card"><h2>✍️ 我要報名</h2>
     <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：Rosie">
+    <label>LINE ID <span class="meta">（只有主揪看得到，方便私訊聯絡）</span></label><input id="fLine" maxlength="40" autocapitalize="off" autocomplete="off" value="${esc(pf.lineId || '')}" placeholder="例如：rosie5473">
     <label>寶貝名字與年紀（兄弟姊妹可以一起報）</label><div id="fKids"></div>
     <button class="btn sm white" type="button" onclick="addKid()">＋ 再加一位寶貝</button>
     <label>陪同家長人數</label><select id="fComp">${[1, 2, 3].map(n => `<option ${n == pf.companions ? 'selected' : ''}>${n}</option>`).join('')}</select>
@@ -424,15 +426,15 @@ function updatePicks(c){
       <span>${esc(sessLabel(s))}</span><span class="hint" style="color:${left > 0 ? 'var(--mint)' : 'var(--orange)'}">${left > 0 ? `剩 ${left} 位` : `額滿・備取第 ${r.wait.length + 1}`}</span></label>`; }).join('') || '<div class="empty">沒有可以報名的場次了</div>';
 }
 async function submitSignup(cid){
-  const c = getCourse(cid), parentName = $('#fParent').value.trim();
+  const c = getCourse(cid), parentName = $('#fParent').value.trim(), lineId = $('#fLine').value.trim();
   const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:d.querySelector('.kAge').value.trim() })).filter(k => k.name);
   const sids = [...document.querySelectorAll('#fPicks input:checked')].map(i => i.value), companions = Number($('#fComp').value) || 1, note = $('#fNote').value.trim();
-  if(!parentName) return toast('請填家長名稱'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
+  if(!parentName) return toast('請填家長名稱'); if(!lineId) return toast('請填 LINE ID，主揪才聯絡得到你'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
   if(!S.user) return toast('還在連線，請稍等一下再按');
   const mine = (S.signups[cid] || []).filter(x => !x.cancelled && x.uid === S.user.uid);
-  const items = []; sids.forEach(sid => kids.forEach(k => { if(!mine.some(x => x.sessionId === sid && x.childName === k.name)) items.push({ courseId:cid, sessionId:sid, parentName, childName:k.name, childAge:k.age, companions, note }); }));
+  const items = []; sids.forEach(sid => kids.forEach(k => { if(!mine.some(x => x.sessionId === sid && x.childName === k.name)) items.push({ courseId:cid, sessionId:sid, parentName, childName:k.name, childAge:k.age, companions, note, lineId }); }));
   if(!items.length) return toast('這些場次你都報過了喔');
-  store.set('cl-profile', { parentName, kids, companions });
+  store.set('cl-profile', { parentName, lineId, kids, companions });
   $('#fSubmit').disabled = true;
   try{ await API.addSignups(items); toast(`報名成功！共 ${items.length} 筆 🎉`); document.querySelectorAll('#fPicks input:checked').forEach(i => { i.checked = false; i.parentNode.classList.remove('on'); }); $('#fNote').value = ''; setTimeout(() => $('#cMine').scrollIntoView({ behavior:'smooth' }), 300); }
   catch(e){ toast('報名失敗：' + (e.message || e)); }
@@ -490,14 +492,14 @@ function adminCourseCard(c){
     <div class="card"><h2>💰 繳費追蹤 <span class="tag ok">已收 ${paid}/${bill.length} 位家長</span></h2>
     <div class="meta">只計算正取。家長回報末五碼後會顯示「已回報」，你對完帳按「確認收款」。</div>
     ${bill.map((g, i) => `<div class="paygrp ${g.status === 'confirmed' ? 'done' : ''}"><div class="row"><b class="grow">${esc(g.name)}</b><b>${money(g.total)} 元</b></div>
-      <div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
+      ${g.lineId ? `<div class="meta">LINE ID：<b>${esc(g.lineId)}</b> <button class="icon" onclick="copyText('${esc(g.lineId).replace(/'/g, '')}').then(()=>toast('已複製 LINE ID'))">📋</button></div>` : ''}<div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
       <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid('${c.id}',${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid('${c.id}',${i},'unpaid')">改回未繳</button>`}
       <button class="btn sm white" onclick="showCopy('個別私訊：${esc(g.name).replace(/'/g, '')}', txtPayOne(getCourse('${c.id}'), billing(getCourse('${c.id}'))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
 
     <div class="card"><h2>🗂 各場次管理</h2>
     ${ss.map(s => { const r = roster(c, s.id);
       const li = (x, i, w) => { const p = payOf(c, x.id);
-        return `<li class="${x.cancelled ? 'x' : ''}"><span class="no ${w ? 'w' : ''}">${x.cancelled ? '✕' : i + 1}</span><span class="grow">${esc(x.parentName)}・<b>${esc(x.childName)}</b> <span class="meta">${esc(x.childAge || '')}${x.companions > 1 ? `・陪同 ${x.companions}` : ''}${x.note ? '・' + esc(x.note) : ''}</span>
+        return `<li class="${x.cancelled ? 'x' : ''}"><span class="no ${w ? 'w' : ''}">${x.cancelled ? '✕' : i + 1}</span><span class="grow">${esc(x.parentName)}・<b>${esc(x.childName)}</b> <span class="meta">${esc(x.childAge || '')}${p.lineId ? '・LINE ' + esc(p.lineId) : ''}${x.companions > 1 ? `・陪同 ${x.companions}` : ''}${x.note ? '・' + esc(x.note) : ''}</span>
           ${!x.cancelled && !w ? (p.status === 'confirmed' ? '<span class="tag ok">已收</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳</span>') : ''}</span>
           ${x.cancelled ? `<button class="icon" onclick="adminCancel('${x.id}',false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup('${c.id}','${s.id}','${x.id}',-1)">↑</button><button class="icon" title="往後" onclick="moveSignup('${c.id}','${s.id}','${x.id}',1)">↓</button><button class="icon" onclick="adminCancel('${x.id}',true)">取消</button>`}</li>`; };
       return `<div class="sess"><div class="hd">${esc(sessLabel(s))} <span class="tag ${r.ok.length >= r.cap ? 'pay' : 'ok'}">${r.ok.length}/${r.cap}</span>${r.wait.length ? `<span class="tag wait">備取 ${r.wait.length}</span>` : ''}</div>
@@ -518,14 +520,14 @@ async function moveSignup(cid, sid, id, dir){
 function manualAdd(cid, sid){
   const c = getCourse(cid), ss = sortedSessions(c);
   openModal(`<h2>＋ 代家長報名</h2><div class="meta">幫在 LINE 留言報名的家長登記，順位排在目前最後面。</div>
-    <label>家長名稱</label><input id="mP" maxlength="30"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
+    <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
     <label>場次（可複選）</label>${ss.filter(s => s.date >= today()).map(s => `<label class="pick ${s.id === sid ? 'on' : ''}"><input type="checkbox" class="mS" value="${s.id}" ${s.id === sid ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${esc(sessLabel(s))}</span></label>`).join('')}
     <div class="btns"><button class="btn big" onclick="doManualAdd('${cid}')">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
 }
 async function doManualAdd(cid){
-  const p = $('#mP').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
+  const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
   if(!p || !k || !sids.length) return toast('請填家長、寶貝名字並選場次');
-  try{ await API.addSignups(sids.map(sid => ({ courseId:cid, sessionId:sid, parentName:p, childName:k, childAge:a, companions:1, note:'主揪代報' }))); closeModal(); toast('已登記'); }catch(e){ toast('失敗：' + e.message); }
+  try{ await API.addSignups(sids.map(sid => ({ courseId:cid, sessionId:sid, parentName:p, childName:k, childAge:a, companions:1, note:'主揪代報', lineId }))); closeModal(); toast('已登記'); }catch(e){ toast('失敗：' + e.message); }
 }
 
 // ===== 主揪後台首頁 =====
