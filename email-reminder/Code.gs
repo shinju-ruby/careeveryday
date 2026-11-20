@@ -86,7 +86,10 @@ function loadDb(){
   PUSH_TOKENS = tokens_(mine);
   if(space) all.forEach(d => { if(d !== mine && fv_(d, 'space') === space) PUSH_TOKENS = PUSH_TOKENS.concat(tokens_(d)); });
   PUSH_TOKENS = PUSH_TOKENS.filter((x, i, a) => a.indexOf(x) === i);
-  const d = JSON.parse(fv_(doc, 'json') || '{}');
+  // 新版：個人資料（提醒設定、作業）在自己的帳號，共用資料（行程、待辦、紀念日）在家庭空間
+  const pj = JSON.parse(fv_(mine, 'json') || '{}'), sj = space ? JSON.parse(fv_(doc, 'json') || '{}') : pj;
+  const d = Object.assign({}, sj, {settings: pj.settings || sj.settings, hwBy: pj.hwBy});
+  if(space){ d.events = sj.events; d.todos = sj.todos; d.anniv = sj.anniv; }
   d.events = d.events || []; d.todos = (d.todos || []).map(x => Object.assign({steps: [], pri: 'mid'}, x)); d.settings = d.settings || {};
   DB = d; return d;
 }

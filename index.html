@@ -121,6 +121,14 @@ details.fold[open]>summary{margin-bottom:10px}
 .media{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin-bottom:10px;background:#fff}
 .media .em{font-size:26px;line-height:1;width:44px;height:44px;border:2px solid var(--ink);border-radius:12px;display:grid;place-items:center;flex:none;background:var(--soft-yellow)}
 .media.movie .em{background:var(--soft-blue)} .media.drama .em{background:var(--soft-pink)}
+.shopadd{display:flex;gap:8px;align-items:center;margin-top:12px;background:var(--soft-yellow);border:2px solid var(--ink);border-radius:18px;padding:8px}
+.shopadd input{flex:1;min-width:0}
+.shopcat{font-weight:900;font-size:14px;margin:12px 0 4px;display:flex;align-items:center;gap:6px}
+.sitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border:2px solid var(--ink);border-radius:14px;background:#fff;margin-bottom:6px}
+.sitem .nm{font-weight:700;font-size:15.5px;word-break:break-word}
+.sitem .qty{display:inline-block;font-size:12px;font-weight:900;background:var(--soft-yellow);border:1.5px solid var(--ink);border-radius:999px;padding:0 8px;margin-left:4px}
+.sitem.got{background:#F4FBF8;opacity:.75} .sitem.got .nm{text-decoration:line-through;color:var(--muted)}
+.sitem .chk{width:26px;height:26px}
 .wmap{width:100%;display:block;margin:0 auto;background:#EAF6FF;border-radius:14px;border:2px solid var(--ink)}
 .wmap path{stroke:#1D2547;stroke-width:.7;vector-effect:non-scaling-stroke;cursor:pointer}
 .wmap path.sel{stroke-width:2}
@@ -457,6 +465,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
       <button data-tab="calendar" title="行事曆" aria-label="行事曆"><i>📅</i><span>行事曆</span></button>
       <button data-tab="todos" title="待辦" aria-label="待辦"><i>✅</i><span>待辦</span></button>
+      <button data-tab="shop" title="購物" aria-label="購物"><i>🛒</i><span>購物</span></button>
       <button data-tab="habits" title="習慣" aria-label="習慣"><i>💧</i><span>習慣</span></button>
       <button data-tab="trips" title="旅行" aria-label="旅行"><i>🏕️</i><span>旅行</span></button>
       <button data-tab="diary" title="日記" aria-label="日記"><i>📔</i><span>日記</span></button>
@@ -490,6 +499,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <div class="card w peek"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2>💧 我的今日習慣 <button class="act" data-act="tab" data-tab="habits">管理</button></h2><div id="wHabits"></div></div>
       <div class="card w"><h2>📈 本週進度 <button class="act" data-act="tab" data-tab="calendar">看行事曆</button></h2><div id="wWeek"></div></div>
       <div class="card w peek"><img class="pet left" src="icons/pets/tabby.svg" alt=""><h2>🏕️ 旅行露營 <button class="act" data-act="tab" data-tab="trips">全部</button></h2><div id="wTrips"></div></div>
+      <div class="card w peek"><img class="pet left" src="icons/pets/calico.svg" alt=""><h2>🛒 要買的 <button class="act" data-act="tab" data-tab="shop">清單</button></h2><div id="wShop"></div></div>
       <div class="card w"><h2>💰 本月收支 <button class="act" data-act="tab" data-tab="diary">記帳</button></h2><div id="wMoney"></div></div>
     <div class="card peek w span2"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <h2>💬 問問我</h2>
@@ -632,6 +642,27 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   </section>
 
   <!-- 習慣 -->
+  <!-- 購物清單（全家共用） -->
+  <section data-page="shop" class="hidden">
+    <div class="card peek"><img class="pet right" src="icons/pets/shiba.svg" alt="">
+      <div class="row between"><h2 style="margin:0">🛒 購物清單</h2><span class="meta" id="shopCount"></span></div>
+      <div class="shopadd">
+        <button class="mic" id="shopMic" title="用說的加入" aria-label="語音加入">🎤</button>
+        <input type="text" id="shopInput" placeholder="要買什麼？例如：牛奶 2、衛生紙、貓砂">
+        <button class="btn" id="shopAddBtn" style="padding:7px 14px">加入</button>
+      </div>
+      <div class="tagbar scroll" id="shopStores" style="margin-top:10px"></div>
+      <div id="shopList" style="margin-top:6px"></div>
+      <div class="row between" style="margin-top:10px"><button class="btn white" id="shopClear" style="padding:5px 14px">🧹 清除已買</button><button class="btn mint" id="shopPay" style="padding:5px 14px">🧾 結帳記一筆</button></div>
+      <p class="meta" style="margin-bottom:0">👨‍👩‍👧 和家人共用，誰加的、誰買了都會即時同步。一次加很多樣可以用「、」或逗號分開，數量寫在後面。</p>
+    </div>
+    <div class="card peek"><img class="pet left" src="icons/pets/calico.svg" alt="">
+      <h2>🔁 常買的</h2>
+      <div class="tagbar" id="shopFreqBar"></div>
+      <p class="meta" style="margin-bottom:0">點一下就加回清單。買過越多次的排越前面。</p>
+    </div>
+  </section>
+
   <section data-page="habits" class="hidden">
     <div class="card peek"><img class="pet right" src="icons/pets/calico.svg" alt="">
       <div class="row between"><h2 style="margin:0">💧 我的習慣</h2>
@@ -701,6 +732,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
           <button class="btn white" id="dToday" style="padding:4px 12px">今天</button>
         </div>
       </div>
+      <p class="meta" style="margin:4px 0 0">🔒 心情和日記只有你自己看得到</p>
       <div class="subhead">今天心情</div>
       <div class="moods" id="dMoods"></div>
       <div class="subhead">想記下的事</div>
@@ -708,7 +740,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <div class="meta" id="dSaved" style="text-align:right">會自動儲存</div>
       <div class="subhead">🏆 這天完成的事</div>
       <ul class="donelog" id="dDone" style="margin:0;padding-left:20px"></ul>
-      <div class="subhead">💰 記帳</div>
+      <div class="subhead">💰 記帳 <span class="meta" style="font-weight:700">👨‍👩‍👧 全家共用</span></div>
       <div class="row">
         <select id="mKind"><option value="out">支出</option><option value="in">收入</option></select>
         <input type="number" id="mAmt" placeholder="金額" min="0" inputmode="decimal" style="width:100px">
@@ -852,7 +884,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 毛孩動畫版 2</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 購物清單版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -888,6 +920,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
       <button data-tab="calendar" title="行事曆" aria-label="行事曆"><i>📅</i><span>行事曆</span></button>
       <button data-tab="todos" title="待辦" aria-label="待辦"><i>✅</i><span>待辦</span></button>
+      <button data-tab="shop" title="購物" aria-label="購物"><i>🛒</i><span>購物</span></button>
       <button data-tab="habits" title="習慣" aria-label="習慣"><i>💧</i><span>習慣</span></button>
       <button data-tab="trips" title="旅行" aria-label="旅行"><i>🏕️</i><span>旅行</span></button>
       <button data-tab="diary" title="日記" aria-label="日記"><i>📔</i><span>日記</span></button>
@@ -968,12 +1001,19 @@ const DEFAULT_ANNIV = () => [['a-hub','老公生日',6,11,0,'🎂'],['a-me','我
   ['a-dad','爸爸生日',4,3,0,'🎂'],['a-mom','媽媽生日',11,23,0,'🎂'],['a-wed','結婚紀念日',6,2,0,'💍'],['a-date','交往紀念日',9,23,0,'💕'],['a-mil','婆婆生日',9,23,1,'🎂']]
   .map(([id,name,m,d,lunar,emoji]) => ({id,name,m,d,lunar:!!lunar,emoji}));
 const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,time:'21:00'}, fired:{}});
+// 記帳：以前放在日記裡（diary[日期].money），現在獨立成 db.money，才能和家人共用
+function extractMoney(d){
+  const m = (d.money && typeof d.money==='object' && !Array.isArray(d.money)) ? JSON.parse(JSON.stringify(d.money)) : {};
+  Object.entries(d.diary||{}).forEach(([k,v]) => { if(v && Array.isArray(v.money) && v.money.length){ const a = m[k] || (m[k] = []); v.money.forEach(x => { if(!a.some(y=>y.id===x.id)) a.push(x); }); } });
+  return m;
+}
+function cleanDiary(dy){ const o = {}; Object.entries(dy||{}).forEach(([k,v]) => { if(v) o[k] = {mood:v.mood||'', text:v.text||''}; }); return o; }
 function makeDb(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
   return {events:d.events||[], todos:(d.todos||[]).map(normTodo), ideas:d.ideas||[], tags:Array.isArray(d.tags)?d.tags:DEFAULT_TAGS.slice(),
-    diary:(d.diary && typeof d.diary==='object')?d.diary:{}, settings:st,
+    diary:cleanDiary(d.diary), money:extractMoney(d), settings:st,
     habits:Array.isArray(d.habits)?d.habits:null, habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:null,
     habitsBy:(d.habitsBy && typeof d.habitsBy==='object')?d.habitsBy:{}, habitLogBy:(d.habitLogBy && typeof d.habitLogBy==='object')?d.habitLogBy:{},
-    trips:Array.isArray(d.trips)?d.trips:[], anniv:Array.isArray(d.anniv)?d.anniv:DEFAULT_ANNIV(), hwBy:(d.hwBy && typeof d.hwBy==='object')?d.hwBy:{}, media:Array.isArray(d.media)?d.media:[]}; }
+    trips:Array.isArray(d.trips)?d.trips:[], anniv:Array.isArray(d.anniv)?d.anniv:DEFAULT_ANNIV(), hwBy:(d.hwBy && typeof d.hwBy==='object')?d.hwBy:{}, media:Array.isArray(d.media)?d.media:[], shop:Array.isArray(d.shop)?d.shop:[], shopFreq:(d.shopFreq && typeof d.shopFreq==='object')?d.shopFreq:{}}; }
 // 習慣是每個人自己的：依登入帳號分開存
 const meKey = () => (typeof Sync !== 'undefined' && Sync.uid()) || 'local';
 function myHabits(){
@@ -1028,14 +1068,20 @@ const Sync = (() => {
     const tags = r.tags.slice(); l.tags.forEach(t => { if(!tags.some(x=>x.name===t.name)) tags.push(t); });
     const diary = Object.assign({}, l.diary);
     Object.entries(r.diary).forEach(([k,v]) => { const lv = diary[k];
-      diary[k] = !lv ? v : {mood:v.mood||lv.mood, text:(v.text||'').length>=(lv.text||'').length?v.text:lv.text, money:mergeById(lv.money||[], v.money||[])}; });
+      diary[k] = !lv ? v : {mood:v.mood||lv.mood, text:(v.text||'').length>=(lv.text||'').length?v.text:lv.text}; });
+    const money = JSON.parse(JSON.stringify(r.money)); Object.entries(l.money).forEach(([k,a]) => { money[k] = mergeById(money[k]||[], a); });
+    const shopFreq = Object.assign({}, l.shopFreq); Object.entries(r.shopFreq).forEach(([k,v]) => { shopFreq[k] = !shopFreq[k] || v.n >= shopFreq[k].n ? v : shopFreq[k]; });
     const habitsBy = Object.assign({}, r.habitsBy), habitLogBy = JSON.parse(JSON.stringify(r.habitLogBy));
     Object.entries(l.habitsBy).forEach(([u,arr]) => { habitsBy[u] = mergeById(habitsBy[u]||[], arr); });
     Object.entries(l.habitLogBy).forEach(([u,lg]) => { const t = habitLogBy[u] || (habitLogBy[u] = {});
       Object.entries(lg).forEach(([d,o]) => { t[d] = t[d] || {}; Object.entries(o).forEach(([k,v]) => { t[d][k] = Math.max(t[d][k]||0, v); }); }); });
     return makeDb({events:mergeById(l.events,r.events), todos:mergeById(l.todos,r.todos), ideas:mergeById(l.ideas,r.ideas), tags, diary, settings:r.settings,
-      habits:r.habits||l.habits, habitLog:r.habitLog||l.habitLog, habitsBy, habitLogBy, trips:mergeById(l.trips,r.trips), anniv:mergeById(l.anniv,r.anniv), hwBy:mergeBy(l.hwBy,r.hwBy), media:mergeById(l.media,r.media)});
+      habits:r.habits||l.habits, habitLog:r.habitLog||l.habitLog, habitsBy, habitLogBy, trips:mergeById(l.trips,r.trips), anniv:mergeById(l.anniv,r.anniv), hwBy:mergeBy(l.hwBy,r.hwBy), media:mergeById(l.media,r.media), money, shop:mergeById(l.shop,r.shop), shopFreq});
   }
+  // 共用範圍：只有這些放在家庭空間，其餘都是個人資料（存在自己的帳號）
+  const SHARED = ['events','todos','tags','anniv','money','shop','shopFreq'];
+  const pick = (o, keys) => { const r = {}; keys.forEach(k => { if(o[k] !== undefined) r[k] = o[k]; }); return r; };
+  const omit = (o, keys) => { const r = Object.assign({}, o); keys.forEach(k => delete r[k]); return r; };
   function applyRemote(data){
     db = makeDb(data);
     try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
@@ -1044,28 +1090,43 @@ const Sync = (() => {
   }
   const userRef = () => firebase.firestore().collection('users').doc(user.uid);
   const spaceRef = id => firebase.firestore().collection('spaces').doc(id);
-  let spaceId = null, members = 0;
-  function detach(){ if(unsub){ unsub(); unsub = null; } ref = null; ready = false; spaceId = null; members = 0; renderFamily(); }
-  async function attach(r, sid, mergeLocal){
-    detach(); ref = r; spaceId = sid;
-    const snap = await ref.get();
-    if(snap.exists && snap.data().json){ const remote = JSON.parse(snap.data().json); applyRemote(mergeLocal ? merge(remote, db) : remote); }
-    if(sid && snap.exists) members = (snap.data().members||[]).length;
-    ready = true;
-    if(mergeLocal || !snap.exists || !snap.data().json) push(); else badge(sid ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
-    unsub = ref.onSnapshot(sn => {
+  let spaceId = null, members = 0, uRef = null, sRef = null, unsubS = null, lastU = '', lastS = '', seenU = '', seenS = '';
+  function detach(){ if(unsub){ unsub(); unsub = null; } if(unsubS){ unsubS(); unsubS = null; } ref = uRef = sRef = null; ready = false; spaceId = null; members = 0; renderFamily(); }
+  const okBadge = () => badge(spaceId ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
+  async function attach(sid, mergeLocal){
+    detach(); spaceId = sid; uRef = ref = userRef(); sRef = sid ? spaceRef(sid) : null;
+    const us = await uRef.get(), ud = us.exists ? us.data() : {};
+    let uData = ud.json ? JSON.parse(ud.json) : null, sData = null; seenU = ud.json || ''; seenS = '';
+    if(sid){
+      const ss = await sRef.get(), sd = ss.exists ? ss.data() : {};
+      sData = sd.json ? JSON.parse(sd.json) : null; seenS = sd.json || ''; members = (sd.members||[]).length;
+      // 舊版把全部資料都放在家庭空間；第一次用新版時，把個人的部分複製回自己的帳號
+      if(!ud.v2 && sData) uData = uData ? merge(sData, uData) : sData;
+    }
+    let next = makeDb(uData || {});
+    if(sid && sData) next = makeDb(Object.assign({}, next, pick(makeDb(sData), SHARED)));
+    if(mergeLocal) next = merge(next, db);
+    if(uData || sData || mergeLocal) applyRemote(next);
+    ready = true; lastU = lastS = ''; push(true);
+    unsub = uRef.onSnapshot(sn => {
+      const d = sn.data(); if(!d || !d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenU || d.json === lastU) return;
+      seenU = d.json; const nu = JSON.parse(d.json); lastU = d.json;
+      applyRemote(spaceId ? Object.assign({}, makeDb(nu), pick(db, SHARED)) : nu); okBadge();
+    }, e => { console.warn(e); badge('⚠️ 同步失敗'); });
+    if(sRef) unsubS = sRef.onSnapshot(sn => {
       const d = sn.data(); if(!d) return;
-      if(sid){ members = (d.members||[]).length; renderFamily(); }
-      if(!d.json || d.device === DEVICE || sn.metadata.hasPendingWrites) return;
-      applyRemote(JSON.parse(d.json)); badge(sid ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
+      members = (d.members||[]).length; renderFamily();
+      if(!d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenS || d.json === lastS) return;
+      seenS = d.json; lastS = d.json;
+      applyRemote(Object.assign({}, omit(db, SHARED), pick(makeDb(JSON.parse(d.json)), SHARED))); okBadge();
     }, e => { console.warn(e); badge('⚠️ 同步失敗'); });
     renderFamily();
   }
   async function createSpace(){
     const id = Array.from(crypto.getRandomValues(new Uint8Array(15)), x => 'abcdefghijkmnpqrstuvwxyz23456789'[x % 32]).join('');
-    await spaceRef(id).set({members:[user.uid], owner:user.uid, json:JSON.stringify(db), device:DEVICE, updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await spaceRef(id).set({members:[user.uid], owner:user.uid, json:JSON.stringify(pick(db, SHARED)), device:DEVICE, updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     await userRef().set({space:id}, {merge:true});
-    await attach(spaceRef(id), id, false);
+    await attach(id, false);
     toast('家庭空間建立好了！把邀請連結傳給家人吧 👨‍👩‍👧');
   }
   async function joinSpace(code){
@@ -1074,16 +1135,16 @@ const Sync = (() => {
     try{
       await spaceRef(code).update({members: firebase.firestore.FieldValue.arrayUnion(user.uid)});
     }catch(e){ toast('加入失敗：邀請碼不正確，或家庭空間不存在'); console.warn(e); return; }
-    await userRef().set({space:code}, {merge:true});
-    await attach(spaceRef(code), code, true);
-    toast('已加入家庭空間，資料開始共用 🎉');
+    await userRef().set({space:code, v2:true}, {merge:true});
+    await attach(code, true);
+    toast('已加入家庭空間，開始共用購物清單、待辦、行事曆和記帳 🎉');
   }
   async function leaveSpace(){
-    if(!spaceId || !confirm('離開後就不再和家人共用，目前的資料會複製一份留在你自己的帳號。確定離開？')) return;
+    if(!spaceId || !confirm('離開後就不再和家人共用，共用的資料會複製一份留在你自己的帳號。確定離開？')) return;
     const sid = spaceId;
-    await userRef().set({space:firebase.firestore.FieldValue.delete(), json:JSON.stringify(db), device:DEVICE, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    await userRef().set({space:firebase.firestore.FieldValue.delete(), json:JSON.stringify(db), device:DEVICE, v2:true, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
     try{ await spaceRef(sid).update({members: firebase.firestore.FieldValue.arrayRemove(user.uid)}); }catch(e){}
-    await attach(userRef(), null, false);
+    await attach(null, false);
     toast('已離開家庭空間');
   }
   const inviteLink = () => location.origin + location.pathname + '?join=' + spaceId;
@@ -1091,13 +1152,14 @@ const Sync = (() => {
     const box = $('#familyBox'); if(!box) return;
     if(!user){ box.innerHTML = '<p class="meta">登入後才能使用家庭共用。</p>'; return; }
     if(!spaceId){
-      box.innerHTML = `<p class="meta" style="margin-top:0">建立家庭空間後，把邀請連結傳給家人。家人用自己的 Google 帳號登入並加入，就能一起看、一起編輯所有資料。</p>
+      box.innerHTML = `<p class="meta" style="margin-top:0">建立家庭空間後，把邀請連結傳給家人。家人用自己的 Google 帳號登入並加入，就能一起編輯：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳。日記、靈感、習慣、作業、旅行、書影劇都只有自己看得到。</p>
         <button class="btn" id="famCreate">建立家庭空間</button>
         <div class="row" style="margin-top:12px"><input type="text" id="famCode" placeholder="或貼上家人給你的邀請碼／連結"><button class="btn white" id="famJoin">加入</button></div>`;
       $('#famCreate').onclick = () => createSpace().catch(e => toast('建立失敗：' + (e.message||e.code)));
       $('#famJoin').onclick = () => joinSpace($('#famCode').value);
     } else {
       box.innerHTML = `<p style="margin-top:0;font-weight:700">✅ 你已在家庭空間裡，目前有 ${members||1} 位成員一起共用。</p>
+        <p class="meta">👨‍👩‍👧 共用：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳<br>🔒 只有自己：日記心情、靈感、習慣、作業、旅行、書影劇、提醒設定</p>
         <p class="meta">邀請家人：把下面的連結傳給他，用他自己的 Google 帳號登入後就會問要不要加入。</p>
         <div class="row"><input type="text" id="famLink" readonly value="${esc(inviteLink())}"><button class="btn blue" id="famCopy">複製連結</button></div>
         <button class="btn white" id="famLeave" style="margin-top:12px">離開家庭空間</button>`;
@@ -1105,13 +1167,18 @@ const Sync = (() => {
       $('#famLeave').onclick = () => leaveSpace().catch(e => toast('操作失敗：' + (e.message||e.code)));
     }
   }
-  function push(){
-    if(!ref || !ready) return;
-    badge('☁️ 同步中…'); clearTimeout(timer);
+  function push(force){
+    if(!uRef || !ready) return;
+    clearTimeout(timer);
     timer = setTimeout(() => {
-      ref.set({json: JSON.stringify(db), device: DEVICE, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
-        .then(() => badge(spaceId ? '👨‍👩‍👧 已同步' : '☁️ 已同步')).catch(e => { badge('⚠️ 同步失敗'); console.warn(e); });
-    }, 700);
+      const ts = firebase.firestore.FieldValue.serverTimestamp(), jobs = [];
+      const uj = JSON.stringify(spaceId ? omit(db, SHARED) : db);
+      if(force || uj !== lastU){ lastU = uj; jobs.push(uRef.set({json:uj, device:DEVICE, v2:true, updatedAt:ts}, {merge:true})); }
+      if(sRef){ const sj = JSON.stringify(pick(db, SHARED)); if(force || sj !== lastS){ lastS = sj; jobs.push(sRef.set({json:sj, device:DEVICE, updatedAt:ts}, {merge:true})); } }
+      if(!jobs.length) return;
+      badge('☁️ 同步中…');
+      Promise.all(jobs).then(okBadge).catch(e => { badge('⚠️ 同步失敗'); console.warn(e); });
+    }, force ? 0 : 700);
   }
   function ui(){
     const on = !!FIREBASE_CONFIG;
@@ -1143,7 +1210,7 @@ const Sync = (() => {
         try{
           const us = await userRef().get();
           const sp = us.exists && us.data().space;
-          await attach(sp ? spaceRef(sp) : userRef(), sp || null, localStorage.getItem('pa-synced-uid') !== u.uid);
+          await attach(sp || null, localStorage.getItem('pa-synced-uid') !== u.uid);
           localStorage.setItem('pa-synced-uid', u.uid);
           if(u.email) userRef().set({email:u.email}, {merge:true}).catch(()=>{}); // 讓 Email 提醒找得到你的資料
           if(pushOn()) getPushToken().catch(e => console.warn('push', e));
@@ -1195,7 +1262,7 @@ const Sync = (() => {
     if(t && user) await userRef().update({pushTokens: firebase.firestore.FieldValue.arrayRemove(t)}).catch(()=>{});
     try{ if(firebase.messaging) await firebase.messaging().deleteToken(); }catch(e){}
   }
-  return {push, init, uid: () => user ? user.uid : null, enablePush, disablePush, pushOn};
+  return {push, init, uid: () => user ? user.uid : null, name: () => user ? (user.displayName || (user.email||'').split('@')[0] || '').split(' ')[0] : '', enablePush, disablePush, pushOn};
 })();
 const progress = t => t.steps.length ? Math.round(t.steps.filter(s=>s.done).length / t.steps.length * 100) : (t.done ? 100 : 0);
 const startOf = t => t.start || (t.due && ymd(new Date(t.createdAt)) > t.due ? t.due : ymd(new Date(t.createdAt)));
@@ -1415,7 +1482,10 @@ function renderDoneLog(){
 const MOODS = ['😄','🙂','😐','😢','😡','😴','🥳'];
 const CATS = {out:['餐飲','交通','購物','生活','學習','娛樂','醫療','其他'], in:['薪水','獎金','零用','其他']};
 let dDate = today(), dShownFor = null, dTimer = null;
-const entry = ds => db.diary[ds] || (db.diary[ds] = {mood:'', text:'', money:[]});
+const entry = ds => db.diary[ds] || (db.diary[ds] = {mood:'', text:''});
+const mlist = ds => db.money[ds] || [];
+const mlistW = ds => db.money[ds] || (db.money[ds] = []);
+const monthMoney = (ym, f) => Object.keys(db.money).filter(k=>k.startsWith(ym)).forEach(k => db.money[k].forEach(f));
 const money = n => Number(n).toLocaleString('zh-TW');
 function fillCats(){ $('#mCat').innerHTML = CATS[$('#mKind').value].map(c=>`<option>${c}</option>`).join(''); }
 $('#mKind').onchange = fillCats; fillCats();
@@ -1429,25 +1499,25 @@ $('#dText').addEventListener('input', () => {
 function addMoney(){
   const amt = parseFloat($('#mAmt').value);
   if(!(amt>0)){ toast('請輸入金額'); return; }
-  entry(dDate).money.push({id:uid(), kind:$('#mKind').value, amt, cat:$('#mCat').value, note:$('#mNote').value.trim()});
+  mlistW(dDate).push({id:uid(), by:Sync.name(), kind:$('#mKind').value, amt, cat:$('#mCat').value, note:$('#mNote').value.trim()});
   $('#mAmt').value=''; $('#mNote').value=''; save(); toast('記好了 💰'); $('#mAmt').focus();
 }
 $('#mAdd').onclick = addMoney;
 ['#mAmt','#mNote'].forEach(sel => $(sel).addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) addMoney(); }));
 function renderDiary(){
-  const e = db.diary[dDate] || {mood:'', text:'', money:[]};
+  const e = db.diary[dDate] || {mood:'', text:''}, ml = mlist(dDate);
   $('#dLabel').textContent = prettyDate(dDate) + (dDate===today()?' 今天':'');
   if(dShownFor !== dDate){ clearTimeout(dTimer); $('#dText').value = e.text || ''; $('#dSaved').textContent = '會自動儲存'; dShownFor = dDate; }
   $('#dMoods').innerHTML = MOODS.map(m=>`<button class="${e.mood===m?'on':''}" data-act="mood" data-m="${m}">${m}</button>`).join('');
   const dn = doneOn(dDate);
   $('#dDone').innerHTML = dn.length ? dn.map(x=>`<li><span class="meta">${hm(x.at)}</span> ${x.html}</li>`).join('') : '<li class="empty" style="list-style:none;margin-left:-20px">這天還沒有勾掉的待辦</li>';
-  const out = e.money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = e.money.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
-  $('#mList').innerHTML = e.money.length ? e.money.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="delMoney" data-mid="${m.id}">✕</button></div>`).join('')
+  const out = ml.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = ml.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
+  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="delMoney" data-mid="${m.id}">✕</button></div>`).join('')
     + `<div class="money" style="font-weight:900"><span class="grow">這天合計</span>${out?`<span class="amt out">支出 $${money(out)}</span>`:''}${inc?`<span class="amt in">收入 $${money(inc)}</span>`:''}</div>`
     : '<div class="empty">這天還沒有記帳</div>';
   // 本月
   const ym = dDate.slice(0,7); let mo = 0, mi = 0; const byCat = {};
-  Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k => db.diary[k].money.forEach(m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; } else mi += m.amt; }));
+  monthMoney(ym, m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; } else mi += m.amt; });
   $('#mMonthTitle').textContent = `📊 ${+ym.slice(5)} 月收支`;
   const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>`
@@ -1455,8 +1525,8 @@ function renderDiary(){
   renderEntries();
 }
 function renderEntries(){
-  const keys = Object.keys(db.diary).filter(k => { const e = db.diary[k]; return e.text || e.mood || e.money.length; }).sort().reverse().slice(0,10);
-  $('#dEntries').innerHTML = keys.length ? keys.map(k => { const e = db.diary[k], out = e.money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
+  const keys = Object.keys(db.diary).filter(k => { const e = db.diary[k]; return e.text || e.mood; }).sort().reverse().slice(0,10);
+  $('#dEntries').innerHTML = keys.length ? keys.map(k => { const e = db.diary[k], out = mlist(k).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
     return `<div class="entry" data-act="openDiary" data-date="${k}"><b>${e.mood||'📝'} ${prettyDate(k)}</b>${out?` <span class="meta">· 支出 $${money(out)}</span>`:''}<div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc((e.text||'').split('\n')[0])||'（沒有文字）'}</div></div>`; }).join('')
     : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/tabby.svg" alt="">還沒有日記，虎斑想聽你今天的故事 ✍️</div>';
 }
@@ -1657,6 +1727,14 @@ document.addEventListener('click', e => {
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
     case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
     case 'hEmoji': hEmoji = b.dataset.e; renderHabits(); return;
+    case 'shopToggle': { const x = db.shop.find(y=>y.id===sid); if(!x) return; x.done = !x.done; x.doneAt = x.done ? Date.now() : null; x.gotBy = x.done ? Sync.name() : '';
+      if(x.done){ const f = db.shopFreq[x.name] || {n:0}; db.shopFreq[x.name] = {n:f.n+1, cat:x.cat, last:today()}; sparkle(lastXY[0], lastXY[1], 6);
+        if(!db.shop.some(y=>!y.done)) celebrate('全部買齊了！🛒'); } break; }
+    case 'shopDel': db.shop = db.shop.filter(y=>y.id!==sid); break;
+    case 'shopCat': { const x = db.shop.find(y=>y.id===sid); if(!x) return; const i = SHOP_CATS.findIndex(c=>c[0]===catOf(x.cat)[0]); x.cat = SHOP_CATS[(i+1)%SHOP_CATS.length][0];
+      if(db.shopFreq[x.name]) db.shopFreq[x.name].cat = x.cat; toast(`改成 ${catOf(x.cat)[1]} ${catOf(x.cat)[2]}`); break; }
+    case 'shopStore': shopStore = b.dataset.st; renderShop(); return;
+    case 'shopRe': shopAdd(b.dataset.n); return;
     case 'toggleHw': { const h = myHw().find(x=>x.id===b.dataset.hid); if(!h) return; h.done = !h.done; h.doneAt = h.done ? Date.now() : null; if(h.done){ toast('作業完成！수고했어 📚✨'); celebrate('📚 作業交出去了！'); } break; }
     case 'editHw': hwEdit(b.dataset.hid); return;
     case 'delHw': { if(!confirm('確定刪除這份作業？')) return; const a = myHw(), i = a.findIndex(x=>x.id===b.dataset.hid); if(i>=0) a.splice(i,1); break; }
@@ -1684,7 +1762,7 @@ document.addEventListener('click', e => {
     case 'delTag': { e.stopPropagation(); const n = b.dataset.tag; if(!confirm(`刪除「${n}」標籤？使用這個標籤的待辦會變成不分類。`)) return;
       db.tags = db.tags.filter(x=>x.name!==n); db.todos.forEach(x=>{ if(x.tag===n) x.tag=''; }); if(pickTag===n) pickTag=''; if(filterTag===n) filterTag=''; break; }
     case 'mood': { const en = entry(dDate); en.mood = en.mood===b.dataset.m ? '' : b.dataset.m; break; }
-    case 'delMoney': { const en = entry(dDate); en.money = en.money.filter(m=>m.id!==b.dataset.mid); break; }
+    case 'delMoney': { db.money[dDate] = mlist(dDate).filter(m=>m.id!==b.dataset.mid); if(!db.money[dDate].length) delete db.money[dDate]; break; }
     case 'openDiary': dDate = date; renderDiary(); window.scrollTo(0,0); return;
     case 'toggleCd': if(td){ td.countdown = !td.countdown; toast(td.countdown?'已開啟倒數小提示 ⏳':'已關閉倒數小提示'); } break;
     case 'delStep': if(td) td.steps = td.steps.filter(x=>x.id!==sid); break;
@@ -1849,6 +1927,83 @@ function renderMedia(){
   $('#mdList').innerHTML = html || `<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/tabby.svg" alt="">${f==='want'?'把想看的先記下來，虎斑幫你記著':'還沒有紀錄，看完一本書或一部劇就來記一筆吧！'}</div>`;
 }
 
+// ---------- 購物清單（全家共用） ----------
+const SHOP_CATS = [
+  ['veg','🥬','蔬果',/菜|蔥|薑|蒜|菇|瓜|果|蕉|蘋果|橘|橙|莓|芭樂|番茄|蕃茄|馬鈴薯|洋蔥|紅蘿蔔|玉米|檸檬|葡萄|梨|桃|芒果|奇異果|酪梨|豆芽|菠菜|高麗菜|地瓜|芋頭/],
+  ['dairy','🥛','乳品蛋',/奶|蛋|優格|起司|乳酪|奶油|豆漿/],
+  ['meat','🥩','肉類海鮮',/肉|雞|豬|牛排|牛肉|魚|蝦|蟹|蛤|花枝|鮭|鯛|培根|火腿|香腸|絞肉|排骨|海鮮/],
+  ['food','🍞','食品零食',/麵包|吐司|米|麵|餅|零食|巧克力|糖|咖啡|茶|果汁|飲料|醬|油|鹽|醋|罐頭|泡麵|麥片|穀|豆腐|水餃|冷凍|冰淇淋|調味/],
+  ['daily','🧴','日用品',/衛生紙|面紙|紙巾|洗|皂|牙|刷|沐浴|洗髮|潤|垃圾袋|保鮮|電池|燈泡|清潔|漂白|拖把|抹布|棉|毛巾|濕紙巾|芳香|夾鏈袋|鋁箔/],
+  ['baby','👶','寶寶',/尿布|奶粉|奶瓶|副食品|寶寶|嬰|兒童|童/],
+  ['pet','🐾','毛孩',/貓|狗|飼料|罐罐|貓砂|尿布墊|零食條|肉泥|寵物|潔牙骨/],
+  ['med','💊','藥品保健',/藥|維他命|維生素|保健|口罩|ok繃|OK繃|酒精|體溫|魚油|益生菌|葉黃素/],
+  ['other','📦','其他',/.^/]];
+const SHOP_STORES = ['全聯','好市多','家樂福','藥局','網購','市場'];
+const catOf = k => SHOP_CATS.find(c=>c[0]===k) || SHOP_CATS[SHOP_CATS.length-1];
+const guessCat = n => (SHOP_CATS.find(c => c[3].test(n)) || SHOP_CATS[SHOP_CATS.length-1])[0];
+let shopStore = '';
+function parseShop(text){
+  return text.split(/[、，,\n；;]+|\s{2,}/).map(x=>x.trim()).filter(Boolean).map(x => {
+    const m = x.match(/^(.*?)\s*[xX×*]?\s*(\d+\s*(?:個|瓶|包|盒|罐|顆|袋|條|片|斤|公斤|入|組|串|把|箱|卷|捲|杯|份|隻)?)$/);
+    const name = (m && m[1].trim()) ? m[1].trim() : x, qty = (m && m[1].trim()) ? m[2].replace(/\s+/g,'') : '';
+    return {name, qty};
+  });
+}
+function shopAdd(text, voice){
+  const items = parseShop(text||''); if(!items.length) return 0;
+  items.forEach(({name, qty}) => {
+    const same = db.shop.find(x => !x.done && x.name===name);
+    if(same){ if(qty) same.qty = qty; return; }
+    db.shop.push({id:uid(), name, qty, cat:(db.shopFreq[name]||{}).cat || guessCat(name), store:shopStore, done:false, by:Sync.name(), createdAt:Date.now()});
+  });
+  save(); toast(`🛒 加入 ${items.map(x=>x.name).join('、')}`); if(voice) speak('加好了');
+  return items.length;
+}
+$('#shopAddBtn').onclick = () => { if(shopAdd($('#shopInput').value)) $('#shopInput').value = ''; };
+$('#shopInput').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) $('#shopAddBtn').click(); });
+$('#shopMic').onclick = () => {
+  if(!SR){ toast('這個瀏覽器不支援語音輸入，可以點輸入框、用鍵盤上的麥克風說話 🎤'); $('#shopInput').focus(); return; }
+  if(listening){ rec.stop(); return; }
+  let text = ''; const btn = $('#shopMic');
+  rec = new SR(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false;
+  rec.onresult = e => { text = Array.from(e.results).map(r => r[0].transcript).join(''); $('#shopInput').value = text; };
+  rec.onerror = e => toast(e.error==='not-allowed' ? '請允許這個網站使用麥克風' : '沒有聽清楚，再按一次試試');
+  rec.onend = () => { listening = false; btn.classList.remove('on'); btn.textContent = '🎤';
+    if(text && shopAdd(text.replace(/還有|跟|和/g, '、'), true)) $('#shopInput').value = ''; };
+  try{ rec.start(); listening = true; btn.classList.add('on'); btn.textContent = '⏹'; $('#shopInput').placeholder = '🎙️ 請說，例如：牛奶兩瓶、雞蛋、貓砂'; }catch(e){ toast('無法開始錄音'); }
+};
+$('#shopClear').onclick = () => { const n = db.shop.filter(x=>x.done).length; if(!n){ toast('還沒有買好的東西'); return; } db.shop = db.shop.filter(x=>!x.done); save(); toast(`清掉 ${n} 樣買好的東西 🧹`); };
+$('#shopPay').onclick = () => {
+  const got = db.shop.filter(x=>x.done); if(!got.length){ toast('先把買好的東西打勾，再結帳記一筆'); return; }
+  const v = prompt(`這次買了 ${got.length} 樣（${got.slice(0,4).map(x=>x.name).join('、')}${got.length>4?'…':''}），總共花多少錢？`); if(v===null) return;
+  const amt = Math.round(+String(v).replace(/[^\d.]/g,'')); if(!amt){ toast('請輸入金額'); return; }
+  const stores = [...new Set(got.map(x=>x.store).filter(Boolean))];
+  mlistW(today()).push({id:uid(), kind:'out', amt, cat:'購物', note:(stores.length?stores.join('、')+'：':'') + got.map(x=>x.name).join('、').slice(0,60), by:Sync.name()});
+  db.shop = db.shop.filter(x=>!x.done); save(); celebrate(`記好帳了：$${money(amt)}`);
+};
+function shopRow(x){
+  const c = catOf(x.cat);
+  return `<div class="sitem ${x.done?'got':''}"><input type="checkbox" class="chk" data-act="shopToggle" data-sid="${x.id}" ${x.done?'checked':''} aria-label="買好了">
+    <div class="grow"><span class="nm">${esc(x.name)}</span>${x.qty?`<span class="qty">${esc(x.qty)}</span>`:''}
+      <div class="meta" style="font-size:12px">${x.store?`📍${esc(x.store)} · `:''}${x.by?esc(x.by)+' 加的':''}${x.done&&x.gotBy?` · ${esc(x.gotBy)} 買了`:''}</div></div>
+    <button class="icon" data-act="shopCat" data-sid="${x.id}" title="換分類">${c[1]}</button><button class="icon" data-act="shopDel" data-sid="${x.id}" title="刪除">✕</button></div>`;
+}
+function renderShop(){
+  const open = db.shop.filter(x=>!x.done && (!shopStore || x.store===shopStore || !x.store)), got = db.shop.filter(x=>x.done);
+  $('#shopCount').textContent = `還要買 ${db.shop.filter(x=>!x.done).length} 樣`;
+  $('#shopStores').innerHTML = `<span class="meta" style="white-space:nowrap;flex:none">在哪買：</span>` + [''].concat(SHOP_STORES).map(st => `<button class="tchip ${shopStore===st?'on':''}" data-act="shopStore" data-st="${st}" style="${shopStore===st?'background:var(--yellow)':''}">${st||'不限'}</button>`).join('');
+  let html = '';
+  SHOP_CATS.forEach(c => { const its = open.filter(x=>catOf(x.cat)[0]===c[0]).sort((a,b)=>a.createdAt-b.createdAt); if(!its.length) return;
+    html += `<div class="shopcat">${c[1]} ${c[2]} <span class="meta">${its.length}</span></div>` + its.map(shopRow).join(''); });
+  if(got.length) html += `<div class="shopcat">✅ 放進購物車了 <span class="meta">${got.length}</span></div>` + got.sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).map(shopRow).join('');
+  $('#shopList').innerHTML = html || `<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/shiba.svg" alt="">清單空空的，柴柴想要罐罐 🦴</div>`;
+  const onList = new Set(db.shop.filter(x=>!x.done).map(x=>x.name));
+  const freq = Object.entries(db.shopFreq).filter(([n]) => !onList.has(n)).sort((a,b)=>b[1].n-a[1].n).slice(0,18);
+  $('#shopFreqBar').innerHTML = freq.length ? freq.map(([n,v]) => `<button class="tchip" data-act="shopRe" data-n="${esc(n)}">${catOf(v.cat)[1]} ${esc(n)}</button>`).join('') : '<span class="meta">買過的東西會出現在這裡</span>';
+  const w = db.shop.filter(x=>!x.done);
+  $('#wShop').innerHTML = w.length ? w.slice(0,6).map(x=>`<div class="mini"><input type="checkbox" class="chk sm" data-act="shopToggle" data-sid="${x.id}"><span class="t">${catOf(x.cat)[1]} ${esc(x.name)}${x.qty?' ×'+esc(x.qty):''}</span></div>`).join('') + (w.length>6?`<div class="meta">還有 ${w.length-6} 樣</div>`:'') : '<div class="empty">沒有要買的東西 🎉</div>';
+}
+
 // ---------- 習慣追蹤 ----------
 const HABIT_EMOJIS = ['💧','🏃','🧘','📖','💊','🥗','😴','🧹','🍎','✍️','🦷','🚶','🙏','📵','👶'];
 let hEmoji = '🏃', hDate = today();
@@ -1994,8 +2149,8 @@ function renderDash(){
     <div class="tile"><b>${db.trips.filter(x=>x.type==='travel').length} 次</b><span>旅遊</span></div><div class="tile"><b>${new Set(db.trips.map(ctry)).size}</b><span>去過的國家</span></div></div>`
     + (lastT ? `<div class="meta" style="margin-top:8px">最近一次：${prettyDate(lastT.start)} ${esc(lastT.title)}（${esc(placeOf(lastT))}）</div>` : '<div class="meta" style="margin-top:8px">還沒有紀錄，下次出門記得記一筆！</div>');
   const ym = t.slice(0,7); let mo = 0, mi = 0;
-  Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k => db.diary[k].money.forEach(m => m.kind==='out' ? mo += m.amt : mi += m.amt));
-  const todayOut = ((db.diary[t]||{money:[]}).money).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
+  monthMoney(ym, m => m.kind==='out' ? mo += m.amt : mi += m.amt);
+  const todayOut = mlist(t).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
   $('#wMoney').innerHTML = `<div class="tiles"><div class="tile"><b>$${money(todayOut)}</b><span>今天支出</span></div><div class="tile"><b>$${money(mo)}</b><span>本月支出</span></div>
     <div class="tile"><b>$${money(mi)}</b><span>本月收入</span></div><div class="tile"><b>$${money(mi-mo)}</b><span>本月結餘</span></div></div>`;
 }
@@ -2079,8 +2234,8 @@ function answer(q){
     const top = Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,n])=>`${c} ${n} 次`).join('、');
     return `【旅行露營】\n累積露營：${camps.length} 露（${yr} 年 ${camps.filter(x=>x.start.startsWith(yr)).length} 露），共 ${camps.reduce((a,x)=>a+nights(x),0)} 晚\n旅遊：${tr.length} 次\n去過 ${Object.keys(by).length} 個縣市${top?`\n最常去：${top}`:''}${last?`\n最近一次：${prettyDate(last.start)} ${last.title}（${last.county}）`:''}`; }
   if(/喝水|習慣|運動/.test(q)){ const t = today(); return myHabits().length ? '【今天的習慣】\n' + myHabits().map(h=>`  ${h.emoji} ${h.name}：${hCount(t,h.id)}/${h.target} ${h.unit||''}${hCount(t,h.id)>=h.target?' ✓':''}${streak(h)>1?`（連續 ${streak(h)} 天）`:''}`).join('\n') : '還沒有設定習慣喔，到「習慣」新增一個吧！'; }
-  if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; Object.keys(db.diary).filter(k=>k.startsWith(ym)).forEach(k=>db.diary[k].money.forEach(m=>m.kind==='out'?o+=m.amt:i+=m.amt));
-    const td = (db.diary[today()]||{money:[]}).money.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
+  if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; monthMoney(ym, m=>m.kind==='out'?o+=m.amt:i+=m.amt);
+    const td = mlist(today()).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
     return `【記帳】\n今天支出：$${money(td)}\n本月支出：$${money(o)}\n本月收入：$${money(i)}\n本月結餘：$${money(i-o)}`; }
   if(/完成了什麼|做了什麼|完成紀錄/.test(q)){ const dn = doneOn(today()); return dn.length ? `【今天完成了 ${dn.length} 項】\n` + dn.map(x=>`  ✓ ${x.text}`).join('\n') : '今天還沒有勾掉任何事，挑一件小的開始吧！'; }
   if(/靈感|點子|想法/.test(q)) return ideaReport();
@@ -2251,7 +2406,7 @@ $('#importFile').onchange = e => {
 };
 $('#wipeBtn').onclick = () => { if(confirm('真的要清空所有行程、待辦、靈感、日記、習慣和旅行紀錄嗎？這無法復原。')){ db = makeDb(); save(); toast('已清空'); } };
 
-function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderHeroIdeas(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); renderHw(); renderMedia(); }
+function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderHeroIdeas(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); renderHw(); renderMedia(); renderShop(); }
 
 load(); renderAll(); updateNotice(); checkReminders(); Sync.init();
 setInterval(checkReminders, 20000);
