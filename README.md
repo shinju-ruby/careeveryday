@@ -5,3 +5,7 @@
 - 單一 `index.html`，純 HTML/CSS/JavaScript，不需要安裝。
 - 資料只存在使用者自己的瀏覽器（localStorage），不會上傳到任何伺服器。可在「設定」匯出／匯入備份。
 - 提醒需要網頁保持開啟。
+
+## 授權與來源
+
+- 台灣縣市地圖資料改寫自 [taiwan-atlas](https://github.com/dkaoster/taiwan-atlas)（MIT License, Copyright (c) 2020 Daniel Kao）。
