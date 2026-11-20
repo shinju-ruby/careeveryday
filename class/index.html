@@ -201,10 +201,8 @@ const FB = {
     ids.forEach(id => b.set(this.db.collection('cl_pay').doc(id), { ...patch, courseId, updatedAt:this.ts(), ...(S.admin ? {} : { uid:S.user.uid }) }, { merge:true }));
     await b.commit();
   },
-  async clearSignups(cid){
-    const q = await this.db.collection('cl_signups').where('courseId', '==', cid).get(), docs = q.docs;
-    for(let i = 0; i < docs.length; i += 200){ const b = this.db.batch(); docs.slice(i, i + 200).forEach(d => { b.delete(d.ref); b.delete(this.db.collection('cl_pay').doc(d.id)); }); await b.commit(); }
-    return docs.length;
+  async setCleared(ids, tag){
+    for(let i = 0; i < ids.length; i += 400){ const b = this.db.batch(); ids.slice(i, i + 400).forEach(id => b.update(this.db.collection('cl_signups').doc(id), { cleared: tag || null })); await b.commit(); }
   },
   async saveCourse(id, data){ const ref = id ? this.db.collection('cl_courses').doc(id) : this.db.collection('cl_courses').doc();
     if('openAt' in data) data = { ...data, openAt: data.openAt ? firebase.firestore.Timestamp.fromMillis(data.openAt) : null };
@@ -255,7 +253,7 @@ const DEMO = {
   async setPays(ids, patch, courseId){ const d = this.load(); ids.forEach(id => { d.pays[id] = { ...(d.pays[id] || { uid:S.user.uid, courseId }), ...patch }; }); this.save(d); },
   async saveCourse(id, data){ const d = this.load(); id = id || rid(); d.courses[id] = { ...(d.courses[id] || {}), ...data, updatedAt:Date.now() }; this.save(d); return id; },
   async delCourse(id){ const d = this.load(); delete d.courses[id]; this.save(d); },
-  async clearSignups(cid){ const d = this.load(); let n = 0; Object.keys(d.signups).forEach(id => { if(d.signups[id].courseId === cid){ delete d.signups[id]; delete d.pays[id]; n++; } }); this.save(d); return n; },
+  async setCleared(ids, tag){ const d = this.load(); ids.forEach(id => { if(d.signups[id]) d.signups[id].cleared = tag || null; }); this.save(d); },
   signIn(){ store.set('cl-demo-role', 'admin'); location.reload(); },
   signOut(){ store.set('cl-demo-role', 'parent'); location.reload(); }
 };
@@ -281,8 +279,9 @@ function fmtTime(ms){ const d = new Date(ms); return `${d.getMonth() + 1}/${d.ge
 function stateTag(c){ const st = regState(c); return st === 'open' ? '<span class="tag ok">報名中</span>' : st === 'soon' ? `<span class="tag wait">${esc(fmtTime(openMs(c)))} 開放</span>` : '<span class="tag off">暫停報名</span>'; }
 const sortedSessions = c => [...(c.sessions || [])].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
 const upcoming = (c, days) => sortedSessions(c).filter(s => s.date >= today(0) && s.date <= today(days));
+const live = cid => (S.signups[cid] || []).filter(x => !x.cleared);
 function roster(c, sid){
-  const all = (S.signups[c.id] || []).filter(x => x.sessionId === sid).sort((a, b) => a.t - b.t);
+  const all = live(c.id).filter(x => x.sessionId === sid).sort((a, b) => a.t - b.t);
   const act = all.filter(x => !x.cancelled), cap = Number(c.capacity) || 8;
   return { ok:act.slice(0, cap), wait:act.slice(cap), cancelled:all.filter(x => x.cancelled), cap };
 }
@@ -461,7 +460,7 @@ async function submitSignup(cid){
   const sids = [...document.querySelectorAll('#fPicks input:checked')].map(i => i.value), companions = Number($('#fComp').value) || 1, note = $('#fNote').value.trim();
   if(!parentName) return toast('請填家長名稱'); if(!lineId) return toast('請填 LINE ID，主揪才聯絡得到你'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
   if(!S.user) return toast('還在連線，請稍等一下再按');
-  const mine = (S.signups[cid] || []).filter(x => !x.cancelled && x.uid === S.user.uid);
+  const mine = live(cid).filter(x => !x.cancelled && x.uid === S.user.uid);
   const items = []; sids.forEach(sid => kids.forEach(k => { if(!mine.some(x => x.sessionId === sid && x.childName === k.name)) items.push({ courseId:cid, sessionId:sid, parentName, childName:k.name, childAge:k.age, companions, note, lineId }); }));
   if(!items.length) return toast('這些場次你都報過了喔');
   store.set('cl-profile', { parentName, lineId, kids, companions });
@@ -473,7 +472,7 @@ async function submitSignup(cid){
 
 function mineCard(c){
   if(!S.user) return '';
-  const mine = (S.signups[c.id] || []).filter(x => x.uid === S.user.uid && !x.cancelled && x.note !== '主揪代報');
+  const mine = live(c.id).filter(x => x.uid === S.user.uid && !x.cancelled && x.note !== '主揪代報');
   if(!mine.length) return '';
   const ss = sortedSessions(c), byS = id => ss.find(s => s.id === id) || { date:'1970-01-01', start:'', end:'', id };
   mine.sort((a, b) => (byS(a.sessionId).date + byS(a.sessionId).start).localeCompare(byS(b.sessionId).date + byS(b.sessionId).start));
@@ -499,7 +498,7 @@ async function cancelMine(cid, id){
 }
 async function reportPay(cid){
   const c = getCourse(cid), note = $('#payNote').value.trim(); if(!note) return toast('請填末五碼');
-  const ids = (S.signups[cid] || []).filter(x => x.uid === S.user.uid && !x.cancelled && statusOf(c, x).k === 'ok' && payOf(c, x.id).status !== 'confirmed').map(x => x.id);
+  const ids = live(cid).filter(x => x.uid === S.user.uid && !x.cancelled && statusOf(c, x).k === 'ok' && payOf(c, x.id).status !== 'confirmed').map(x => x.id);
   try{ await API.setPays(ids, { status:'reported', note }, cid); toast('已回報，謝謝！'); }catch(e){ toast('回報失敗：' + (e.message || e)); }
 }
 
@@ -518,6 +517,7 @@ function adminCourseCard(c){
       <button class="btn white" onclick="go('edit=${c.id}')">✏️ 編輯課程</button>
       <button class="btn white" onclick="go('edit=new&from=${c.id}')">📄 複製成新課程</button>
       <button class="btn white" style="color:#c33" onclick="clearSignups(${jsq(c.id)})">🗑 清空報名名單</button>
+      ${lastCleared(c) ? `<button class="btn yellow" onclick="restoreSignups(${jsq(c.id)})">↩️ 復原清空的 ${lastCleared(c).length} 筆</button>` : ''}
     </div></div>
 
     <div class="card"><h2>💰 繳費追蹤 <span class="tag ok">已收 ${paid}/${bill.length} 位家長</span></h2>
@@ -540,12 +540,21 @@ function adminCourseCard(c){
         <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse(${jsq(c.id)}), ${jsq(s.date)}))">📢 這天的上課提醒</button>
         <button class="btn sm white" onclick="manualAdd(${jsq(c.id)},${jsq(s.id)})">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
 }
+function lastCleared(c){
+  const cl = (S.signups[c.id] || []).filter(x => x.cleared); if(!cl.length) return null;
+  const tag = cl.map(x => x.cleared).sort().pop(); return cl.filter(x => x.cleared === tag);
+}
 async function clearSignups(cid){
-  const c = getCourse(cid), n = (S.signups[cid] || []).length;
-  if(!n) return toast('目前沒有報名資料');
-  if(!confirm(`確定要刪除「${c.title}」全部 ${n} 筆報名（含已取消、繳費紀錄）嗎？刪了就救不回來喔。`)) return;
-  if(!confirm('再確認一次：真的要清空嗎？')) return;
-  try{ const k = await API.clearSignups(cid); toast(`已清空 ${k} 筆報名`); }catch(e){ toast('清空失敗：' + e.message); }
+  const c = getCourse(cid), ids = live(cid).map(x => x.id);
+  if(!ids.length) return toast('目前沒有報名資料');
+  if(!confirm(`確定要清空「${c.title}」的 ${ids.length} 筆報名嗎？\n清空後名單會變空白，但資料先收起來，之後可以按「復原」拿回來。`)) return;
+  try{ await API.setCleared(ids, 't' + Date.now()); toast(`已清空 ${ids.length} 筆，可按「復原」拿回來`); }catch(e){ toast('清空失敗：' + e.message); }
+}
+async function restoreSignups(cid){
+  const c = getCourse(cid), back = lastCleared(c); if(!back) return;
+  const now = live(cid).filter(x => !x.cancelled).length;
+  if(!confirm(`要把上次清空的 ${back.length} 筆報名復原嗎？` + (now ? `\n注意：復原的人會回到原本的順位，排在目前 ${now} 筆新報名的前面。` : ''))) return;
+  try{ await API.setCleared(back.map(x => x.id), null); toast(`已復原 ${back.length} 筆`); }catch(e){ toast('復原失敗：' + e.message); }
 }
 async function toggleOpen(cid){ const c = getCourse(cid); try{ await API.saveCourse(cid, { open:!c.open }); toast(c.open ? '已暫停報名' : '已開放報名'); }catch(e){ toast('失敗：' + e.message); } }
 async function markPaid(cid, i, status){ const c = getCourse(cid), g = billing(c)[i]; try{ await API.setPays(g.items.map(it => it.x.id), { status }, cid); toast(status === 'confirmed' ? `已確認 ${g.name} 收款 ✅` : '已改回未繳'); }catch(e){ toast('失敗：' + e.message); } }
@@ -643,7 +652,7 @@ function genSessions(){
 }
 function delSess(i){
   const s = ED.sessions[i], r = route(), c = r.id !== 'new' && getCourse(r.id);
-  const cnt = c ? (S.signups[c.id] || []).filter(x => x.sessionId === s.id && !x.cancelled).length : 0;
+  const cnt = c ? live(c.id).filter(x => x.sessionId === s.id && !x.cancelled).length : 0;
   if(cnt && !confirm(`這場已有 ${cnt} 人報名，刪掉後他們會看不到這場，確定嗎？`)) return;
   ED.sessions.splice(i, 1); drawEd();
 }
