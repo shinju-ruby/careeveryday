@@ -884,7 +884,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 購物清單版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 購物清單版 2</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1079,7 +1079,7 @@ const Sync = (() => {
       habits:r.habits||l.habits, habitLog:r.habitLog||l.habitLog, habitsBy, habitLogBy, trips:mergeById(l.trips,r.trips), anniv:mergeById(l.anniv,r.anniv), hwBy:mergeBy(l.hwBy,r.hwBy), media:mergeById(l.media,r.media), money, shop:mergeById(l.shop,r.shop), shopFreq});
   }
   // 共用範圍：只有這些放在家庭空間，其餘都是個人資料（存在自己的帳號）
-  const SHARED = ['events','todos','tags','anniv','money','shop','shopFreq'];
+  const SHARED = ['events','todos','tags','anniv','money','shop','shopFreq','trips'];
   const pick = (o, keys) => { const r = {}; keys.forEach(k => { if(o[k] !== undefined) r[k] = o[k]; }); return r; };
   const omit = (o, keys) => { const r = Object.assign({}, o); keys.forEach(k => delete r[k]); return r; };
   function applyRemote(data){
@@ -1104,7 +1104,12 @@ const Sync = (() => {
       if(!ud.v2 && sData) uData = uData ? merge(sData, uData) : sData;
     }
     let next = makeDb(uData || {});
-    if(sid && sData) next = makeDb(Object.assign({}, next, pick(makeDb(sData), SHARED)));
+    if(sid && sData){
+      const S = makeDb(sData), own = next;
+      next = makeDb(Object.assign({}, next, pick(S, SHARED)));
+      // 後來改成共用的項目（旅遊露營）：自己帳號裡原有的紀錄併進共用空間，不會不見
+      if(own.trips.length) next.trips = mergeById(S.trips, own.trips);
+    }
     if(mergeLocal) next = merge(next, db);
     if(uData || sData || mergeLocal) applyRemote(next);
     ready = true; lastU = lastS = ''; push(true);
@@ -1152,14 +1157,14 @@ const Sync = (() => {
     const box = $('#familyBox'); if(!box) return;
     if(!user){ box.innerHTML = '<p class="meta">登入後才能使用家庭共用。</p>'; return; }
     if(!spaceId){
-      box.innerHTML = `<p class="meta" style="margin-top:0">建立家庭空間後，把邀請連結傳給家人。家人用自己的 Google 帳號登入並加入，就能一起編輯：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳。日記、靈感、習慣、作業、旅行、書影劇都只有自己看得到。</p>
+      box.innerHTML = `<p class="meta" style="margin-top:0">建立家庭空間後，把邀請連結傳給家人。家人用自己的 Google 帳號登入並加入，就能一起編輯：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳、🏕️ 旅遊露營。日記、靈感、習慣、作業、書影劇都只有自己看得到。</p>
         <button class="btn" id="famCreate">建立家庭空間</button>
         <div class="row" style="margin-top:12px"><input type="text" id="famCode" placeholder="或貼上家人給你的邀請碼／連結"><button class="btn white" id="famJoin">加入</button></div>`;
       $('#famCreate').onclick = () => createSpace().catch(e => toast('建立失敗：' + (e.message||e.code)));
       $('#famJoin').onclick = () => joinSpace($('#famCode').value);
     } else {
       box.innerHTML = `<p style="margin-top:0;font-weight:700">✅ 你已在家庭空間裡，目前有 ${members||1} 位成員一起共用。</p>
-        <p class="meta">👨‍👩‍👧 共用：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳<br>🔒 只有自己：日記心情、靈感、習慣、作業、旅行、書影劇、提醒設定</p>
+        <p class="meta">👨‍👩‍👧 共用：🛒 購物清單、✅ 待辦、📅 行事曆（含生日紀念日）、💰 記帳、🏕️ 旅遊露營<br>🔒 只有自己：日記心情、靈感、習慣、作業、書影劇、提醒設定</p>
         <p class="meta">邀請家人：把下面的連結傳給他，用他自己的 Google 帳號登入後就會問要不要加入。</p>
         <div class="row"><input type="text" id="famLink" readonly value="${esc(inviteLink())}"><button class="btn blue" id="famCopy">複製連結</button></div>
         <button class="btn white" id="famLeave" style="margin-top:12px">離開家庭空間</button>`;
