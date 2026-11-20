@@ -1838,7 +1838,7 @@ function renderSettings(){
   const st = db.settings;
   $('#sDailyOn').checked = st.daily.on; $('#sDailyTime').value = st.daily.time;
   $('#sWeeklyOn').checked = st.weekly.on; $('#sWeeklyTime').value = st.weekly.time;
-  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items!==false;
+  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true;
 }
 [['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
   db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));

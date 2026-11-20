@@ -3,7 +3,7 @@
  * 不用開網頁，也會照 App 裡的設定寄 Email 給你：
  *   1. 每天晚上「明天預告」（時間跟 App 設定頁一樣，預設 21:00）
  *   2. 週日晚上「下週預告」
- *   3. 每個行程的提前提醒、待辦的提醒時間
+ *   （行程、待辦的個別提醒預設不寄，要的話到 App 設定頁勾選）
  * 安裝步驟請看「安裝說明.md」。裝好後只要執行一次 setup。
  */
 const PROJECT_ID = 'careeveryday-c49fc';
@@ -39,7 +39,7 @@ function tick(){
     send_(w ? '🗓️ 下週預告' : '🌙 明天預告', w && dl ? weekReport(1) + '\n\n' + dailyText() : w ? weeklyText() : dailyText());
   }
   // 行程、待辦的個別提醒
-  if(mail.items !== false){
+  if(mail.items === true){   // 預設不寄個別提醒，到 App 設定勾選才會寄
     const items = [];
     [t, addD(t,1)].forEach(d => db.events.forEach(ev => {
       if(!(ev.remind >= 0) || !occurs(ev, d)) return;
