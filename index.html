@@ -688,6 +688,15 @@ nav#nav button.on span{display:inline}
         <input type="time" id="sWeeklyTime">
         <button class="btn white" id="sWeeklyPreview" style="padding:3px 12px">預覽</button>
       </div>
+      <div style="border-top:2px dashed #ddd;margin-top:12px;padding-top:10px">
+        <b>📧 Email 提醒（不用開網頁）</b>
+        <p class="meta" style="margin:4px 0 8px">要先在 Google Apps Script 安裝一次，<a href="https://github.com/shinju-ruby/careeveryday/blob/main/email-reminder/安裝說明.md" target="_blank" rel="noopener">看安裝說明</a>。裝好以後，下面勾選的會寄到你的信箱：</p>
+        <div class="row">
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailDaily"> 明天預告</label>
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailWeekly"> 下週預告</label>
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailItems"> 行程和待辦的提醒</label>
+        </div>
+      </div>
     </div>
     <div class="card">
       <h2>🔔 提醒測試</h2>
@@ -695,7 +704,7 @@ nav#nav button.on span{display:inline}
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 農曆節日版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 Email 提醒版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -983,6 +992,7 @@ const Sync = (() => {
           const sp = us.exists && us.data().space;
           await attach(sp ? spaceRef(sp) : userRef(), sp || null, localStorage.getItem('pa-synced-uid') !== u.uid);
           localStorage.setItem('pa-synced-uid', u.uid);
+          if(u.email) userRef().set({email:u.email}, {merge:true}).catch(()=>{}); // 讓 Email 提醒找得到你的資料
           const join = new URLSearchParams(location.search).get('join');
           if(join){ history.replaceState(null, '', location.pathname); if(join !== spaceId && confirm('要加入這個家庭空間嗎？加入後會和家人共用行程、待辦、日記和記帳。')) await joinSpace(join); }
         }catch(e){ console.warn(e); badge('⚠️ 同步失敗'); toast('同步失敗：' + (e.message||e.code)); }
@@ -1828,7 +1838,10 @@ function renderSettings(){
   const st = db.settings;
   $('#sDailyOn').checked = st.daily.on; $('#sDailyTime').value = st.daily.time;
   $('#sWeeklyOn').checked = st.weekly.on; $('#sWeeklyTime').value = st.weekly.time;
+  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true;
 }
+[['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
+  db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));
 [['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time']].forEach(([sel,k,f]) =>
   $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : e.target.value; if(f==='time' && !v) return;
     db.settings[k][f] = v; if(f==='time') delete db.settings.fired[k]; saveQuiet(); toast('提醒設定已更新'); }));
