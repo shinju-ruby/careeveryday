@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>共學揪課報名</title>
+<meta name="theme-color" content="#FF6B3D">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF7E8; --card:#fff; --ink:#1D2547; --muted:#6A6F86;
+  --orange:#FF6B3D; --yellow:#FFC93C; --blue:#38B6FF; --mint:#22C39A; --pink:#FF7EB6; --purple:#8B6CFF;
+  --soft-orange:#FFE3D6; --soft-yellow:#FFF1C7; --soft-blue:#DDF2FF; --soft-mint:#D8F6EC; --soft-pink:#FFE2EF; --soft-purple:#ECE6FF;
+  --shadow:4px 4px 0 var(--ink); --r:18px;
+}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:10;background:rgba(255,247,232,.94);backdrop-filter:blur(6px);border-bottom:3px solid var(--ink)}
+.bar{max-width:640px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;cursor:pointer;flex:1;min-width:0}
+.logo .em{width:40px;height:40px;flex:none;display:grid;place-items:center;font-size:23px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink)}
+.logo small{display:block;font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{max-width:640px;margin:0 auto;padding:18px 16px 80px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:var(--r);padding:16px;margin-bottom:18px;box-shadow:var(--shadow)}
+.card h2{font-size:18px;font-weight:900;margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h3{font-size:16px;margin:0 0 6px}
+.hero{background:var(--orange);color:#fff}
+.hero h2{color:#fff;font-size:22px}
+.hero p{margin:4px 0 0;font-weight:500}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;border:2px solid var(--ink);background:#fff;white-space:nowrap}
+.tag.ok{background:var(--soft-mint)} .tag.wait{background:var(--soft-yellow)} .tag.off{background:#eee;color:var(--muted)}
+.tag.pay{background:var(--soft-pink)} .tag.rep{background:var(--soft-blue)} .tag.mine{background:var(--yellow)}
+label{display:block;font-weight:700;font-size:14px;margin:10px 0 4px}
+input,select,textarea{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 11px;width:100%;font-size:16px}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--yellow);outline-offset:1px}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--orange);flex:none;margin:0}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{min-width:0}
+.grow{flex:1}
+.btn{font:inherit;font-weight:700;border:2px solid var(--ink);background:var(--orange);color:#fff;padding:8px 16px;border-radius:12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);white-space:nowrap;font-size:15px}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.blue{background:var(--blue)} .btn.mint{background:var(--mint)} .btn.white{background:#fff;color:var(--ink)} .btn.yellow{background:var(--yellow);color:var(--ink)} .btn.pink{background:var(--pink)}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:10px}
+.btn.big{width:100%;padding:12px;font-size:17px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.icon{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:8px;font-family:inherit}
+.icon:hover{background:var(--soft-yellow);color:var(--ink)}
+.meta{color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px;padding:4px 0}
+.info{white-space:pre-wrap;font-size:14.5px;background:var(--soft-yellow);border:2px dashed var(--ink);border-radius:12px;padding:10px 12px;margin-top:10px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14.5px}
+.kv b{white-space:nowrap}
+.course{cursor:pointer}
+.course .t{font-weight:900;font-size:17px}
+.sess{border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin:10px 0;background:#fff}
+.sess.past{opacity:.6}
+.sess .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:900}
+.meter{height:10px;border:2px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;margin:7px 0}
+.meter i{display:block;height:100%;background:var(--mint)}
+.meter.full i{background:var(--orange)}
+.names{display:flex;flex-wrap:wrap;gap:5px;font-size:13.5px}
+.names span{background:var(--soft-mint);border-radius:999px;padding:1px 9px;border:1.5px solid var(--ink)}
+.names.w span{background:var(--soft-yellow)}
+.names span.me{background:var(--yellow);font-weight:700}
+.pick{display:flex;align-items:center;gap:10px;border:2px solid var(--ink);border-radius:12px;padding:9px 11px;margin:6px 0;cursor:pointer;background:#fff;font-weight:500}
+.pick.on{background:var(--soft-orange)}
+.pick.dis{opacity:.5;cursor:not-allowed}
+.pick .hint{margin-left:auto;font-size:12.5px;font-weight:700;white-space:nowrap}
+.slot{display:grid;grid-template-columns:1fr 12px 1fr 30px;gap:6px;align-items:center;margin-bottom:10px}.slot .lb{grid-column:1/4}
+.kid{display:grid;grid-template-columns:1fr 92px 34px;gap:6px;margin-bottom:6px}
+.list{margin:6px 0 0;padding:0;list-style:none}
+.list li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1.5px dashed #c9cbd6;font-size:14.5px;flex-wrap:wrap}
+.list li:last-child{border-bottom:0}
+.list .no{width:24px;height:24px;flex:none;display:grid;place-items:center;border:2px solid var(--ink);border-radius:50%;font-size:12px;font-weight:900;background:var(--soft-mint)}
+.list .no.w{background:var(--soft-yellow)}
+.list li.x{text-decoration:line-through;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:2px 6px 2px 11px;background:var(--soft-blue);font-weight:700;font-size:14px;display:flex;align-items:center;gap:2px}
+.remind{background:var(--soft-blue)}
+.remind .sess{background:#fff}
+.paygrp{border:2px solid var(--ink);border-radius:12px;padding:9px 11px;margin:8px 0;background:#fff}
+.paygrp.done{background:var(--soft-mint)}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#fff;padding:5px 14px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--ink);color:#fff}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;font-weight:700;padding:10px 18px;border-radius:999px;transition:transform .25s;z-index:50;max-width:calc(100% - 32px);text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(29,37,71,.45);display:flex;align-items:flex-end;justify-content:center;z-index:40}
+.modal.hidden{display:none}
+.sheet{background:var(--bg);border:3px solid var(--ink);border-bottom:0;border-radius:22px 22px 0 0;width:100%;max-width:640px;max-height:90vh;overflow:auto;padding:18px 16px 28px}
+.sheet h2{margin:0 0 8px;font-size:18px}
+.sheet textarea{min-height:260px;font-size:14.5px}
+.banner{background:var(--soft-pink);border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:14px;margin-bottom:14px}
+.demo{background:var(--purple);color:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:13.5px;margin-bottom:14px;font-weight:700}
+.sep{border:0;border-top:2px dashed var(--ink);margin:14px 0;opacity:.35}
+@media (min-width:560px){ .kid{grid-template-columns:1fr 120px 34px} }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo" onclick="go('')"><span class="em">🎒</span><div>共學揪課報名<small>報名・正備取・繳費・上課通知一次搞定</small></div></div>
+  <button class="btn sm white" id="adminBtn" onclick="go('admin')">🔑 主揪</button>
+</div></header>
+<main id="app"><div class="card"><div class="empty">載入中…</div></div></main>
+<div id="toast"></div>
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()"><div class="sheet" id="sheet"></div></div>
+
+<script>
+// ===== Firebase 設定（這些是公開識別碼，不是密碼；資料安全靠 Firestore 安全規則保護） =====
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBzlR9n_bXVeHzm4mn1NTRqsA3PSwL0oqA",
+  authDomain: "careeveryday-c49fc.firebaseapp.com",
+  projectId: "careeveryday-c49fc",
+  storageBucket: "careeveryday-c49fc.firebasestorage.app",
+  messagingSenderId: "70270100203",
+  appId: "1:70270100203:web:6171f0514163cdf6d3d4ae"
+};
+
+// ===== 小工具 =====
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = '日一二三四五六';
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = (off = 0) => { const d = new Date(); d.setDate(d.getDate() + off); return ymd(d); };
+function fmtDate(s){ const [y,m,d] = s.split('-').map(Number); return `${m}/${d}（${WD[new Date(y,m-1,d).getDay()]}）`; }
+const sessLabel = s => `${fmtDate(s.date)} ${s.start}–${s.end}${s.label ? ' ' + s.label : ''}`;
+const money = n => Number(n || 0).toLocaleString('en-US');
+const rid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const store = { get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+function openModal(html){ $('#sheet').innerHTML = html; $('#modal').classList.remove('hidden'); }
+function closeModal(){ $('#modal').classList.add('hidden'); }
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select(); let ok = false; try{ ok = document.execCommand('copy'); }catch(e){} ta.remove(); return ok;
+}
+function showCopy(title, text){
+  openModal(`<h2>${esc(title)}</h2><div class="meta">可以先改內容，再按複製貼到 LINE 群組或記事本。</div>
+    <textarea id="copyBox">${esc(text)}</textarea>
+    <div class="btns"><button class="btn big" onclick="doCopy()">📋 複製</button><button class="btn white" onclick="closeModal()">關閉</button></div>`);
+}
+async function doCopy(){ const ok = await copyText($('#copyBox').value); toast(ok ? '已複製，去 LINE 貼上吧！' : '複製失敗，請長按文字手動複製'); if(ok) closeModal(); }
+const isLineApp = /Line\//i.test(navigator.userAgent);
+
+// ===== 狀態 =====
+const S = { user:null, admin:false, demo:false, ready:false, courses:[], coursesLoaded:false, signups:{}, pays:{}, err:'' };
+const subs = {};
+
+// ===== 資料層：Firebase 版 =====
+function loadScript(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+const FB = {
+  async init(){
+    const base = 'https://www.gstatic.com/firebasejs/10.14.1/';
+    await loadScript(base + 'firebase-app-compat.js');
+    await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+    firebase.initializeApp(FIREBASE_CONFIG);
+    this.db = firebase.firestore(); this.ts = () => firebase.firestore.FieldValue.serverTimestamp();
+    firebase.auth().getRedirectResult().catch(e => toast('登入失敗：' + (e.message || e.code)));
+    firebase.auth().onAuthStateChanged(async u => {
+      if(!u){ firebase.auth().signInAnonymously().catch(e => { S.err = (e.code === 'auth/operation-not-allowed' || e.code === 'auth/admin-restricted-operation') ? '主揪還沒在 Firebase 開啟「匿名登入」，所以暫時不能報名。' : '連線失敗：' + (e.message || e.code); render(); }); return; }
+      S.user = { uid:u.uid, anon:u.isAnonymous, email:u.email, name:u.displayName };
+      S.admin = false;
+      if(!u.isAnonymous){ try{ await this.db.collection('cl_meta').doc('admin').get(); S.admin = true; }catch(e){ S.admin = false; } }
+      resetSubs(); S.ready = true; startCourses(); render();
+    });
+  },
+  onCourses(cb){ return this.db.collection('cl_courses').onSnapshot(q => cb(q.docs.map(d => ({ id:d.id, ...d.data() }))), e => { S.err = '讀取課程失敗：' + e.message; render(); }); },
+  onSignups(cid, cb){
+    return this.db.collection('cl_signups').where('courseId', '==', cid).onSnapshot(q => cb(q.docs.map(d => {
+      const x = d.data({ serverTimestamps:'estimate' }); return { id:d.id, ...x, t: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
+    })), e => console.warn(e));
+  },
+  onPays(cid, cb){
+    let q = this.db.collection('cl_pay').where('courseId', '==', cid);
+    if(!S.admin) q = q.where('uid', '==', S.user.uid);
+    return q.onSnapshot(s => cb(Object.fromEntries(s.docs.map(d => [d.id, d.data()]))), e => console.warn(e));
+  },
+  async addSignups(items){
+    const b = this.db.batch();
+    for(const it of items){
+      const ref = this.db.collection('cl_signups').doc();
+      b.set(ref, { ...it, uid:S.user.uid, cancelled:false, createdAt:this.ts() });
+      b.set(this.db.collection('cl_pay').doc(ref.id), { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'', updatedAt:this.ts() });
+    }
+    await b.commit();
+  },
+  cancel(id, v = true){ return this.db.collection('cl_signups').doc(id).update(v ? { cancelled:true, cancelledAt:this.ts() } : { cancelled:false }); },
+  setOrder(id, ms){ return this.db.collection('cl_signups').doc(id).update({ createdAt: firebase.firestore.Timestamp.fromMillis(ms) }); },
+  async setPays(ids, patch, courseId){
+    const b = this.db.batch();
+    ids.forEach(id => b.set(this.db.collection('cl_pay').doc(id), { ...patch, courseId, updatedAt:this.ts(), ...(S.admin ? {} : { uid:S.user.uid }) }, { merge:true }));
+    await b.commit();
+  },
+  async saveCourse(id, data){ const ref = id ? this.db.collection('cl_courses').doc(id) : this.db.collection('cl_courses').doc(); await ref.set({ ...data, updatedAt:this.ts() }, { merge:true }); return ref.id; },
+  delCourse(id){ return this.db.collection('cl_courses').doc(id).delete(); },
+  signIn(){
+    const p = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(p).catch(e => {
+      if(e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') firebase.auth().signInWithRedirect(p);
+      else if(e.code !== 'auth/popup-closed-by-user') toast('登入失敗：' + (e.message || e.code));
+    });
+  },
+  signOut(){ return firebase.auth().signOut(); }
+};
+
+// ===== 資料層：試玩版（資料只存在這台裝置） =====
+const DEMO = {
+  key:'cl-demo-v1', ls:[],
+  load(){ return store.get(this.key, null) || this.seed(); },
+  save(d){ store.set(this.key, d); this.ls.forEach(f => f()); },
+  seed(){
+    const d = { courses:{}, signups:{}, pays:{} }, cid = 'demo1';
+    const sat = []; const t = new Date(); t.setDate(t.getDate() + ((6 - t.getDay() + 7) % 7 || 7));
+    for(let i = 0; i < 4; i++){ const x = new Date(t); x.setDate(t.getDate() + i * 7); sat.push(ymd(x)); }
+    const sessions = []; sat.forEach((dt, i) => { sessions.push({ id:dt + '_1000', date:dt, start:'10:00', end:'11:00', label:'小班' }); if(i % 2) sessions.push({ id:dt + '_1100', date:dt, start:'11:00', end:'12:00', label:'大班' }); });
+    d.courses[cid] = { title:'芒果老師🥭 週六體能課', teacher:'芒果老師', location:'皇翔歡喜城教室', age:'1.5y–5y（最低需滿 1.5y）', capacity:8, feeMode:'split', teacherFee:2000, venueFee:300, fixedFee:0,
+      payInfo:'郵局 700 帳號 0000000-0000000（範例）', payDeadline:'報名截止後 3 天內', open:true, sessions,
+      notes:'⭐ 注意事項 ⭐\n滿班後會提醒繳費，期限內請完成繳費以確保名額，超時未繳納則釋出名額。\n☺︎ 找代課，請假無退費補課\n☺︎ 帶水壺補充水分，教室內請勿飲食\n☺︎ 有缺額依候補名單順序遞補', updatedAt:Date.now() };
+    const fam = [['喬','布丁','2y'],['欣穎','擠擠','3y7m'],['欣穎','蕾蕾','2y'],['의정','藤藤','1y9m'],['吳宜蓉','媽媽','1y11m'],['Li Chi','Elio','1y11m'],['Rosie','恩恩','2y'],['ANGELA','Angela','3y'],['PEGGY','書宇','1y8m']];
+    let ms = Date.now() - 86400000 * 3;
+    fam.forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[0].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status: Math.random() < .5 ? 'confirmed' : 'unpaid', note:'' }; });
+    fam.slice(0, 5).forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[1].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status:'unpaid', note:'' }; });
+    store.set(this.key, d); return d;
+  },
+  async init(){
+    S.demo = true; S.user = { uid: store.get('cl-demo-role', 'parent') === 'admin' ? 'demo-admin' : 'demo-parent', anon:true };
+    S.admin = S.user.uid === 'demo-admin'; S.ready = true;
+    window.addEventListener('storage', e => { if(e.key === this.key) this.ls.forEach(f => f()); });
+    startCourses(); render();
+  },
+  watch(fn){ this.ls.push(fn); fn(); return () => { this.ls = this.ls.filter(f => f !== fn); }; },
+  onCourses(cb){ return this.watch(() => { const d = this.load(); cb(Object.entries(d.courses).map(([id, c]) => ({ id, ...c }))); }); },
+  onSignups(cid, cb){ return this.watch(() => { const d = this.load(); cb(Object.entries(d.signups).filter(([, s]) => s.courseId === cid).map(([id, s]) => ({ id, ...s }))); }); },
+  onPays(cid, cb){ return this.watch(() => { const d = this.load(); cb(Object.fromEntries(Object.entries(d.pays).filter(([, p]) => p.courseId === cid && (S.admin || p.uid === S.user.uid)))); }); },
+  async addSignups(items){ const d = this.load(); let ms = Date.now(); items.forEach(it => { const id = rid(); d.signups[id] = { ...it, uid:S.user.uid, cancelled:false, t:ms++ }; d.pays[id] = { uid:S.user.uid, courseId:it.courseId, status:'unpaid', note:'' }; }); this.save(d); },
+  async cancel(id, v = true){ const d = this.load(); d.signups[id].cancelled = v; this.save(d); },
+  async setOrder(id, ms){ const d = this.load(); d.signups[id].t = ms; this.save(d); },
+  async setPays(ids, patch, courseId){ const d = this.load(); ids.forEach(id => { d.pays[id] = { ...(d.pays[id] || { uid:S.user.uid, courseId }), ...patch }; }); this.save(d); },
+  async saveCourse(id, data){ const d = this.load(); id = id || rid(); d.courses[id] = { ...(d.courses[id] || {}), ...data, updatedAt:Date.now() }; this.save(d); return id; },
+  async delCourse(id){ const d = this.load(); delete d.courses[id]; this.save(d); },
+  signIn(){ store.set('cl-demo-role', 'admin'); location.reload(); },
+  signOut(){ store.set('cl-demo-role', 'parent'); location.reload(); }
+};
+let API = FB;
+
+function startCourses(){ if(subs.courses) subs.courses(); subs.courses = API.onCourses(list => { S.courses = list; S.coursesLoaded = true; ensureNeeded(); render(); }); }
+function resetSubs(){ Object.keys(subs).forEach(k => { if(k !== 'courses'){ subs[k](); delete subs[k]; } }); S.signups = {}; S.pays = {}; }
+function ensureCourse(cid){
+  if(!subs['s:' + cid]) subs['s:' + cid] = API.onSignups(cid, list => { S.signups[cid] = list; render(); });
+  if(!subs['p:' + cid]) subs['p:' + cid] = API.onPays(cid, m => { S.pays[cid] = m; render(); });
+}
+function ensureNeeded(){
+  const r = route();
+  if(r.c) ensureCourse(r.c);
+  if(r.v === 'admin' && S.admin) S.courses.filter(c => upcoming(c, 3).length).forEach(c => ensureCourse(c.id));
+}
+
+// ===== 正取 / 備取 / 費用計算 =====
+const getCourse = id => S.courses.find(c => c.id === id);
+const sortedSessions = c => [...(c.sessions || [])].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+const upcoming = (c, days) => sortedSessions(c).filter(s => s.date >= today(0) && s.date <= today(days));
+function roster(c, sid){
+  const all = (S.signups[c.id] || []).filter(x => x.sessionId === sid).sort((a, b) => a.t - b.t);
+  const act = all.filter(x => !x.cancelled), cap = Number(c.capacity) || 8;
+  return { ok:act.slice(0, cap), wait:act.slice(cap), cancelled:all.filter(x => x.cancelled), cap };
+}
+function perHead(c, n){
+  if(c.feeMode === 'fixed') return Number(c.fixedFee) || 0;
+  const cap = Number(c.capacity) || 8; n = Math.min(n || 0, cap); if(!n) return 0;
+  return Math.ceil((Number(c.teacherFee) || 0) / n) + Math.ceil((Number(c.venueFee) || 0) / n);
+}
+function feeText(c){
+  const cap = Number(c.capacity) || 8;
+  if(c.feeMode === 'fixed') return `每位每堂 ${money(c.fixedFee)} 元`;
+  return `老師費 ${money(c.teacherFee)}＋場地費 ${money(c.venueFee)} ／堂，由正取人數均分\n滿 ${cap} 人每位 ${money(perHead(c, cap))} 元（未滿則均分，人數越多越便宜）`;
+}
+const statusOf = (c, x) => { const r = roster(c, x.sessionId); const i = r.ok.indexOf(x); if(x.cancelled) return { k:'x' }; if(i >= 0) return { k:'ok', n:r.ok.length }; return { k:'wait', pos:r.wait.indexOf(x) + 1 }; };
+const payOf = (c, id) => ((S.pays[c.id] || {})[id] || { status:'unpaid' });
+const groupByParent = list => { const m = new Map(); list.forEach(x => { const k = (x.parentName || '').trim(); if(!m.has(k)) m.set(k, []); m.get(k).push(x); }); return m; };
+const kidsText = arr => [...new Set(arr.map(x => x.childName))].join('、');
+
+// 每位家長應繳金額（只算正取）
+function billing(c){
+  const res = new Map(), sess = sortedSessions(c);
+  sess.forEach(s => { const r = roster(c, s.id), fee = perHead(c, r.ok.length);
+    r.ok.forEach(x => { const k = (x.parentName || '').trim(); if(!res.has(k)) res.set(k, { name:k, items:[], total:0 }); const g = res.get(k); g.items.push({ x, s, fee }); g.total += fee; }); });
+  res.forEach(g => { const st = g.items.map(i => payOf(c, i.x.id)); g.status = st.every(p => p.status === 'confirmed') ? 'confirmed' : st.some(p => p.status === 'reported') ? 'reported' : 'unpaid'; g.note = (st.find(p => p.note) || {}).note || ''; });
+  return [...res.values()];
+}
+
+// ===== 要貼到 LINE 的文字 =====
+const link = c => location.origin + location.pathname + '#c=' + c.id;
+function txtAnnounce(c){
+  const ss = sortedSessions(c), slots = new Map();
+  ss.forEach(s => { const k = `${s.start}–${s.end}${s.label ? ' ' + s.label : ''}`; if(!slots.has(k)) slots.set(k, []); slots.get(k).push(fmtDate(s.date).replace(/（.）/, '')); });
+  return `${c.title}\n\n` + [...slots].map(([k, d]) => `⏰ ${k}：${d.join('、')}`).join('\n') +
+    `\n\n🔹 授課老師：${c.teacher || ''}\n🔹 地點：${c.location || ''}\n🔹 人數：${c.capacity || 8} 位滿班\n🔹 寶貝年齡：${c.age || ''}\n🔸 活動費用：\n${feeText(c)}\n` +
+    (c.payDeadline ? `🔸 繳費期限：${c.payDeadline}\n` : '') +
+    `\n👉 報名請點這裡（選日期、填寶貝名字就好，正取／備取會自動排好）：\n${link(c)}\n` + (c.notes ? `\n${c.notes}\n` : '');
+}
+function lineNames(list){ return [...groupByParent(list)].map(([p, xs]) => `@${p}（${xs.map(x => x.childName + (x.childAge ? ' ' + x.childAge : '')).join('、')}）`).join('\n'); }
+function txtNotice(c, s){
+  const r = roster(c, s.id), fee = perHead(c, r.ok.length);
+  const unpaid = S.admin ? [...groupByParent(r.ok.filter(x => payOf(c, x.id).status !== 'confirmed'))].map(([p]) => '@' + p) : [];
+  return `📢 上課通知\n📅 ${sessLabel(s)}\n📍 ${c.location || ''}` + (c.teacher ? `\n👩‍🏫 ${c.teacher}` : '') +
+    `\n\n正取（${r.ok.length}/${r.cap}）：\n${lineNames(r.ok) || '（還沒有人）'}` +
+    (r.wait.length ? `\n－－－－－－－－－－\n備取：\n${lineNames(r.wait)}` : '') +
+    (fee ? `\n\n💰 本堂每位 ${money(fee)} 元` : '') +
+    (unpaid.length ? `\n⚠️ 還沒完成繳費：${unpaid.join(' ')}，麻煩盡快匯款並到報名頁回報末五碼🙏` : '') +
+    `\n\n臨時請假請到報名頁按「取消」或私訊主揪，備取會依序遞補喔！\n${link(c)}`;
+}
+function txtStats(c){
+  const lines = sortedSessions(c).filter(s => s.date >= today()).map(s => { const r = roster(c, s.id), left = r.cap - r.ok.length;
+    return `・${sessLabel(s)}：` + (left > 0 ? `尚有 ${left} 名` : `額滿` + (r.wait.length ? `（備取 ${r.wait.length} 位）` : '')); });
+  return `📋 ${c.title} 報名統計\n\n各日期正取／備取名單都在這裡，請家長核對寶貝姓名與日期：\n${link(c)}\n\n目前名額：\n${lines.join('\n')}\n\n想加報的請直接在報名頁選日期。\n正取臨時請假請在報名頁按「取消」，系統會自動讓備取第一位遞補🙌`;
+}
+function txtPay(c){
+  const due = billing(c).filter(g => g.status !== 'confirmed' && g.total > 0);
+  return `💰 ${c.title} 繳費提醒\n\n以下家長還沒完成繳費` + (c.payDeadline ? `，請在 ${c.payDeadline} ` : '，請盡快') + `匯款，並在報名頁「我的報名」回報帳號末五碼，逾期會把名額釋出給備取喔🙏\n\n` +
+    (due.map(g => `@${g.name}　${money(g.total)} 元（${g.items.length} 堂${g.status === 'reported' ? '，已回報待確認' : ''}）`).join('\n') || '（全部都繳清了🎉）') +
+    (c.payInfo ? `\n\n🏦 匯款資訊：\n${c.payInfo}` : '') + `\n\n${link(c)}`;
+}
+function txtPayOne(c, g){
+  return `${g.name} 您好～${c.title} 費用明細：\n` + g.items.map(i => `・${sessLabel(i.s)} ${i.x.childName}：${money(i.fee)} 元`).join('\n') +
+    `\n合計 ${money(g.total)} 元` + (c.payInfo ? `\n🏦 ${c.payInfo}` : '') + `\n匯款後請到報名頁回報末五碼，謝謝🙏\n${link(c)}`;
+}
+
+// ===== 路由 =====
+function route(){ const h = location.hash.replace(/^#/, ''), p = new URLSearchParams(h); if(p.get('c')) return { v:'course', c:p.get('c') }; if(p.has('edit')) return { v:'edit', id:p.get('edit'), from:p.get('from') }; if(h === 'admin') return { v:'admin' }; return { v:'home' }; }
+function go(h){ location.hash = h; }
+window.addEventListener('hashchange', () => { lastKey = ''; ensureNeeded(); render(); window.scrollTo(0, 0); });
+
+// ===== 畫面 =====
+let lastKey = '';
+function render(){
+  const r = route(), app = $('#app');
+  $('#adminBtn').textContent = S.admin ? '🔑 後台' : '🔑 主揪';
+  const top = (S.demo ? `<div class="demo">🎭 試玩模式：資料只存在這台裝置。${S.admin ? '目前是「主揪」身分' : '目前是「家長」身分'} <button class="btn sm white" onclick="API.${S.admin ? 'signOut' : 'signIn'}()">切換成${S.admin ? '家長' : '主揪'}</button></div>` : '') +
+    (S.err ? `<div class="banner">⚠️ ${esc(S.err)}</div>` : '');
+  if(!S.ready || !S.coursesLoaded){ app.innerHTML = top + `<div class="card"><div class="empty">載入中…</div></div>`; return; }
+  // 編輯頁只畫一次，避免打字到一半被重畫
+  if(r.v === 'edit'){ const key = 'edit:' + r.id + ':' + r.from; if(lastKey === key) return; if(!S.admin){ app.innerHTML = top + loginCard(); return; } lastKey = key; app.innerHTML = top + editView(r); bindEdit(r); return; }
+  if(r.v === 'course'){
+    const c = getCourse(r.c); if(!c){ app.innerHTML = top + `<div class="card"><h2>找不到這堂課 🥲</h2><div class="empty">可能已被主揪刪除。</div><div class="btns"><button class="btn" onclick="go('')">回首頁</button></div></div>`; return; }
+    const key = 'course:' + c.id + ':' + S.admin;
+    if(lastKey !== key){ lastKey = key; app.innerHTML = top + `<div id="cInfo"></div><div id="cMine"></div><div id="cForm"></div><div id="cSess"></div><div id="cAdmin"></div>`; renderForm(c); }
+    $('#cInfo').innerHTML = infoCard(c); $('#cMine').innerHTML = mineCard(c); $('#cSess').innerHTML = sessCard(c); $('#cAdmin').innerHTML = S.admin ? adminCourseCard(c) : '';
+    updatePicks(c); return;
+  }
+  lastKey = '';
+  app.innerHTML = top + (r.v === 'admin' ? adminView() : homeView());
+}
+
+function courseRow(c){
+  const ss = sortedSessions(c), fut = ss.filter(s => s.date >= today());
+  const dates = [...new Set(ss.map(s => fmtDate(s.date).replace(/（.）/, '')))];
+  return `<div class="card course" onclick="go('c=${c.id}')">
+    <div class="row"><div class="t grow">${esc(c.title)}</div>${c.open && fut.length ? '<span class="tag ok">報名中</span>' : '<span class="tag off">' + (fut.length ? '暫停報名' : '已結束') + '</span>'}</div>
+    <div class="meta">📍 ${esc(c.location || '')}　👩‍🏫 ${esc(c.teacher || '')}</div>
+    <div class="meta">📅 ${esc(dates.join('、'))}</div></div>`;
+}
+function homeView(){
+  const list = [...S.courses].sort((a, b) => { const fa = sortedSessions(a).some(s => s.date >= today()), fb = sortedSessions(b).some(s => s.date >= today()); return (fb - fa) || ((b.updatedAt?.toMillis?.() ?? b.updatedAt ?? 0) - (a.updatedAt?.toMillis?.() ?? a.updatedAt ?? 0)); });
+  const show = list.filter(c => S.admin || c.open || sortedSessions(c).some(s => s.date >= today(-14)));
+  return `<div class="card hero"><h2>一起來上課吧！🎉</h2><p>點課程 → 選日期 → 填寶貝名字，就完成報名。正取、備取系統會自動排好，有人取消也會自動遞補。</p></div>` +
+    (show.map(courseRow).join('') || `<div class="card"><div class="empty">目前還沒有開放報名的課程，等主揪開課喔～</div></div>`) +
+    (S.admin ? `<button class="btn big" onclick="go('edit=new')">＋ 開新課程</button>` : '');
+}
+
+function infoCard(c){
+  return `<div class="card"><h2>${esc(c.title)} ${c.open ? '<span class="tag ok">報名中</span>' : '<span class="tag off">暫停報名</span>'}</h2>
+    <div class="kv"><b>👩‍🏫 老師</b><span>${esc(c.teacher || '')}</span><b>📍 地點</b><span>${esc(c.location || '')}</span>
+    <b>👶 年齡</b><span>${esc(c.age || '不限')}</span><b>🙋 名額</b><span>每場 ${esc(c.capacity || 8)} 位，額滿列備取</span>
+    <b>💰 費用</b><span style="white-space:pre-wrap">${esc(feeText(c))}</span>${c.payDeadline ? `<b>⏳ 繳費</b><span>${esc(c.payDeadline)}</span>` : ''}</div>
+    ${c.notes ? `<div class="info">${esc(c.notes)}</div>` : ''}</div>`;
+}
+
+function sessCard(c){
+  const ss = sortedSessions(c), me = S.user && S.user.uid;
+  return `<div class="card"><h2>📅 各場次名單</h2>` + (ss.map(s => {
+    const r = roster(c, s.id), past = s.date < today(), full = r.ok.length >= r.cap;
+    const chip = x => `<span class="${x.uid === me ? 'me' : ''}">${esc(x.parentName)}・${esc(x.childName)}</span>`;
+    return `<div class="sess ${past ? 'past' : ''}"><div class="hd">${esc(sessLabel(s))}${past ? '<span class="tag off">已結束</span>' : full ? '<span class="tag pay">額滿</span>' : `<span class="tag ok">剩 ${r.cap - r.ok.length} 位</span>`}</div>
+      <div class="meter ${full ? 'full' : ''}"><i style="width:${Math.min(100, r.ok.length / r.cap * 100)}%"></i></div>
+      <div class="meta">正取 ${r.ok.length}/${r.cap}${r.ok.length && c.feeMode !== 'fixed' ? `，目前每位 ${money(perHead(c, r.ok.length))} 元` : ''}</div>
+      <div class="names">${r.ok.map(chip).join('') || '<span style="background:#fff">還沒有人，快來搶頭香！</span>'}</div>
+      ${r.wait.length ? `<div class="meta" style="margin-top:6px">備取（依順序遞補）</div><div class="names w">${r.wait.map((x, i) => chip(x).replace('">', '">' + (i + 1) + '. ')).join('')}</div>` : ''}</div>`;
+  }).join('') || '<div class="empty">還沒有場次</div>') + `</div>`;
+}
+
+function renderForm(c){
+  const el = $('#cForm'); if(!c.open){ el.innerHTML = ''; return; }
+  const pf = store.get('cl-profile', { parentName:'', kids:[{ name:'', age:'' }], companions:1 });
+  el.innerHTML = `<div class="card"><h2>✍️ 我要報名</h2>
+    <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：Rosie">
+    <label>寶貝名字與年紀（兄弟姊妹可以一起報）</label><div id="fKids"></div>
+    <button class="btn sm white" type="button" onclick="addKid()">＋ 再加一位寶貝</button>
+    <label>陪同家長人數</label><select id="fComp">${[1, 2, 3].map(n => `<option ${n == pf.companions ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <label>選擇要報名的日期場次</label><div id="fPicks"></div>
+    <label>想跟主揪說的話（選填）</label><input id="fNote" maxlength="100" placeholder="例如：第一次參加">
+    <div class="btns"><button class="btn big" id="fSubmit" onclick="submitSignup('${c.id}')">送出報名 🙌</button></div>
+    <div class="meta" style="margin-top:8px">送出後會依報名先後自動排正取／備取，可以在上面「我的報名」看到結果。</div></div>`;
+  (pf.kids && pf.kids.length ? pf.kids : [{ name:'', age:'' }]).forEach(k => addKid(k));
+}
+function addKid(k = { name:'', age:'' }){
+  const d = document.createElement('div'); d.className = 'kid';
+  d.innerHTML = `<input class="kName" maxlength="20" placeholder="寶貝名字" value="${esc(k.name)}"><input class="kAge" maxlength="10" placeholder="年紀 3y" value="${esc(k.age)}"><button class="icon" type="button" title="移除" onclick="if(document.querySelectorAll('.kid').length>1)this.parentNode.remove()">✕</button>`;
+  $('#fKids').appendChild(d);
+}
+function updatePicks(c){
+  const box = $('#fPicks'); if(!box) return;
+  const checked = new Set([...box.querySelectorAll('input:checked')].map(i => i.value));
+  const ss = sortedSessions(c).filter(s => s.date >= today());
+  box.innerHTML = ss.map(s => { const r = roster(c, s.id), left = r.cap - r.ok.length;
+    return `<label class="pick ${checked.has(s.id) ? 'on' : ''}"><input type="checkbox" value="${s.id}" ${checked.has(s.id) ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)">
+      <span>${esc(sessLabel(s))}</span><span class="hint" style="color:${left > 0 ? 'var(--mint)' : 'var(--orange)'}">${left > 0 ? `剩 ${left} 位` : `額滿・備取第 ${r.wait.length + 1}`}</span></label>`; }).join('') || '<div class="empty">沒有可以報名的場次了</div>';
+}
+async function submitSignup(cid){
+  const c = getCourse(cid), parentName = $('#fParent').value.trim();
+  const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:d.querySelector('.kAge').value.trim() })).filter(k => k.name);
+  const sids = [...document.querySelectorAll('#fPicks input:checked')].map(i => i.value), companions = Number($('#fComp').value) || 1, note = $('#fNote').value.trim();
+  if(!parentName) return toast('請填家長名稱'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
+  if(!S.user) return toast('還在連線，請稍等一下再按');
+  const mine = (S.signups[cid] || []).filter(x => !x.cancelled && x.uid === S.user.uid);
+  const items = []; sids.forEach(sid => kids.forEach(k => { if(!mine.some(x => x.sessionId === sid && x.childName === k.name)) items.push({ courseId:cid, sessionId:sid, parentName, childName:k.name, childAge:k.age, companions, note }); }));
+  if(!items.length) return toast('這些場次你都報過了喔');
+  store.set('cl-profile', { parentName, kids, companions });
+  $('#fSubmit').disabled = true;
+  try{ await API.addSignups(items); toast(`報名成功！共 ${items.length} 筆 🎉`); document.querySelectorAll('#fPicks input:checked').forEach(i => { i.checked = false; i.parentNode.classList.remove('on'); }); $('#fNote').value = ''; setTimeout(() => $('#cMine').scrollIntoView({ behavior:'smooth' }), 300); }
+  catch(e){ toast('報名失敗：' + (e.message || e)); }
+  $('#fSubmit').disabled = false;
+}
+
+function mineCard(c){
+  if(!S.user) return '';
+  const mine = (S.signups[c.id] || []).filter(x => x.uid === S.user.uid && !x.cancelled && x.note !== '主揪代報');
+  if(!mine.length) return '';
+  const ss = sortedSessions(c), byS = id => ss.find(s => s.id === id) || { date:'1970-01-01', start:'', end:'', id };
+  mine.sort((a, b) => (byS(a.sessionId).date + byS(a.sessionId).start).localeCompare(byS(b.sessionId).date + byS(b.sessionId).start));
+  let total = 0; const okIds = [];
+  const rows = mine.map(x => { const s = byS(x.sessionId), st = statusOf(c, x), fee = st.k === 'ok' ? perHead(c, st.n) : 0, p = payOf(c, x.id);
+    if(st.k === 'ok'){ total += fee; okIds.push(x.id); }
+    return `<li><span class="grow"><b>${esc(sessLabel(s))}</b><br>${esc(x.childName)} ${st.k === 'ok' ? '<span class="tag ok">正取 ✅</span>' : `<span class="tag wait">備取第 ${st.pos} 位</span>`}
+      ${st.k === 'ok' ? (p.status === 'confirmed' ? '<span class="tag ok">已收款</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳費</span>') : ''}
+      ${fee ? `<span class="meta">${money(fee)} 元</span>` : ''}</span>
+      ${s.date >= today() ? `<button class="btn sm white" onclick="cancelMine('${c.id}','${x.id}')">取消</button>` : ''}</li>`; }).join('');
+  const pays = okIds.map(id => payOf(c, id)), allPaid = okIds.length && pays.every(p => p.status === 'confirmed'), reported = pays.find(p => p.status === 'reported');
+  return `<div class="card" style="background:var(--soft-mint)"><h2>🧸 我的報名</h2><ul class="list">${rows}</ul>
+    ${okIds.length ? `<hr class="sep"><div class="row"><b class="grow">正取應繳合計</b><b style="font-size:20px">${money(total)} 元</b></div>
+    <div class="meta">${c.feeMode === 'fixed' ? '' : '費用會依正取人數均分，人數有變動時金額會自動更新。'}</div>
+    ${c.payInfo ? `<div class="info">🏦 ${esc(c.payInfo)}${c.payDeadline ? `\n⏳ ${esc(c.payDeadline)}` : ''}</div>` : ''}
+    ${allPaid ? '<div style="margin-top:10px;font-weight:900">✅ 主揪已確認收款，謝謝！</div>' :
+      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：12345" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay('${c.id}')">${reported ? '更新' : '回報'}</button></div>
+       ${reported ? '<div class="meta">已回報，等主揪確認中 🙏</div>' : ''}`}` : '<div class="meta" style="margin-top:8px">目前都在備取，輪到你遞補時這裡會變成「正取」，到時再繳費就好。</div>'}</div>`;
+}
+async function cancelMine(cid, id){
+  if(!confirm('確定要取消這一場嗎？名額會自動遞補給備取第一位，之後再報要重新排隊喔。')) return;
+  try{ await API.cancel(id, true); toast('已取消'); }catch(e){ toast('取消失敗：' + (e.message || e)); }
+}
+async function reportPay(cid){
+  const c = getCourse(cid), note = $('#payNote').value.trim(); if(!note) return toast('請填末五碼');
+  const ids = (S.signups[cid] || []).filter(x => x.uid === S.user.uid && !x.cancelled && statusOf(c, x).k === 'ok' && payOf(c, x.id).status !== 'confirmed').map(x => x.id);
+  try{ await API.setPays(ids, { status:'reported', note }, cid); toast('已回報，謝謝！'); }catch(e){ toast('回報失敗：' + (e.message || e)); }
+}
+
+// ===== 主揪：課程管理 =====
+function adminCourseCard(c){
+  const ss = sortedSessions(c), bill = billing(c), paid = bill.filter(g => g.status === 'confirmed').length;
+  return `<div class="card" style="background:var(--soft-purple)"><h2>🔑 主揪工具</h2>
+    <div class="btns">
+      <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse('${c.id}')))">📣 開課公告</button>
+      <button class="btn blue" onclick="showCopy('報名統計', txtStats(getCourse('${c.id}')))">📋 報名統計</button>
+      <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse('${c.id}')))">💰 催繳訊息</button>
+      <button class="btn yellow" onclick="copyText(link(getCourse('${c.id}'))).then(()=>toast('已複製報名連結'))">🔗 報名連結</button>
+    </div>
+    <div class="btns">
+      <button class="btn white" onclick="toggleOpen('${c.id}')">${c.open ? '⏸ 暫停報名' : '▶️ 開放報名'}</button>
+      <button class="btn white" onclick="go('edit=${c.id}')">✏️ 編輯課程</button>
+      <button class="btn white" onclick="go('edit=new&from=${c.id}')">📄 複製成新課程</button>
+    </div></div>
+
+    <div class="card"><h2>💰 繳費追蹤 <span class="tag ok">已收 ${paid}/${bill.length} 位家長</span></h2>
+    <div class="meta">只計算正取。家長回報末五碼後會顯示「已回報」，你對完帳按「確認收款」。</div>
+    ${bill.map((g, i) => `<div class="paygrp ${g.status === 'confirmed' ? 'done' : ''}"><div class="row"><b class="grow">${esc(g.name)}</b><b>${money(g.total)} 元</b></div>
+      <div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
+      <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid('${c.id}',${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid('${c.id}',${i},'unpaid')">改回未繳</button>`}
+      <button class="btn sm white" onclick="showCopy('個別私訊：${esc(g.name).replace(/'/g, '')}', txtPayOne(getCourse('${c.id}'), billing(getCourse('${c.id}'))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
+
+    <div class="card"><h2>🗂 各場次管理</h2>
+    ${ss.map(s => { const r = roster(c, s.id);
+      const li = (x, i, w) => { const p = payOf(c, x.id);
+        return `<li class="${x.cancelled ? 'x' : ''}"><span class="no ${w ? 'w' : ''}">${x.cancelled ? '✕' : i + 1}</span><span class="grow">${esc(x.parentName)}・<b>${esc(x.childName)}</b> <span class="meta">${esc(x.childAge || '')}${x.companions > 1 ? `・陪同 ${x.companions}` : ''}${x.note ? '・' + esc(x.note) : ''}</span>
+          ${!x.cancelled && !w ? (p.status === 'confirmed' ? '<span class="tag ok">已收</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳</span>') : ''}</span>
+          ${x.cancelled ? `<button class="icon" onclick="adminCancel('${x.id}',false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup('${c.id}','${s.id}','${x.id}',-1)">↑</button><button class="icon" title="往後" onclick="moveSignup('${c.id}','${s.id}','${x.id}',1)">↓</button><button class="icon" onclick="adminCancel('${x.id}',true)">取消</button>`}</li>`; };
+      return `<div class="sess"><div class="hd">${esc(sessLabel(s))} <span class="tag ${r.ok.length >= r.cap ? 'pay' : 'ok'}">${r.ok.length}/${r.cap}</span>${r.wait.length ? `<span class="tag wait">備取 ${r.wait.length}</span>` : ''}</div>
+        <div class="meta" style="margin-top:6px">正取</div><ul class="list">${r.ok.map((x, i) => li(x, i, false)).join('') || '<li class="empty">沒有人</li>'}</ul>
+        ${r.wait.length ? `<div class="meta" style="margin-top:6px">備取</div><ul class="list">${r.wait.map((x, i) => li(x, i, true)).join('')}</ul>` : ''}
+        ${r.cancelled.length ? `<details><summary class="meta">已取消 ${r.cancelled.length} 筆</summary><ul class="list">${r.cancelled.map((x, i) => li(x, i, false)).join('')}</ul></details>` : ''}
+        <div class="btns"><button class="btn sm blue" onclick="showCopy('上課通知', txtNotice(getCourse('${c.id}'), sortedSessions(getCourse('${c.id}')).find(s=>s.id==='${s.id}')))">📢 上課通知</button>
+        <button class="btn sm white" onclick="manualAdd('${c.id}','${s.id}')">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
+}
+async function toggleOpen(cid){ const c = getCourse(cid); try{ await API.saveCourse(cid, { open:!c.open }); toast(c.open ? '已暫停報名' : '已開放報名'); }catch(e){ toast('失敗：' + e.message); } }
+async function markPaid(cid, i, status){ const c = getCourse(cid), g = billing(c)[i]; try{ await API.setPays(g.items.map(it => it.x.id), { status }, cid); toast(status === 'confirmed' ? `已確認 ${g.name} 收款 ✅` : '已改回未繳'); }catch(e){ toast('失敗：' + e.message); } }
+async function adminCancel(id, v){ if(v && !confirm('確定要取消這筆報名嗎？備取會自動遞補。')) return; try{ await API.cancel(id, v); }catch(e){ toast('失敗：' + e.message); } }
+async function moveSignup(cid, sid, id, dir){
+  const c = getCourse(cid), r = roster(c, sid), act = [...r.ok, ...r.wait], i = act.findIndex(x => x.id === id), j = i + dir;
+  if(j < 0 || j >= act.length) return;
+  try{ await Promise.all([API.setOrder(act[i].id, act[j].t), API.setOrder(act[j].id, act[i].t)]); }catch(e){ toast('失敗：' + e.message); }
+}
+function manualAdd(cid, sid){
+  const c = getCourse(cid), ss = sortedSessions(c);
+  openModal(`<h2>＋ 代家長報名</h2><div class="meta">幫在 LINE 留言報名的家長登記，順位排在目前最後面。</div>
+    <label>家長名稱</label><input id="mP" maxlength="30"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
+    <label>場次（可複選）</label>${ss.filter(s => s.date >= today()).map(s => `<label class="pick ${s.id === sid ? 'on' : ''}"><input type="checkbox" class="mS" value="${s.id}" ${s.id === sid ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${esc(sessLabel(s))}</span></label>`).join('')}
+    <div class="btns"><button class="btn big" onclick="doManualAdd('${cid}')">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
+}
+async function doManualAdd(cid){
+  const p = $('#mP').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
+  if(!p || !k || !sids.length) return toast('請填家長、寶貝名字並選場次');
+  try{ await API.addSignups(sids.map(sid => ({ courseId:cid, sessionId:sid, parentName:p, childName:k, childAge:a, companions:1, note:'主揪代報' }))); closeModal(); toast('已登記'); }catch(e){ toast('失敗：' + e.message); }
+}
+
+// ===== 主揪後台首頁 =====
+function loginCard(){
+  if(S.demo) return `<div class="card"><h2>🔑 主揪登入</h2><button class="btn big" onclick="API.signIn()">切換成主揪（試玩）</button></div>`;
+  return `<div class="card"><h2>🔑 主揪登入</h2><p>主揪用 Google 帳號登入後，可以開課、看繳費、複製上課通知。家長不用登入。</p>
+    ${isLineApp ? `<div class="banner">你現在在 LINE 裡面開啟，Google 不允許在這裡登入。請按右上角「⋯」選「用預設瀏覽器開啟」，或用這個連結：<br><button class="btn sm white" onclick="copyText(location.origin+location.pathname+'?openExternalBrowser=1#admin').then(()=>toast('已複製，貼到瀏覽器開啟'))">複製外部瀏覽器連結</button></div>` : ''}
+    ${S.user && !S.user.anon && !S.admin ? `<div class="banner">${esc(S.user.email)} 不是主揪帳號。請換主揪的 Google 帳號登入。</div>` : ''}
+    <button class="btn big" onclick="API.signIn()">用 Google 登入</button></div>`;
+}
+function adminView(){
+  if(!S.admin) return loginCard();
+  const rem = [];
+  S.courses.forEach(c => upcoming(c, 2).forEach(s => rem.push({ c, s })));
+  rem.sort((a, b) => (a.s.date + a.s.start).localeCompare(b.s.date + b.s.start));
+  const dayName = d => d === today() ? '今天' : d === today(1) ? '明天' : '後天';
+  return `<div class="card remind"><h2>⏰ 上課提醒（今天～後天）</h2>
+    ${rem.map(({ c, s }) => { const r = roster(c, s.id); return `<div class="sess"><div class="hd"><span class="tag mine">${dayName(s.date)}</span>${esc(sessLabel(s))}</div>
+      <div class="meta">${esc(c.title)}・正取 ${r.ok.length}/${r.cap}${r.wait.length ? `・備取 ${r.wait.length}` : ''}</div>
+      <div class="btns"><button class="btn sm blue" onclick="showCopy('上課通知', txtNotice(getCourse('${c.id}'), sortedSessions(getCourse('${c.id}')).find(s=>s.id==='${s.id}')))">📢 複製上課通知</button></div></div>`; }).join('') || '<div class="empty">最近兩天沒有課，放鬆一下 ☕</div>'}</div>
+    <button class="btn big" style="margin-bottom:18px" onclick="go('edit=new')">＋ 開新課程</button>
+    ${S.courses.map(courseRow).join('')}
+    <div class="card"><div class="meta">${S.demo ? '試玩模式' : '已登入：' + esc(S.user.email || '')}</div><div class="btns"><button class="btn white sm" onclick="API.signOut()">登出主揪</button></div></div>`;
+}
+
+// ===== 開課 / 編輯課程 =====
+let ED = null;
+function editView(r){
+  const base = r.id !== 'new' ? getCourse(r.id) : r.from ? getCourse(r.from) : null;
+  const copy = r.id === 'new' && base;
+  ED = { slots:[{ start:'10:00', end:'11:00', label:'' }], dates:[], sessions: base && !copy ? sortedSessions(base).map(s => ({ ...s })) : [] };
+  if(base){ const m = new Map(); sortedSessions(base).forEach(s => m.set(s.start + s.end + s.label, { start:s.start, end:s.end, label:s.label || '' })); if(m.size) ED.slots = [...m.values()]; }
+  const v = (k, d = '') => esc(base ? (base[k] ?? d) : d);
+  const def = { title:'', teacher:'', location:'', age:'', capacity:8, teacherFee:2000, venueFee:300, fixedFee:300 };
+  const val = k => esc(base ? (base[k] ?? def[k]) : def[k]);
+  return `<div class="card"><h2>${r.id === 'new' ? (copy ? '📄 複製成新課程' : '＋ 開新課程') : '✏️ 編輯課程'}</h2>
+    <label>課程名稱</label><input id="eTitle" maxlength="60" value="${val('title')}" placeholder="例如：芒果老師🥭 11、12月週六體能課">
+    <div class="row"><div class="grow"><label>授課老師</label><input id="eTeacher" maxlength="30" value="${val('teacher')}"></div><div class="grow"><label>地點</label><input id="eLoc" maxlength="60" value="${val('location')}"></div></div>
+    <div class="row"><div class="grow"><label>寶貝年齡</label><input id="eAge" maxlength="40" value="${val('age')}" placeholder="1.5y–5y"></div><div style="width:100px"><label>每場名額</label><input id="eCap" type="number" min="1" max="50" value="${val('capacity')}"></div></div>
+    <label>收費方式</label><select id="eMode" onchange="document.getElementById('eSplit').hidden=this.value!=='split';document.getElementById('eFixed').hidden=this.value!=='fixed'">
+      <option value="split" ${(base?.feeMode || 'split') === 'split' ? 'selected' : ''}>老師費＋場地費，由正取人數均分</option><option value="fixed" ${base?.feeMode === 'fixed' ? 'selected' : ''}>每人固定金額</option></select>
+    <div id="eSplit" class="row" ${base?.feeMode === 'fixed' ? 'hidden' : ''}><div class="grow"><label>老師費／堂</label><input id="eTF" type="number" min="0" value="${val('teacherFee')}"></div><div class="grow"><label>場地費／堂</label><input id="eVF" type="number" min="0" value="${val('venueFee')}"></div></div>
+    <div id="eFixed" ${base?.feeMode === 'fixed' ? '' : 'hidden'}><label>每人每堂</label><input id="eFF" type="number" min="0" value="${val('fixedFee')}"></div>
+    <label>匯款資訊（家長在「我的報名」看得到）</label><input id="ePay" maxlength="120" value="${v('payInfo')}" placeholder="銀行代碼、帳號、戶名">
+    <label>繳費期限</label><input id="eDeadline" maxlength="40" value="${v('payDeadline')}" placeholder="例如：11/1 前，或 確認正取後 3 天內">
+    <label>注意事項／說明</label><textarea id="eNotes" maxlength="1500">${v('notes')}</textarea></div>
+
+    <div class="card"><h2>📅 場次</h2>
+    <div class="meta">先設定時段，再加日期，按「產生場次」就會把每個日期 × 每個時段排好。不要的場次可以單獨刪掉。</div>
+    <label>時段</label><div id="eSlots"></div><button class="btn sm white" onclick="ED.slots.push({start:'11:00',end:'12:00',label:''});drawEd()">＋ 加時段</button>
+    <label>日期</label><div class="row"><input id="eDate" type="date" class="grow"><button class="btn sm blue" onclick="addDate()">加入</button></div><div class="chips" id="eDates"></div>
+    <div class="btns"><button class="btn mint" onclick="genSessions()">⬇️ 產生場次</button></div>
+    <hr class="sep"><b>目前場次（<span id="eCount">0</span>）</b><ul class="list" id="eSess"></ul></div>
+
+    <div class="card"><label class="row" style="margin:0"><input type="checkbox" id="eOpen" ${!base || copy || base.open ? 'checked' : ''}> 存檔後馬上開放報名</label>
+    <div class="btns"><button class="btn big" onclick="saveCourse('${r.id}')">💾 儲存課程</button></div>
+    <div class="btns"><button class="btn white" onclick="history.back()">取消</button>${r.id !== 'new' ? `<button class="btn white" style="margin-left:auto;color:#c33" onclick="delCourse('${r.id}')">刪除課程</button>` : ''}</div></div>`;
+}
+function bindEdit(){ drawEd(); }
+function drawEd(){
+  $('#eSlots').innerHTML = ED.slots.map((s, i) => `<div class="slot"><input type="time" value="${s.start}" onchange="ED.slots[${i}].start=this.value"><span>–</span><input type="time" value="${s.end}" onchange="ED.slots[${i}].end=this.value"><button class="icon" onclick="ED.slots.splice(${i},1);drawEd()">✕</button><input class="lb" maxlength="10" placeholder="班別名稱（選填，例如 小班）" value="${esc(s.label)}" onchange="ED.slots[${i}].label=this.value"></div>`).join('');
+  $('#eDates').innerHTML = ED.dates.sort().map((d, i) => `<span class="chip">${fmtDate(d)}<button class="icon" onclick="ED.dates.splice(${i},1);drawEd()">✕</button></span>`).join('');
+  ED.sessions.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  $('#eSess').innerHTML = ED.sessions.map((s, i) => `<li><span class="grow">${esc(sessLabel(s))}</span><button class="icon" onclick="delSess(${i})">刪除</button></li>`).join('') || '<li class="empty">還沒有場次</li>';
+  $('#eCount').textContent = ED.sessions.length;
+}
+function addDate(){ const d = $('#eDate').value; if(!d) return toast('先選日期'); if(!ED.dates.includes(d)) ED.dates.push(d); $('#eDate').value = ''; drawEd(); }
+function genSessions(){
+  if(!ED.dates.length) return toast('先加入日期'); if(!ED.slots.length) return toast('先設定時段');
+  let n = 0; ED.dates.forEach(d => ED.slots.forEach(s => { if(!s.start || !s.end) return; const id = d + '_' + s.start.replace(':', ''); if(!ED.sessions.some(x => x.id === id)){ ED.sessions.push({ id, date:d, start:s.start, end:s.end, label:(s.label || '').trim() }); n++; } }));
+  ED.dates = []; drawEd(); toast(`新增 ${n} 個場次`);
+}
+function delSess(i){
+  const s = ED.sessions[i], r = route(), c = r.id !== 'new' && getCourse(r.id);
+  const cnt = c ? (S.signups[c.id] || []).filter(x => x.sessionId === s.id && !x.cancelled).length : 0;
+  if(cnt && !confirm(`這場已有 ${cnt} 人報名，刪掉後他們會看不到這場，確定嗎？`)) return;
+  ED.sessions.splice(i, 1); drawEd();
+}
+async function saveCourse(id){
+  const num = (sel, d) => { const n = Number($(sel).value); return isNaN(n) ? d : n; };
+  const data = { title:$('#eTitle').value.trim(), teacher:$('#eTeacher').value.trim(), location:$('#eLoc').value.trim(), age:$('#eAge').value.trim(),
+    capacity:Math.max(1, num('#eCap', 8)), feeMode:$('#eMode').value, teacherFee:num('#eTF', 0), venueFee:num('#eVF', 0), fixedFee:num('#eFF', 0),
+    payInfo:$('#ePay').value.trim(), payDeadline:$('#eDeadline').value.trim(), notes:$('#eNotes').value.trim(), open:$('#eOpen').checked, sessions:ED.sessions };
+  if(!data.title) return toast('請填課程名稱'); if(!data.sessions.length) return toast('請至少產生一個場次');
+  try{ const nid = await API.saveCourse(id === 'new' ? null : id, data); toast('已儲存 🎉'); go('c=' + nid); }catch(e){ toast('儲存失敗：' + e.message); }
+}
+async function delCourse(id){ if(!confirm('確定刪除整個課程嗎？（報名資料會留在資料庫但看不到）')) return; try{ await API.delCourse(id); toast('已刪除'); go('admin'); }catch(e){ toast('失敗：' + e.message); } }
+
+// ===== 啟動 =====
+(async () => {
+  const demo = /[?&]demo/.test(location.search) || location.protocol === 'file:';
+  if(demo){ API = DEMO; return DEMO.init(); }
+  try{ await FB.init(); }
+  catch(e){ API = DEMO; S.err = '連不上雲端，先用試玩模式。'; DEMO.init(); }
+})();
+</script>
+</body>
+</html>
