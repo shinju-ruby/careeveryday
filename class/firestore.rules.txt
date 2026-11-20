@@ -19,13 +19,18 @@
       allow read: if request.auth != null;
       allow create: if isClAdmin() || (
         request.auth != null
+        && id.matches('^[A-Za-z0-9]{20}$')
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.createdAt == request.time
         && request.resource.data.cancelled == false
         && request.resource.data.keys().hasOnly(['courseId','sessionId','parentName','childName','childAge','companions','note','uid','cancelled','createdAt'])
         && request.resource.data.parentName is string && request.resource.data.parentName.size() > 0 && request.resource.data.parentName.size() <= 30
         && request.resource.data.childName is string && request.resource.data.childName.size() > 0 && request.resource.data.childName.size() <= 20
-        && request.resource.data.note.size() <= 100
+        && request.resource.data.courseId is string && request.resource.data.courseId.size() <= 40
+        && request.resource.data.sessionId is string && request.resource.data.sessionId.size() <= 40
+        && request.resource.data.childAge is string && request.resource.data.childAge.size() <= 10
+        && request.resource.data.companions is int && request.resource.data.companions >= 0 && request.resource.data.companions <= 5
+        && request.resource.data.note is string && request.resource.data.note.size() <= 100
         && get(/databases/$(database)/documents/cl_courses/$(request.resource.data.courseId)).data.open == true
       );
       // 家長只能「取消」自己的報名，不能改順序或改回來
@@ -40,9 +45,14 @@
     // 繳費狀態與末五碼：只有本人和主揪看得到；家長只能標「已回報」，「已收款」只有主揪能按
     match /cl_pay/{id} {
       allow read: if isClAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      // 只能替「自己剛報名的那筆」建立繳費資料
       allow create: if isClAdmin() || (
         request.auth != null && request.resource.data.uid == request.auth.uid
-        && request.resource.data.status in ['unpaid','reported']
+        && getAfter(/databases/$(database)/documents/cl_signups/$(id)).data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid','courseId','status','note','lineId','updatedAt'])
+        && request.resource.data.status == 'unpaid'
+        && request.resource.data.note == ''
+        && request.resource.data.lineId is string && request.resource.data.lineId.size() <= 40
       );
       allow update: if isClAdmin() || (
         request.auth != null && resource.data.uid == request.auth.uid
@@ -50,7 +60,7 @@
         && resource.data.status != 'confirmed'
         && request.resource.data.status in ['unpaid','reported']
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','note','updatedAt','courseId','uid'])
-        && request.resource.data.note.size() <= 20
+        && request.resource.data.note is string && request.resource.data.note.size() <= 20
       );
       allow delete: if isClAdmin();
     }

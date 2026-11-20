@@ -124,6 +124,7 @@ const FIREBASE_CONFIG = {
 
 // ===== 小工具 =====
 const $ = s => document.querySelector(s);
+const jsq = v => esc(JSON.stringify(String(v ?? '')));   // 安全地把值放進 onclick 屬性
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WD = '日一二三四五六';
 const pad = n => String(n).padStart(2, '0');
@@ -175,8 +176,8 @@ const FB = {
   onCourses(cb){ return this.db.collection('cl_courses').onSnapshot(q => cb(q.docs.map(d => ({ id:d.id, ...d.data() }))), e => { S.err = '讀取課程失敗：' + e.message; render(); }); },
   onSignups(cid, cb){
     return this.db.collection('cl_signups').where('courseId', '==', cid).onSnapshot(q => cb(q.docs.map(d => {
-      const x = d.data({ serverTimestamps:'estimate' }); return { id:d.id, ...x, t: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
-    })), e => console.warn(e));
+      const x = d.data({ serverTimestamps:'estimate' }); if(!/^[\w-]{1,40}$/.test(d.id)) return null; return { id:d.id, ...x, t: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
+    }).filter(Boolean)), e => console.warn(e));
   },
   onPays(cid, cb){
     let q = this.db.collection('cl_pay').where('courseId', '==', cid);
@@ -334,7 +335,8 @@ function txtPayOne(c, g){
 }
 
 // ===== 路由 =====
-function route(){ const h = location.hash.replace(/^#/, ''), p = new URLSearchParams(h); if(p.get('c')) return { v:'course', c:p.get('c') }; if(p.has('edit')) return { v:'edit', id:p.get('edit'), from:p.get('from') }; if(h === 'admin') return { v:'admin' }; return { v:'home' }; }
+function route(){ const h = location.hash.replace(/^#/, ''), q = new URLSearchParams(h), ok = v => v && /^[\w-]{1,40}$/.test(v) ? v : null;
+  const p = { get:k => ok(q.get(k)), has:k => q.has(k) }; if(p.get('c')) return { v:'course', c:p.get('c') }; if(p.has('edit')) return { v:'edit', id:p.get('edit') || 'new', from:p.get('from') }; if(h === 'admin') return { v:'admin' }; return { v:'home' }; }
 function go(h){ location.hash = h; }
 window.addEventListener('hashchange', () => { lastKey = ''; S.parentView = false; ensureNeeded(); render(); window.scrollTo(0, 0); });
 
@@ -411,7 +413,7 @@ function renderForm(c){
     <label>陪同家長人數</label><select id="fComp">${[1, 2, 3].map(n => `<option ${n == pf.companions ? 'selected' : ''}>${n}</option>`).join('')}</select>
     <label>選擇要報名的日期場次</label><div id="fPicks"></div>
     <label>想跟主揪說的話（選填）</label><input id="fNote" maxlength="100" placeholder="例如：第一次參加">
-    <div class="btns"><button class="btn big" id="fSubmit" onclick="submitSignup('${c.id}')">送出報名 🙌</button></div>
+    <div class="btns"><button class="btn big" id="fSubmit" onclick="submitSignup(${jsq(c.id)})">送出報名 🙌</button></div>
     <div class="meta" style="margin-top:8px">送出後會依報名先後自動排正取／備取，可以在上面「我的報名」看到結果。</div></div>`;
   (pf.kids && pf.kids.length ? pf.kids : [{ name:'', age:'' }]).forEach(k => addKid(k));
 }
@@ -456,14 +458,14 @@ function mineCard(c){
     return `<li><span class="grow"><b>${esc(sessLabel(s))}</b><br>${esc(x.childName)} ${st.k === 'ok' ? '<span class="tag ok">正取 ✅</span>' : `<span class="tag wait">備取第 ${st.pos} 位</span>`}
       ${st.k === 'ok' ? (p.status === 'confirmed' ? '<span class="tag ok">已收款</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳費</span>') : ''}
       ${fee ? `<span class="meta">${money(fee)} 元</span>` : ''}</span>
-      ${s.date >= today() ? `<button class="btn sm white" onclick="cancelMine('${c.id}','${x.id}')">取消</button>` : ''}</li>`; }).join('');
+      ${s.date >= today() ? `<button class="btn sm white" onclick="cancelMine(${jsq(c.id)},${jsq(x.id)})">取消</button>` : ''}</li>`; }).join('');
   const pays = okIds.map(id => payOf(c, id)), allPaid = okIds.length && pays.every(p => p.status === 'confirmed'), reported = pays.find(p => p.status === 'reported');
   return `<div class="card" style="background:var(--soft-mint)"><h2>🧸 我的報名</h2><ul class="list">${rows}</ul>
     ${okIds.length ? `<hr class="sep"><div class="row"><b class="grow">正取應繳合計</b><b style="font-size:20px">${money(total)} 元</b></div>
     <div class="meta">${c.feeMode === 'fixed' ? '' : '費用會依正取人數均分，人數有變動時金額會自動更新。'}</div>
     ${c.payInfo ? `<div class="info">🏦 ${esc(c.payInfo)}${c.payDeadline ? `\n⏳ ${esc(c.payDeadline)}` : ''}</div>` : ''}
     ${allPaid ? '<div style="margin-top:10px;font-weight:900">✅ 主揪已確認收款，謝謝！</div>' :
-      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：12345" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay('${c.id}')">${reported ? '更新' : '回報'}</button></div>
+      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：12345" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay(${jsq(c.id)})">${reported ? '更新' : '回報'}</button></div>
        ${reported ? '<div class="meta">已回報，等主揪確認中 🙏</div>' : ''}`}` : '<div class="meta" style="margin-top:8px">目前都在備取，輪到你遞補時這裡會變成「正取」，到時再繳費就好。</div>'}</div>`;
 }
 async function cancelMine(cid, id){
@@ -481,13 +483,13 @@ function adminCourseCard(c){
   const ss = sortedSessions(c), bill = billing(c), paid = bill.filter(g => g.status === 'confirmed').length;
   return `<div class="card" style="background:var(--soft-purple)"><h2>🔑 主揪工具</h2>
     <div class="btns">
-      <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse('${c.id}')))">📣 開課公告</button>
-      <button class="btn blue" onclick="showCopy('報名結果', txtResult(getCourse('${c.id}')))">📋 報名結果</button>
-      <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse('${c.id}')))">💰 催繳訊息</button>
-      <button class="btn yellow" onclick="copyText(link(getCourse('${c.id}'))).then(()=>toast('已複製報名連結'))">🔗 報名連結</button>
+      <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse(${jsq(c.id)})))">📣 開課公告</button>
+      <button class="btn blue" onclick="showCopy('報名結果', txtResult(getCourse(${jsq(c.id)})))">📋 報名結果</button>
+      <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse(${jsq(c.id)})))">💰 催繳訊息</button>
+      <button class="btn yellow" onclick="copyText(link(getCourse(${jsq(c.id)}))).then(()=>toast('已複製報名連結'))">🔗 報名連結</button>
     </div>
     <div class="btns">
-      <button class="btn white" onclick="toggleOpen('${c.id}')">${c.open ? '⏸ 暫停報名' : '▶️ 開放報名'}</button>
+      <button class="btn white" onclick="toggleOpen(${jsq(c.id)})">${c.open ? '⏸ 暫停報名' : '▶️ 開放報名'}</button>
       <button class="btn white" onclick="go('edit=${c.id}')">✏️ 編輯課程</button>
       <button class="btn white" onclick="go('edit=new&from=${c.id}')">📄 複製成新課程</button>
     </div></div>
@@ -495,22 +497,22 @@ function adminCourseCard(c){
     <div class="card"><h2>💰 繳費追蹤 <span class="tag ok">已收 ${paid}/${bill.length} 位家長</span></h2>
     <div class="meta">只計算正取。家長回報末五碼後會顯示「已回報」，你對完帳按「確認收款」。</div>
     ${bill.map((g, i) => `<div class="paygrp ${g.status === 'confirmed' ? 'done' : ''}"><div class="row"><b class="grow">${esc(g.name)}</b><b>${money(g.total)} 元</b></div>
-      ${g.lineId ? `<div class="meta">LINE ID：<b>${esc(g.lineId)}</b> <button class="icon" onclick="copyText('${esc(g.lineId).replace(/'/g, '')}').then(()=>toast('已複製 LINE ID'))">📋</button></div>` : ''}<div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
-      <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid('${c.id}',${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid('${c.id}',${i},'unpaid')">改回未繳</button>`}
-      <button class="btn sm white" onclick="showCopy('個別私訊：${esc(g.name).replace(/'/g, '')}', txtPayOne(getCourse('${c.id}'), billing(getCourse('${c.id}'))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
+      ${g.lineId ? `<div class="meta">LINE ID：<b>${esc(g.lineId)}</b> <button class="icon" onclick="copyText(billing(getCourse(${jsq(c.id)}))[${i}].lineId).then(()=>toast('已複製 LINE ID'))">📋</button></div>` : ''}<div class="meta">${esc(kidsText(g.items.map(i => i.x)))}・${g.items.length} 堂　${g.status === 'confirmed' ? '✅ 已收款' : g.status === 'reported' ? `🔵 已回報末五碼 <b>${esc(g.note)}</b>` : '🔴 未繳'}</div>
+      <div class="btns">${g.status !== 'confirmed' ? `<button class="btn sm mint" onclick="markPaid(${jsq(c.id)},${i},'confirmed')">確認收款</button>` : `<button class="btn sm white" onclick="markPaid(${jsq(c.id)},${i},'unpaid')">改回未繳</button>`}
+      <button class="btn sm white" onclick="showCopy('個別私訊', txtPayOne(getCourse(${jsq(c.id)}), billing(getCourse(${jsq(c.id)}))[${i}]))">💬 明細私訊</button></div></div>`).join('') || '<div class="empty">還沒有正取名單</div>'}</div>
 
     <div class="card"><h2>🗂 各場次管理</h2>
     ${ss.map(s => { const r = roster(c, s.id);
       const li = (x, i, w) => { const p = payOf(c, x.id);
         return `<li class="${x.cancelled ? 'x' : ''}"><span class="no ${w ? 'w' : ''}">${x.cancelled ? '✕' : i + 1}</span><span class="grow">${esc(x.parentName)}・<b>${esc(x.childName)}</b> <span class="meta">${esc(x.childAge || '')}${p.lineId ? '・LINE ' + esc(p.lineId) : ''}${x.companions > 1 ? `・陪同 ${x.companions}` : ''}${x.note ? '・' + esc(x.note) : ''}</span>
           ${!x.cancelled && !w ? (p.status === 'confirmed' ? '<span class="tag ok">已收</span>' : p.status === 'reported' ? '<span class="tag rep">已回報</span>' : '<span class="tag pay">未繳</span>') : ''}</span>
-          ${x.cancelled ? `<button class="icon" onclick="adminCancel('${x.id}',false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup('${c.id}','${s.id}','${x.id}',-1)">↑</button><button class="icon" title="往後" onclick="moveSignup('${c.id}','${s.id}','${x.id}',1)">↓</button><button class="icon" onclick="adminCancel('${x.id}',true)">取消</button>`}</li>`; };
+          ${x.cancelled ? `<button class="icon" onclick="adminCancel(${jsq(x.id)},false)">恢復</button>` : `<button class="icon" title="往前" onclick="moveSignup(${jsq(c.id)},${jsq(s.id)},${jsq(x.id)},-1)">↑</button><button class="icon" title="往後" onclick="moveSignup(${jsq(c.id)},${jsq(s.id)},${jsq(x.id)},1)">↓</button><button class="icon" onclick="adminCancel(${jsq(x.id)},true)">取消</button>`}</li>`; };
       return `<div class="sess"><div class="hd">${esc(sessLabel(s))} <span class="tag ${r.ok.length >= r.cap ? 'pay' : 'ok'}">${r.ok.length}/${r.cap}</span>${r.wait.length ? `<span class="tag wait">備取 ${r.wait.length}</span>` : ''}</div>
         <div class="meta" style="margin-top:6px">正取</div><ul class="list">${r.ok.map((x, i) => li(x, i, false)).join('') || '<li class="empty">沒有人</li>'}</ul>
         ${r.wait.length ? `<div class="meta" style="margin-top:6px">備取</div><ul class="list">${r.wait.map((x, i) => li(x, i, true)).join('')}</ul>` : ''}
         ${r.cancelled.length ? `<details><summary class="meta">已取消 ${r.cancelled.length} 筆</summary><ul class="list">${r.cancelled.map((x, i) => li(x, i, false)).join('')}</ul></details>` : ''}
-        <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse('${c.id}'), '${s.date}'))">📢 這天的上課提醒</button>
-        <button class="btn sm white" onclick="manualAdd('${c.id}','${s.id}')">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
+        <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse(${jsq(c.id)}), ${jsq(s.date)}))">📢 這天的上課提醒</button>
+        <button class="btn sm white" onclick="manualAdd(${jsq(c.id)},${jsq(s.id)})">＋ 代家長報名</button></div></div>`; }).join('')}</div>`;
 }
 async function toggleOpen(cid){ const c = getCourse(cid); try{ await API.saveCourse(cid, { open:!c.open }); toast(c.open ? '已暫停報名' : '已開放報名'); }catch(e){ toast('失敗：' + e.message); } }
 async function markPaid(cid, i, status){ const c = getCourse(cid), g = billing(c)[i]; try{ await API.setPays(g.items.map(it => it.x.id), { status }, cid); toast(status === 'confirmed' ? `已確認 ${g.name} 收款 ✅` : '已改回未繳'); }catch(e){ toast('失敗：' + e.message); } }
@@ -525,7 +527,7 @@ function manualAdd(cid, sid){
   openModal(`<h2>＋ 代家長報名</h2><div class="meta">幫在 LINE 留言報名的家長登記，順位排在目前最後面。</div>
     <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
     <label>場次（可複選）</label>${ss.filter(s => s.date >= today()).map(s => `<label class="pick ${s.id === sid ? 'on' : ''}"><input type="checkbox" class="mS" value="${s.id}" ${s.id === sid ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${esc(sessLabel(s))}</span></label>`).join('')}
-    <div class="btns"><button class="btn big" onclick="doManualAdd('${cid}')">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
+    <div class="btns"><button class="btn big" onclick="doManualAdd(${jsq(cid)})">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
 }
 async function doManualAdd(cid){
   const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
@@ -550,7 +552,7 @@ function adminView(){
   return `<div class="card remind"><h2>⏰ 上課提醒（今天～後天）</h2>
     ${rem.map(({ c, d, ss }) => `<div class="sess"><div class="hd"><span class="tag mine">${dayName(d)}</span>${esc(fmtDate(d))}</div>
       <div class="meta">${esc(c.title)}</div>${ss.map(s => { const r = roster(c, s.id); return `<div class="meta">${s.start}–${s.end}${s.label ? ' ' + esc(s.label) : ''}・正取 ${r.ok.length}/${r.cap}${r.wait.length ? `・備取 ${r.wait.length}` : ''}</div>`; }).join('')}
-      <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse('${c.id}'), '${d}'))">📢 複製上課提醒</button></div></div>`).join('') || '<div class="empty">最近兩天沒有課，放鬆一下 ☕</div>'}</div>
+      <div class="btns"><button class="btn sm blue" onclick="showCopy('上課提醒', txtNotice(getCourse(${jsq(c.id)}), ${jsq(d)}))">📢 複製上課提醒</button></div></div>`).join('') || '<div class="empty">最近兩天沒有課，放鬆一下 ☕</div>'}</div>
     <button class="btn big" style="margin-bottom:18px" onclick="go('edit=new')">＋ 開新課程</button>
     ${S.courses.map(courseRow).join('')}
     <div class="card"><div class="meta">${S.demo ? '試玩模式' : '已登入：' + esc(S.user.email || '')}</div><div class="btns"><button class="btn white sm" onclick="API.signOut()">登出主揪</button></div></div>`;
@@ -587,8 +589,8 @@ function editView(r){
     <hr class="sep"><b>目前場次（<span id="eCount">0</span>）</b><ul class="list" id="eSess"></ul></div>
 
     <div class="card"><label class="row" style="margin:0"><input type="checkbox" id="eOpen" ${!base || copy || base.open ? 'checked' : ''}> 存檔後馬上開放報名</label>
-    <div class="btns"><button class="btn big" onclick="saveCourse('${r.id}')">💾 儲存課程</button></div>
-    <div class="btns"><button class="btn white" onclick="history.back()">取消</button>${r.id !== 'new' ? `<button class="btn white" style="margin-left:auto;color:#c33" onclick="delCourse('${r.id}')">刪除課程</button>` : ''}</div></div>`;
+    <div class="btns"><button class="btn big" onclick="saveCourse(${jsq(r.id)})">💾 儲存課程</button></div>
+    <div class="btns"><button class="btn white" onclick="history.back()">取消</button>${r.id !== 'new' ? `<button class="btn white" style="margin-left:auto;color:#c33" onclick="delCourse(${jsq(r.id)})">刪除課程</button>` : ''}</div></div>`;
 }
 function bindEdit(){ drawEd(); }
 function drawEd(){
