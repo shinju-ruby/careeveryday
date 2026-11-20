@@ -316,8 +316,21 @@ function txtAnnounce(c){
   ss.forEach(s => { const k = `${s.start}–${s.end}${s.label ? ' ' + s.label : ''}`; if(!slots.has(k)) slots.set(k, []); slots.get(k).push(fmtDate(s.date).replace(/（.）/, '')); });
   return `${c.title}\n\n` + [...slots].map(([k, d]) => `⏰ ${k}：${d.join('、')}`).join('\n') +
     `\n\n🔹 授課老師：${c.teacher || ''}\n🔹 地點：${c.location || ''}\n🔹 人數：${c.capacity || 8} 位滿班\n🔹 寶貝年齡：${c.age || ''}\n🔸 活動費用：\n${feeText(c)}\n` +
-    (c.payDeadline ? `🔸 繳費期限：${c.payDeadline}\n` : '') +
+    (c.payDeadline ? `🔸 繳費期限：${c.payDeadline}\n` : '') + `🕙 開始報名：${openLine(c)}\n` +
     `\n👉 報名請點這裡（選日期、填寶貝名字就好，正取／備取會自動排好）：\n${link(c)}\n` + (c.notes ? `\n${c.notes}\n` : '');
+}
+function openLine(c){ const ms = openMs(c); return ms ? `${fmtTime(ms)} 開放報名` + (Date.now() < ms ? '' : '（已開放）') : c.open ? '現在就可以報名' : '報名時間另行公告'; }
+function txtPreview(c){
+  const ss = sortedSessions(c), slots = new Map(), ms = openMs(c), soon = ms && Date.now() < ms;
+  ss.forEach(s => { const k = `${s.start}–${s.end}${s.label ? ' ' + s.label : ''}`; if(!slots.has(k)) slots.set(k, []); slots.get(k).push(fmtDate(s.date).replace(/（.）/, '')); });
+  return `📣 開課預告｜${c.title}\n` + (soon ? `⏰ ${fmtTime(ms)} 開放報名！\n` : '') +
+    `\n📅 上課時間\n` + [...slots].map(([k, d]) => `・${k}：${d.join('、')}`).join('\n') +
+    `\n\n👩‍🏫 老師：${c.teacher || ''}\n📍 地點：${c.location || ''}\n👶 年齡：${c.age || '不限'}\n🙋 名額：每場 ${c.capacity || 8} 位，額滿列備取\n💰 費用：${feeText(c).replace(/\n/g, '\n　　')}` +
+    (c.payDeadline ? `\n⏳ 繳費期限：${c.payDeadline}` : '') +
+    `\n\n🕙 開始報名：${openLine(c)}\n🔗 報名連結：\n${link(c)}` + (soon ? `\n（現在點進去可以先看課程內容，時間一到報名表會自動出現）` : '') +
+    `\n\n✍️ 報名方式\n1. 填家長名稱（建議用 LINE 名稱）和 LINE ID\n2. 填寶貝名字、年紀（兄弟姊妹可以一起報）\n3. 勾選要上的日期 → 送出` +
+    `\n\n📌 小提醒\n・依送出順序自動排正取／備取，在「我的報名」就能看到結果\n・正取臨時不能來，請在報名頁按「取消」，備取會自動遞補\n・「我的報名」會顯示應繳金額，匯款後在同一頁回報末五碼就好\n・請用同一支手機報名和查看，換手機會看不到自己的報名喔` +
+    (c.notes ? `\n\n${c.notes}` : '') + `\n\n有問題再私訊主揪，謝謝大家💛`;
 }
 function lineNames(list, numbered){ return [...groupByParent(list)].map(([p, xs], i) => `${numbered ? (i + 1) + '. ' : ''}@${p}　${[...new Set(xs.map(x => x.childName))].join('、')}`).join('\n'); }
 function txtNotice(c, date){
@@ -508,6 +521,7 @@ function adminCourseCard(c){
   const ss = sortedSessions(c), bill = billing(c), paid = bill.filter(g => g.status === 'confirmed').length;
   return `<div class="card" style="background:var(--soft-purple)"><h2>🔑 主揪工具</h2>
     <div class="btns">
+      <button class="btn yellow" onclick="showCopy('開課預告（貼到群組）', txtPreview(getCourse(${jsq(c.id)})))">⏰ 開課預告</button>
       <button class="btn" onclick="showCopy('開課公告（貼到記事本）', txtAnnounce(getCourse(${jsq(c.id)})))">📣 開課公告</button>
       <button class="btn blue" onclick="showCopy('報名結果', txtResult(getCourse(${jsq(c.id)})))">📋 報名結果</button>
       <button class="btn pink" onclick="showCopy('繳費提醒', txtPay(getCourse(${jsq(c.id)})))">💰 催繳訊息</button>
