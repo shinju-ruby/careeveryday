@@ -549,7 +549,14 @@ function save(){ saveQuiet(); renderAll(); }
 
 // ---------- 雲端同步（Firebase） ----------
 // 把 Firebase 專案的設定貼在這裡；留空 (null) 就只存在這個瀏覽器
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBzlR9n_bXVeHzm4mn1NTRqsA3PSwL0oqA",
+  authDomain: "careeveryday-c49fc.firebaseapp.com",
+  projectId: "careeveryday-c49fc",
+  storageBucket: "careeveryday-c49fc.firebasestorage.app",
+  messagingSenderId: "70270100203",
+  appId: "1:70270100203:web:6171f0514163cdf6d3d4ae"
+};
 const Sync = (() => {
   const DEVICE = (() => { try{ let d = localStorage.getItem('pa-device'); if(!d){ d = uid(); localStorage.setItem('pa-device', d); } return d; }catch(e){ return uid(); } })();
   let ref = null, user = null, timer = null, ready = false, unsub = null;
