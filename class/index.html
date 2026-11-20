@@ -73,7 +73,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--orange);flex:none
 .pick.dis{opacity:.5;cursor:not-allowed}
 .pick .hint{margin-left:auto;font-size:12.5px;font-weight:700;white-space:nowrap}
 .slot{display:grid;grid-template-columns:1fr 12px 1fr 30px;gap:6px;align-items:center;margin-bottom:10px}.slot .lb{grid-column:1/4}
-.kid{display:grid;grid-template-columns:1fr 92px 34px;gap:6px;margin-bottom:6px}
+.kid{display:grid;grid-template-columns:1fr 84px 34px;gap:6px;margin-bottom:6px}
 .list{margin:6px 0 0;padding:0;list-style:none}
 .list li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1.5px dashed #c9cbd6;font-size:14.5px;flex-wrap:wrap}
 .list li:last-child{border-bottom:0}
@@ -228,10 +228,10 @@ const DEMO = {
     const sat = []; const t = new Date(); t.setDate(t.getDate() + ((6 - t.getDay() + 7) % 7 || 7));
     for(let i = 0; i < 4; i++){ const x = new Date(t); x.setDate(t.getDate() + i * 7); sat.push(ymd(x)); }
     const sessions = []; sat.forEach((dt, i) => { sessions.push({ id:dt + '_1000', date:dt, start:'10:00', end:'11:00', label:'小班' }); if(i % 2) sessions.push({ id:dt + '_1100', date:dt, start:'11:00', end:'12:00', label:'大班' }); });
-    d.courses[cid] = { title:'芒果老師🥭 週六體能課', teacher:'芒果老師', location:'皇翔歡喜城教室', age:'1.5y–5y（最低需滿 1.5y）', capacity:8, feeMode:'split', teacherFee:2000, venueFee:300, fixedFee:0,
-      remindNotes:'👉 多功能教室（彩虹島幼兒園對面）\n➡️ 一樓大門進來後右邊電梯上⭐2樓⭐就可以看到了\n➡️ 記得攜帶水壺，怕流汗吹風可攜帶小手帕', payInfo:'郵局 700 帳號 0000000-0000000（範例）', payDeadline:'報名截止後 3 天內', open:true, sessions,
+    d.courses[cid] = { title:'🎵 週六親子律動課（範例）', teacher:'小星老師', location:'陽光社區活動中心', age:'1.5～5 歲', capacity:8, feeMode:'split', teacherFee:2000, venueFee:300, fixedFee:0,
+      remindNotes:'👉 活動中心 3 樓大教室\n➡️ 一樓大門進來搭電梯到 3 樓\n➡️ 記得帶水壺和小毛巾', payInfo:'範例銀行（000）帳號 0000-0000-0000，戶名 範例', payDeadline:'報名截止後 3 天內', open:true, sessions,
       notes:'⭐ 注意事項 ⭐\n滿班後會提醒繳費，期限內請完成繳費以確保名額，超時未繳納則釋出名額。\n☺︎ 找代課，請假無退費補課\n☺︎ 帶水壺補充水分，教室內請勿飲食\n☺︎ 有缺額依候補名單順序遞補', updatedAt:Date.now() };
-    const fam = [['喬','布丁','2y'],['欣穎','擠擠','3y7m'],['欣穎','蕾蕾','2y'],['의정','藤藤','1y9m'],['吳宜蓉','媽媽','1y11m'],['Li Chi','Elio','1y11m'],['Rosie','恩恩','2y'],['ANGELA','Angela','3y'],['PEGGY','書宇','1y8m']];
+    const fam = [['小熊媽媽','小草莓','2歲'],['兔兔爸爸','小餅乾','3.5歲'],['兔兔爸爸','小布丁','2歲'],['企鵝媽咪','小湯圓','1.5歲'],['長頸鹿媽媽','小芒果','2歲'],['貓頭鷹爸比','小饅頭','2歲'],['小象媽媽','小豆芽','2歲'],['松鼠媽媽','小麻糬','3歲'],['海豚媽媽','小蘋果','1.5歲']];
     let ms = Date.now() - 86400000 * 3;
     fam.forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[0].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status: Math.random() < .5 ? 'confirmed' : 'unpaid', note:'' }; });
     fam.slice(0, 5).forEach(([p, c, a]) => { const id = rid(); d.signups[id] = { courseId:cid, sessionId:sessions[1].id, parentName:p, childName:c, childAge:a, companions:1, note:'', uid:'demo-other', cancelled:false, t:ms += 60000 }; d.pays[id] = { uid:'demo-other', courseId:cid, status:'unpaid', note:'' }; });
@@ -422,8 +422,8 @@ function renderForm(c){
     <div class="meta" style="margin-top:6px">時間到會自動出現報名表，不用重新整理。名額依送出的先後排序。</div></div>`; tickCountdown(); return; }
   const pf = store.get('cl-profile', { parentName:'', kids:[{ name:'', age:'' }], companions:1 });
   el.innerHTML = `<div class="card"><h2>✍️ 我要報名</h2>
-    <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：Rosie">
-    <label>LINE ID <span class="meta">（只有主揪看得到，方便私訊聯絡）</span></label><input id="fLine" maxlength="40" autocapitalize="off" autocomplete="off" value="${esc(pf.lineId || '')}" placeholder="例如：rosie5473">
+    <label>家長名稱（建議填 LINE 名稱，方便主揪 @ 你）</label><input id="fParent" maxlength="30" value="${esc(pf.parentName)}" placeholder="例如：小熊媽媽">
+    <label>LINE ID <span class="meta">（只有主揪看得到，方便私訊聯絡）</span></label><input id="fLine" maxlength="40" autocapitalize="off" autocomplete="off" value="${esc(pf.lineId || '')}" placeholder="例如：bear_mama">
     <label>寶貝名字與年紀（兄弟姊妹可以一起報）</label><div id="fKids"></div>
     <button class="btn sm white" type="button" onclick="addKid()">＋ 再加一位寶貝</button>
     <label>陪同家長人數</label><select id="fComp">${[1, 2, 3].map(n => `<option ${n == pf.companions ? 'selected' : ''}>${n}</option>`).join('')}</select>
@@ -441,9 +441,10 @@ function tickCountdown(){
     el.textContent = (h ? h + ' 小時 ' : '') + pad(m) + ' 分 ' + pad(sec) + ' 秒'; };
   f(); S.cdTimer = setInterval(f, 1000);
 }
+const ageStr = v => { const n = parseFloat(v); return n >= 0 && n <= 12 ? n + '歲' : ''; };
 function addKid(k = { name:'', age:'' }){
   const d = document.createElement('div'); d.className = 'kid';
-  d.innerHTML = `<input class="kName" maxlength="20" placeholder="寶貝名字" value="${esc(k.name)}"><input class="kAge" maxlength="10" placeholder="年紀 3y" value="${esc(k.age)}"><button class="icon" type="button" title="移除" onclick="if(document.querySelectorAll('.kid').length>1)this.parentNode.remove()">✕</button>`;
+  d.innerHTML = `<input class="kName" maxlength="20" placeholder="例如：小草莓" value="${esc(k.name)}"><input class="kAge" type="number" inputmode="decimal" min="0" max="12" step="0.5" placeholder="幾歲" value="${esc(parseFloat(k.age) || '')}"><button class="icon" type="button" title="移除" onclick="if(document.querySelectorAll('.kid').length>1)this.parentNode.remove()">✕</button>`;
   $('#fKids').appendChild(d);
 }
 function updatePicks(c){
@@ -456,7 +457,7 @@ function updatePicks(c){
 }
 async function submitSignup(cid){
   const c = getCourse(cid), parentName = $('#fParent').value.trim(), lineId = $('#fLine').value.trim();
-  const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:d.querySelector('.kAge').value.trim() })).filter(k => k.name);
+  const kids = [...document.querySelectorAll('.kid')].map(d => ({ name:d.querySelector('.kName').value.trim(), age:ageStr(d.querySelector('.kAge').value) })).filter(k => k.name);
   const sids = [...document.querySelectorAll('#fPicks input:checked')].map(i => i.value), companions = Number($('#fComp').value) || 1, note = $('#fNote').value.trim();
   if(!parentName) return toast('請填家長名稱'); if(!lineId) return toast('請填 LINE ID，主揪才聯絡得到你'); if(!kids.length) return toast('請至少填一位寶貝名字'); if(!sids.length) return toast('請勾選要報名的日期');
   if(!S.user) return toast('還在連線，請稍等一下再按');
@@ -489,7 +490,7 @@ function mineCard(c){
     <div class="meta">${c.feeMode === 'fixed' ? '' : '費用會依正取人數均分，人數有變動時金額會自動更新。'}</div>
     ${c.payInfo ? `<div class="info">🏦 ${esc(c.payInfo)}${c.payDeadline ? `\n⏳ ${esc(c.payDeadline)}` : ''}</div>` : ''}
     ${allPaid ? '<div style="margin-top:10px;font-weight:900">✅ 主揪已確認收款，謝謝！</div>' :
-      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：12345" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay(${jsq(c.id)})">${reported ? '更新' : '回報'}</button></div>
+      `<label>匯款後回報帳號末五碼</label><div class="row"><input id="payNote" maxlength="20" class="grow" inputmode="numeric" placeholder="例如：00000" value="${esc(reported ? reported.note : '')}"><button class="btn mint" onclick="reportPay(${jsq(c.id)})">${reported ? '更新' : '回報'}</button></div>
        ${reported ? '<div class="meta">已回報，等主揪確認中 🙏</div>' : ''}`}` : '<div class="meta" style="margin-top:8px">目前都在備取，輪到你遞補時這裡會變成「正取」，到時再繳費就好。</div>'}</div>`;
 }
 async function cancelMine(cid, id){
@@ -567,12 +568,12 @@ async function moveSignup(cid, sid, id, dir){
 function manualAdd(cid, sid){
   const c = getCourse(cid), ss = sortedSessions(c);
   openModal(`<h2>＋ 代家長報名</h2><div class="meta">幫在 LINE 留言報名的家長登記，順位排在目前最後面。</div>
-    <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" maxlength="10" placeholder="年紀"><span></span></div>
+    <label>家長名稱</label><input id="mP" maxlength="30"><label>LINE ID（選填）</label><input id="mL" maxlength="40" autocapitalize="off"><div class="kid" style="margin-top:10px"><input id="mC" maxlength="20" placeholder="寶貝名字"><input id="mA" type="number" inputmode="decimal" min="0" max="12" step="0.5" placeholder="幾歲"><span></span></div>
     <label>場次（可複選）</label>${ss.filter(s => s.date >= today()).map(s => `<label class="pick ${s.id === sid ? 'on' : ''}"><input type="checkbox" class="mS" value="${s.id}" ${s.id === sid ? 'checked' : ''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${esc(sessLabel(s))}</span></label>`).join('')}
     <div class="btns"><button class="btn big" onclick="doManualAdd(${jsq(cid)})">登記</button><button class="btn white" onclick="closeModal()">取消</button></div>`);
 }
 async function doManualAdd(cid){
-  const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = $('#mA').value.trim(), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
+  const p = $('#mP').value.trim(), lineId = $('#mL').value.trim(), k = $('#mC').value.trim(), a = ageStr($('#mA').value), sids = [...document.querySelectorAll('.mS:checked')].map(i => i.value);
   if(!p || !k || !sids.length) return toast('請填家長、寶貝名字並選場次');
   try{ await API.addSignups(sids.map(sid => ({ courseId:cid, sessionId:sid, parentName:p, childName:k, childAge:a, companions:1, note:'主揪代報', lineId }))); closeModal(); toast('已登記'); }catch(e){ toast('失敗：' + e.message); }
 }
@@ -611,9 +612,9 @@ function editView(r){
   const def = { title:'', teacher:'', location:'', age:'', capacity:8, teacherFee:2000, venueFee:300, fixedFee:300 };
   const val = k => esc(base ? (base[k] ?? def[k]) : def[k]);
   return `<div class="card"><h2>${r.id === 'new' ? (copy ? '📄 複製成新課程' : '＋ 開新課程') : '✏️ 編輯課程'}</h2>
-    <label>課程名稱</label><input id="eTitle" maxlength="60" value="${val('title')}" placeholder="例如：芒果老師🥭 11、12月週六體能課">
+    <label>課程名稱</label><input id="eTitle" maxlength="60" value="${val('title')}" placeholder="例如：🎵 12月週六親子律動課">
     <div class="row"><div class="grow"><label>授課老師</label><input id="eTeacher" maxlength="30" value="${val('teacher')}"></div><div class="grow"><label>地點</label><input id="eLoc" maxlength="60" value="${val('location')}"></div></div>
-    <div class="row"><div class="grow"><label>寶貝年齡</label><input id="eAge" maxlength="40" value="${val('age')}" placeholder="1.5y–5y"></div><div style="width:100px"><label>每場名額</label><input id="eCap" type="number" min="1" max="50" value="${val('capacity')}"></div></div>
+    <div class="row"><div class="grow"><label>寶貝年齡</label><input id="eAge" maxlength="40" value="${val('age')}" placeholder="例如：1.5～5 歲"></div><div style="width:100px"><label>每場名額</label><input id="eCap" type="number" min="1" max="50" value="${val('capacity')}"></div></div>
     <label>收費方式</label><select id="eMode" onchange="document.getElementById('eSplit').hidden=this.value!=='split';document.getElementById('eFixed').hidden=this.value!=='fixed'">
       <option value="split" ${(base?.feeMode || 'split') === 'split' ? 'selected' : ''}>老師費＋場地費，由正取人數均分</option><option value="fixed" ${base?.feeMode === 'fixed' ? 'selected' : ''}>每人固定金額</option></select>
     <div id="eSplit" class="row" ${base?.feeMode === 'fixed' ? 'hidden' : ''}><div class="grow"><label>老師費／堂</label><input id="eTF" type="number" min="0" value="${val('teacherFee')}"></div><div class="grow"><label>場地費／堂</label><input id="eVF" type="number" min="0" value="${val('venueFee')}"></div></div>
@@ -621,7 +622,7 @@ function editView(r){
     <label>匯款資訊（家長在「我的報名」看得到）</label><input id="ePay" maxlength="120" value="${v('payInfo')}" placeholder="銀行代碼、帳號、戶名">
     <label>繳費期限</label><input id="eDeadline" maxlength="40" value="${v('payDeadline')}" placeholder="例如：11/1 前，或 確認正取後 3 天內">
     <label>注意事項／說明（放在開課公告裡）</label><textarea id="eNotes" maxlength="1500">${v('notes')}</textarea>
-    <label>上課提醒補充說明（教室怎麼走、要帶什麼，會接在上課提醒的地點下面）</label><textarea id="eRemind" maxlength="800" placeholder="例如：&#10;👉 多功能教室（彩虹島幼兒園對面）&#10;➡️ 一樓大門進來後右邊電梯上 2 樓&#10;➡️ 記得攜帶水壺、小手帕">${v('remindNotes')}</textarea></div>
+    <label>上課提醒補充說明（教室怎麼走、要帶什麼，會接在上課提醒的地點下面）</label><textarea id="eRemind" maxlength="800" placeholder="例如：&#10;👉 活動中心 3 樓大教室&#10;➡️ 一樓大門進來搭電梯到 3 樓&#10;➡️ 記得帶水壺和小毛巾">${v('remindNotes')}</textarea></div>
 
     <div class="card"><h2>📅 場次</h2>
     <div class="meta">先設定時段，再加日期，按「產生場次」就會把每個日期 × 每個時段排好。不要的場次可以單獨刪掉。</div>
