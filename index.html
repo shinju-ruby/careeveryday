@@ -888,7 +888,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button class="btn blue" id="testNotify">測試提醒</button>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭成員版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 家庭成員版 2</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1947,12 +1947,13 @@ const SHOP_CATS = [
   ['dairy','🥛','乳品蛋',/奶|蛋|優格|起司|乳酪|奶油|豆漿/],
   ['meat','🥩','肉類海鮮',/肉|雞|豬|牛排|牛肉|魚|蝦|蟹|蛤|花枝|鮭|鯛|培根|火腿|香腸|絞肉|排骨|海鮮/],
   ['food','🍞','食品零食',/麵包|吐司|米|麵|餅|零食|巧克力|糖|咖啡|茶|果汁|飲料|醬|油|鹽|醋|罐頭|泡麵|麥片|穀|豆腐|水餃|冷凍|冰淇淋|調味/],
+  ['camp','⛺','露營裝備',/帳篷|帳棚|天幕|營燈|營柱|營釘|營繩|睡袋|睡墊|充氣床|充氣墊|蛋捲桌|露營|卡式爐|瓦斯罐|爐頭|炊具|套鍋|冰桶|保冷|行動電源|延長線|地布|折疊|摺疊|焚火台|木炭|炭|打火|頭燈|防蚊|驅蚊|蚊香|雨衣|雨鞋|營地|吊床|收納箱|推車|手套|燒烤|烤肉/],
   ['daily','🧴','日用品',/衛生紙|面紙|紙巾|洗|皂|牙|刷|沐浴|洗髮|潤|垃圾袋|保鮮|電池|燈泡|清潔|漂白|拖把|抹布|棉|毛巾|濕紙巾|芳香|夾鏈袋|鋁箔/],
   ['baby','👶','寶寶',/尿布|奶粉|奶瓶|副食品|寶寶|嬰|兒童|童/],
   ['pet','🐾','毛孩',/貓|狗|飼料|罐罐|貓砂|尿布墊|零食條|肉泥|寵物|潔牙骨/],
   ['med','💊','藥品保健',/藥|維他命|維生素|保健|口罩|ok繃|OK繃|酒精|體溫|魚油|益生菌|葉黃素/],
   ['other','📦','其他',/.^/]];
-const SHOP_STORES = ['全聯','好市多','家樂福','藥局','網購','市場'];
+const SHOP_STORES = ['全聯','好市多','家樂福','迪卡儂','露營用品店','藥局','網購','市場'];
 const catOf = k => SHOP_CATS.find(c=>c[0]===k) || SHOP_CATS[SHOP_CATS.length-1];
 const guessCat = n => (SHOP_CATS.find(c => c[3].test(n)) || SHOP_CATS[SHOP_CATS.length-1])[0];
 let shopStore = '';
