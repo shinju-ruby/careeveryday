@@ -19,7 +19,7 @@
   --bg:#FFF7E8; --card:#FFFFFF; --ink:#1D2547; --muted:#6A6F86; --line:#1D2547;
   --orange:#FF6B3D; --yellow:#FFC93C; --blue:#38B6FF; --mint:#22C39A; --pink:#FF7EB6; --purple:#8B6CFF;
   --soft-orange:#FFE3D6; --soft-yellow:#FFF1C7; --soft-blue:#DDF2FF; --soft-mint:#D8F6EC; --soft-pink:#FFE2EF; --soft-purple:#ECE6FF;
-  --shadow:4px 4px 0 var(--ink); --r:18px;
+  --shadow:3px 3px 0 var(--ink); --r:16px;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Noto Sans KR",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.55;
@@ -41,7 +41,7 @@ nav button{font:inherit;font-weight:700;border:2px solid var(--ink);background:#
 nav button:hover{transform:translateY(-2px)}
 nav button.on{background:var(--ink);color:#fff}
 main.wrap{padding-top:20px;padding-bottom:90px}
-.card{background:var(--card);border:3px solid var(--ink);border-radius:var(--r);padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.card{background:var(--card);border:2.5px solid var(--ink);border-radius:var(--r);padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
 .card h2{font-size:18px;font-weight:900;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;border:2px solid var(--ink)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -279,9 +279,11 @@ nav#nav button span{display:none}
 nav#nav button.on span{display:inline}
 .bnav button i{font-style:normal;display:block}
 /* hero ideas */
-.ideabox{background:rgba(255,255,255,.18);border:2px solid var(--ink);border-radius:16px;padding:10px;margin-top:12px;max-width:640px}
+.ideabox{margin-top:10px;max-width:560px}
+.ideabox input{padding:6px 12px;font-size:15px}
+#heroIdeaSave{padding:5px 12px !important;box-shadow:1.5px 1.5px 0 var(--ink)}
 .ideabox input{flex:1;min-width:0;border-radius:999px}
-.mic{width:52px;height:52px;flex:none;border-radius:50%;border:3px solid var(--ink);background:#fff;font-size:24px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.mic{width:38px;height:38px;flex:none;border-radius:50%;border:2px solid var(--ink);font-size:18px !important;background:#fff;font-size:24px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .mic.on{background:#E2401C;animation:pulse 1s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(226,64,28,.7)}100%{box-shadow:0 0 0 16px rgba(226,64,28,0)}}
 .ichips{display:flex;flex-direction:column;gap:5px;margin-top:8px}
@@ -289,7 +291,9 @@ nav#nav button.on span{display:inline}
 .ilink{color:#fff;font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;background:none;border:0;padding:4px 0}
 .w h2{justify-content:space-between}
 .w h2 .act{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--ink);background:var(--soft-yellow);border-radius:999px;padding:2px 12px;cursor:pointer;color:var(--ink)}
-.mini{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1.5px dashed #E6DFCC;font-size:14.5px}
+.mini{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #F0E8D6;font-size:14px}
+.w h2{font-size:16px;margin-bottom:8px}
+.w .empty{font-size:13px;padding:2px 0}
 .mini:first-child{border-top:0}
 .mini .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mini.done .t{text-decoration:line-through;color:var(--muted)}
@@ -333,6 +337,13 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+.ed{cursor:pointer}
+.edform{display:grid;grid-template-columns:auto 1fr;gap:9px 10px;align-items:center;margin-top:12px}
+.edform label{font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+.edform input,.edform select,.edform textarea{width:100%;min-width:0}
+.edform .edck{grid-column:1/-1;display:flex;gap:8px;align-items:center;color:var(--ink)}
+.edform textarea{grid-column:1/-1}
+#edSheet .card{max-width:480px}
 .reload{border:2px solid var(--ink);background:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;line-height:1;cursor:pointer;padding:0;box-shadow:1.5px 1.5px 0 var(--ink);flex:none}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
@@ -386,17 +397,22 @@ details.fold.small>summary::after{width:24px;height:24px;font-size:16px}
   .bnav button.on span{display:block;font-size:11px;font-weight:700}
   .bnav button.on{background:var(--yellow)}
   main.wrap{padding-top:14px;padding-bottom:calc(130px + env(safe-area-inset-bottom))}
-  .card{padding:14px;border-radius:16px;margin-bottom:14px;box-shadow:3px 3px 0 var(--ink)}
+  .card{padding:14px;border-radius:16px;margin-bottom:14px;box-shadow:2.5px 2.5px 0 var(--ink)}
   .card.peek{margin-top:40px}
   .card .pet{width:62px;top:-40px}
   .dash{grid-template-columns:1fr}
-  .dash > .card{margin-top:0} .dash > .card.peek{margin-top:40px}
-  .hero{padding-bottom:62px}
-  .hero h2{font-size:20px}
-  .hero p{font-size:14px}
+  .dash > .card{margin-top:0} .dash > .card.peek{margin-top:0}
+  .dash > .card .pet{display:none}
+  .card.w{padding:11px 13px;margin-bottom:10px;border-radius:14px}
+  .w h2{font-size:15px;margin-bottom:6px}
+  .w h2 .act{font-size:12px;padding:1px 10px}
+  .mini{font-size:13.5px;padding:5px 0}
+  .hero{padding:14px 14px 54px}
+  .hero h2{font-size:18px}
+  .hero p{font-size:13px}
   .hero::after{width:120px;height:120px;right:-40px;top:-50px}
-  .hero-pets img{width:62px}
-  .cheer{font-size:13px}
+  .hero-pets img{width:54px}
+  .cheer{font-size:12px;margin-top:8px;padding:3px 11px} .cheer b{font-size:15px}
   #toasts{bottom:90px}
   body .modal{align-items:flex-end;padding:0}
   body .modal .card{border-radius:22px 22px 0 0;max-height:86vh;max-height:86dvh;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
@@ -478,7 +494,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 @media (max-width:640px){
   .formgrid{grid-template-columns:auto 1fr}
   .cell{min-height:64px} .cell .chip{font-size:10px}
-  .hero h2{font-size:22px}
+  .hero h2{font-size:18px}
   .navbtns .period{min-width:0;font-size:13px}
 }
 </style>
@@ -892,7 +908,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-20 介面整理版 2</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 可編輯版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -927,6 +943,12 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="annLunar"> 農曆</label></div>
     <button class="btn mint" id="annAdd" style="margin-top:12px;width:100%">新增</button>
   </div>
+</div></div>
+<div class="modal" id="edSheet"><div class="card sheet">
+  <div class="row between"><h2 id="edTitle" style="margin:0"></h2><button class="icon" id="edClose" style="font-size:20px" aria-label="關閉">✕</button></div>
+  <p class="meta hidden" id="edNote" style="margin:6px 0 0"></p>
+  <div id="edForm" class="edform"></div>
+  <div class="row between" style="margin-top:14px"><button class="btn white" id="edCancel">取消</button><button class="btn" id="edSave">儲存</button></div>
 </div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
@@ -1441,8 +1463,8 @@ function renderPlan(){
     for(let i=0;i<7;i++){
       const ds = ymd(addDays(s,i));
       const hs = holidaysOn(ds).map(h=>`<div class="witem"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`);
-      const evs = eventsOn(ds).map(ev=>`<div class="witem ev"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
-      const tds = todosDue(ds).map(td=>`<div class="witem td ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t">${tagDot(td.tag)}${esc(td.title)}${td.steps.length?` <b>${progress(td)}%</b>`:''}</span></div>`);
+      const evs = eventsOn(ds).map(ev=>`<div class="witem ev ed" data-act="edit" data-k="ev" data-id="${ev.id}"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
+      const tds = todosDue(ds).map(td=>`<div class="witem td ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}${td.steps.length?` <b>${progress(td)}%</b>`:''}</span></div>`);
       html += `<div class="wcol ${ds===t?'today':''}"><div class="wh" data-act="openDay" data-date="${ds}">週${WD[(i+1)%7]} <span class="meta">${md(ds)}</span> <span class="wlunar">${lunarLabel(ds)}</span> <span style="float:right">＋</span></div><div class="wb" data-act="openDayBg" data-date="${ds}">${hs.concat(evs,tds).join('') || '<span class="meta">點這裡新增</span>'}</div></div>`;
     }
     html += '</div>';
@@ -1456,7 +1478,7 @@ function renderPlan(){
     html += `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn mint" data-act="openDay" data-date="${ds}" style="padding:5px 14px">＋ 在這天新增</button></div>`;
     const evs = eventsOn(ds);
     html += '<div class="subhead">📅 行程</div>';
-    html += evs.length ? evs.map(ev=>`<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div></div>`).join('') : '<div class="empty">這天沒有行程</div>';
+    html += evs.length ? evs.map(ev=>`<div class="dayline ed" data-act="edit" data-k="ev" data-id="${ev.id}"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div><span class="icon">✏️</span></div>`).join('') : '<div class="empty">這天沒有行程</div>';
     const due = db.todos.filter(td => td.due===ds || (ds===t && isLate(td))).sort(tdSort);
     html += '<div class="subhead">🎯 這天要完成</div>' + (due.length ? due.map(todoCard).join('') : '<div class="empty">這天沒有到期的待辦</div>');
     const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=ds && td.due>ds).sort(tdSort);
@@ -1478,12 +1500,12 @@ function todoCard(td){
   const p = progress(td), late = isLate(td);
   const open = expanded.has(td.id);
   const range = td.start && td.due ? `${md(td.start)} → ${md(td.due)}` : td.due ? `期限 ${prettyDate(td.due)}` : '沒有期限';
-  const steps = open ? `<ul class="steps">${td.steps.map(s=>`<li class="${s.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleStep" data-id="${td.id}" data-sid="${s.id}" ${s.done?'checked':''}><span class="grow">${esc(s.title)}</span><button class="icon" data-act="delStep" data-id="${td.id}" data-sid="${s.id}" title="刪除步驟">✕</button></li>`).join('')}
+  const steps = open ? `<ul class="steps">${td.steps.map(s=>`<li class="${s.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleStep" data-id="${td.id}" data-sid="${s.id}" ${s.done?'checked':''}><span class="grow ed" data-act="edit" data-k="step" data-id="${td.id}" data-sid="${s.id}">${esc(s.title)}</span><button class="icon" data-act="delStep" data-id="${td.id}" data-sid="${s.id}" title="刪除步驟">✕</button></li>`).join('')}
       <li class="add"><input type="text" placeholder="＋ 新增步驟，按 Enter" data-addstep="${td.id}"></li></ul>` : '';
   return `<div class="todo ${td.done?'done':''}">
     <div class="head"><input type="checkbox" class="chk" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''} title="整件完成">
-      <div class="grow"><div class="ttl">${esc(td.title)}</div></div>
-      <button class="icon" data-act="delTodo" data-id="${td.id}" title="刪除">✕</button></div>
+      <div class="grow"><div class="ttl ed" data-act="edit" data-k="todo" data-id="${td.id}">${esc(td.title)}</div></div>
+      <button class="icon" data-act="edit" data-k="todo" data-id="${td.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delTodo" data-id="${td.id}" title="刪除">✕</button></div>
     <div class="tmeta">${cdBadge(td)}${tagChip(td.tag)}<span class="tag p-${td.pri}">${PRI[td.pri]}</span><span class="${late?'overdue':''}" style="white-space:nowrap">${late?'⚠️ 逾期 · ':''}${range}</span>${td.remindAt&&!td.done?'<span style="white-space:nowrap">🔔 '+td.remindAt.slice(5).replace('T',' ')+'</span>':''}
       <span class="sp"></span>${td.due&&!td.done?`<button class="icon" data-act="toggleCd" data-id="${td.id}" title="${td.countdown?'關閉':'開啟'}倒數小提示" style="${td.countdown?'':'opacity:.4'}">⏳</button>`:''}<button class="icon" data-act="expand" data-id="${td.id}">${open?'收起 ▲':td.steps.length?`步驟 ${td.steps.filter(s=>s.done).length}/${td.steps.length} ▼`:'＋步驟'}</button></div>
     ${td.steps.length?`<div class="prog"><div class="bar"><div style="width:${p}%"></div></div><span class="pct">${p}%</span></div>`:''}
@@ -1577,7 +1599,7 @@ function renderDiary(){
   const dn = doneOn(dDate);
   $('#dDone').innerHTML = dn.length ? dn.map(x=>`<li><span class="meta">${hm(x.at)}</span> ${x.html}</li>`).join('') : '<li class="empty" style="list-style:none;margin-left:-20px">這天還沒有勾掉的待辦</li>';
   const out = ml.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = ml.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
-  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="delMoney" data-mid="${m.id}">✕</button></div>`).join('')
+  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="edit" data-k="money" data-id="${m.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delMoney" data-mid="${m.id}" aria-label="刪除">✕</button></div>`).join('')
     + `<div class="money" style="font-weight:900"><span class="grow">這天合計</span>${out?`<span class="amt out">支出 $${money(out)}</span>`:''}${inc?`<span class="amt in">收入 $${money(inc)}</span>`:''}</div>`
     : '<div class="empty">這天還沒有記帳</div>';
   // 本月
@@ -1649,14 +1671,14 @@ function renderEvents(){
   const series = db.events.filter(e => e.repeat && (!e.until || e.until >= t));
   let html = '', cur = '';
   if(series.length) html += '<div class="subhead">🔁 重複行程</div>' + series.map(ev => `<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>
-      <div class="meta">${repeatText(ev)} · 從 ${md(ev.date)} 開始${ev.icsUid?' · 📥 Google 日曆':''}</div></div><button class="icon" data-act="delSeries" data-id="${ev.id}" title="刪除整個系列">✕</button></div>`).join('')
+      <div class="meta">${repeatText(ev)} · 從 ${md(ev.date)} 開始${ev.icsUid?' · 📥 Google 日曆':''}</div></div><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delSeries" data-id="${ev.id}" title="刪除整個系列">✕</button></div>`).join('')
       + '<div class="subhead" style="margin-top:20px">📅 接下來 30 天</div>';
   if(!list.length) html += '<div class="empty" style="margin-top:8px">目前沒有行程</div>';
   list.forEach(ev => {
     if(ev.date !== cur){ cur = ev.date; html += `<div class="subhead">${prettyDate(cur)}${cur===t?' · 今天':''}</div>`; }
     html += `<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${ev.repeat?'🔁 ':''}${esc(ev.title)}</b>
       <div class="meta">${ev.remind>=0?'🔔 '+remindText(ev.remind):'不提醒'}${ev.note?' · '+esc(ev.note):''}</div></div>
-      <button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" title="刪除">✕</button></div>`;
+      <button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" title="刪除">✕</button></div>`;
   });
   $('#evList').innerHTML = html;
 }
@@ -1746,7 +1768,7 @@ function renderIdeas(){
       <div class="meta">${i.voice?'🎤 語音 · ':''}${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div></div>
       <button class="icon" data-act="pin" data-id="${i.id}" title="${i.pinned?'取消置頂':'置頂'}">${i.pinned?'📌':'📍'}</button>
       <button class="icon" data-act="toTodo" data-id="${i.id}" title="轉成待辦">➡️</button>
-      <button class="icon" data-act="delIdea" data-id="${i.id}" title="刪除">✕</button></div>`; }).join('')
+      <button class="icon" data-act="edit" data-k="idea" data-id="${i.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delIdea" data-id="${i.id}" title="刪除">✕</button></div>`; }).join('')
     : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/calico.svg" alt="">還沒有靈感，三花在等你分享點子喔</div>';
 }
 
@@ -1786,6 +1808,7 @@ document.addEventListener('click', e => {
   const td = id && db.todos.find(x => x.id===id);
   switch(act){
     case 'gotoDay': view='day'; cursor=parse(date); goTab('calendar'); renderPlan(); return;
+    case 'edit': if(b.tagName === 'INPUT') return; openEdit(b.dataset.k, id, sid); return;
     case 'openDay': openDay(date || today(), b.dataset.k); return;
     case 'openDayBg': if(e.target === b) openDay(date); return;
     case 'tab': goTab(b.dataset.tab); return;
@@ -1876,8 +1899,8 @@ function openDay(ds, kind){
 function renderDaySheet(){
   $('#dsTitle').innerHTML = esc(prettyDate(dsDate) + (dsDate===today()?' · 今天':'')) + `<div class="meta" style="font-size:13px;margin-top:2px">${lunarFull(dsDate)}</div>`;
   const evs = eventsOn(dsDate), tds = todosDue(dsDate), hs = holidaysOn(dsDate), hws = hwDueOn(dsDate);
-  $('#dsList').innerHTML = hs.map(h=>`<div class="mini"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`).join('') + ((evs.length||tds.length||hs.length||hws.length) ? evs.map(ev=>`<div class="mini"><span class="time">${ev.time||'全天'}</span><span class="t">${ev.repeat?'🔁 ':''}${esc(ev.title)}</span><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}">✕</button></div>`).join('')
-    + tds.map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t">${tagDot(td.tag)}${esc(td.title)}</span></div>`).join('')
+  $('#dsList').innerHTML = hs.map(h=>`<div class="mini"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`).join('') + ((evs.length||tds.length||hs.length||hws.length) ? evs.map(ev=>`<div class="mini"><span class="time">${ev.time||'全天'}</span><span class="t ed" data-act="edit" data-k="ev" data-id="${ev.id}">${ev.repeat?'🔁 ':''}${esc(ev.title)}</span><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('')
+    + tds.map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}</span></div>`).join('')
     + hwDueOn(dsDate).map(h=>`<div class="mini ${h.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleHw" data-hid="${h.id}" ${h.done?'checked':''}><span class="t">📚 ${h.course?esc(h.course)+'：':''}${esc(h.content.split('\n')[0])}</span></div>`).join('')
     : '<div class="empty">這天還沒有安排，新增一個吧！</div>');
   $$('#dsKind button').forEach(b => b.classList.toggle('on', b.dataset.k===dsKind));
@@ -2050,9 +2073,9 @@ $('#shopPay').onclick = () => {
 function shopRow(x){
   const c = catOf(x.cat);
   return `<div class="sitem ${x.done?'got':''}"><input type="checkbox" class="chk" data-act="shopToggle" data-sid="${x.id}" ${x.done?'checked':''} aria-label="買好了">
-    <div class="grow"><span class="nm">${esc(x.name)}</span>${x.qty?`<span class="qty">${esc(x.qty)}</span>`:''}
+    <div class="grow ed" data-act="edit" data-k="shop" data-id="${x.id}"><span class="nm">${esc(x.name)}</span>${x.qty?`<span class="qty">${esc(x.qty)}</span>`:''}
       <div class="meta" style="font-size:12px">${x.store?`📍${esc(x.store)} · `:''}${x.by?esc(x.by)+' 加的':''}${x.done&&x.gotBy?` · ${esc(x.gotBy)} 買了`:''}</div></div>
-    <button class="icon" data-act="shopCat" data-sid="${x.id}" title="換分類">${c[1]}</button><button class="icon" data-act="shopDel" data-sid="${x.id}" title="刪除">✕</button></div>`;
+    <button class="icon" data-act="edit" data-k="shop" data-id="${x.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="shopCat" data-sid="${x.id}" title="換分類">${c[1]}</button><button class="icon" data-act="shopDel" data-sid="${x.id}" title="刪除">✕</button></div>`;
 }
 function renderShop(){
   const open = db.shop.filter(x=>!x.done && (!shopStore || x.store===shopStore || !x.store)), got = db.shop.filter(x=>x.done);
@@ -2106,7 +2129,7 @@ function renderHabits(){
     const hit = days.filter(d=>hCount(d,h.id)>=h.target).length;
     return `<div class="habit"><span class="em">${h.emoji}</span><div class="grow"><b>${esc(h.name)}</b> <span class="meta">7 天達成 ${hit} 天 · 每天 ${h.target} ${esc(h.unit||'')}</span>
       <div class="dots">${days.map(d=>{const c=hCount(d,h.id);return `<i class="${c>=h.target?'full':c>0?'part':''}" title="${md(d)}：${c}"></i>`;}).join('')}</div></div>
-      <button class="icon" data-act="delHabit" data-hid="${h.id}" title="刪除習慣">✕</button></div>`; }).join('')
+      <button class="icon" data-act="edit" data-k="habit" data-id="${h.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delHabit" data-hid="${h.id}" title="刪除習慣">✕</button></div>`; }).join('')
     + `<p class="meta" style="margin-bottom:0">圓點由左到右是 ${md(days[0])} ～ ${md(days[6])}，綠色＝達標</p>` : '<div class="empty">—</div>';
 }
 
@@ -2199,11 +2222,11 @@ function renderTrips(){
 function renderDash(){
   const t = today();
   const evs = eventsOn(t);
-  $('#wEvents').innerHTML = evs.length ? evs.map(ev=>`<div class="mini"><span class="time">${ev.time||'全天'}</span><span class="t">${esc(ev.title)}</span></div>`).join('') : '<div class="empty">今天沒有行程，好好享受 ☕</div>';
+  $('#wEvents').innerHTML = evs.length ? evs.map(ev=>`<div class="mini ed" data-act="edit" data-k="ev" data-id="${ev.id}"><span class="time">${ev.time||'全天'}</span><span class="t">${esc(ev.title)}</span></div>`).join('') : '<div class="empty">今天沒有行程，好好享受 ☕</div>';
   const tds = db.todos.filter(x => (!x.done && x.due && x.due<=t) || (x.done && x.doneAt && ymd(new Date(x.doneAt))===t && x.due)).sort(tdSort);
   const hws = myHw().filter(h => (!h.done && h.due && diffDays(t, h.due) <= 2) || (h.done && h.doneAt && ymd(new Date(h.doneAt))===t)).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
   const hwHtml = hws.map(h=>`<div class="mini ${h.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleHw" data-hid="${h.id}" ${h.done?'checked':''}><span class="t">📚 ${h.course?esc(h.course)+'：':''}${esc(h.content.split('\n')[0])}</span><span class="meta" style="font-size:12px">${h.done?'已交':h.due===t?'今天截止':h.due<t?'<span class=overdue>逾期</span>':md(h.due)+' 截止'}</span></div>`).join('');
-  $('#wTodos').innerHTML = hwHtml + (tds.length ? tds.slice(0,8).map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t">${tagDot(td.tag)}${esc(td.title)}</span>${isLate(td)?'<span class="overdue" style="font-size:12px">逾期</span>':td.steps.length?`<span class="meta">${progress(td)}%</span>`:''}</div>`).join('') + (tds.length>8?`<div class="meta">還有 ${tds.length-8} 件，到「待辦」看全部</div>`:'') : (hwHtml ? '' : '<div class="empty">今天沒有到期的待辦 🎉</div>'));
+  $('#wTodos').innerHTML = hwHtml + (tds.length ? tds.slice(0,8).map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}</span>${isLate(td)?'<span class="overdue" style="font-size:12px">逾期</span>':td.steps.length?`<span class="meta">${progress(td)}%</span>`:''}</div>`).join('') + (tds.length>8?`<div class="meta">還有 ${tds.length-8} 件，到「待辦」看全部</div>`:'') : (hwHtml ? '' : '<div class="empty">今天沒有到期的待辦 🎉</div>'));
   $('#wHabits').innerHTML = myHabits().length ? myHabits().map(h=>habitRow(h, t)).join('') : '<div class="empty">到「習慣」新增想培養的好習慣</div>';
   const [ws,we] = weekRange(0), wk = db.todos.filter(x=>x.due && x.due>=ws && x.due<=we);
   const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
@@ -2426,7 +2449,7 @@ $('#sWeeklyPreview').onclick = () => showReport(['weekly']);
 function renderAnniv(){
   const t = today();
   const list = (db.anniv||[]).map(a => ({a, ds:nextAnniv(a, t)})).sort((x,y)=>(x.ds||'9').localeCompare(y.ds||'9'));
-  const row = ({a,ds}, del) => `<div class="annrow"><span style="font-size:20px">${esc(a.emoji)}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${a.lunar ? annivDate(a) + (ds?' · ':'') : ''}${ds?`${prettyDate(ds)}，還有 ${diffDays(t,ds)} 天`:annivDate(a)}</div></div>${del?`<button class="icon" data-act="delAnn" data-id="${esc(a.id)}" title="刪除" aria-label="刪除">✕</button>`:''}</div>`;
+  const row = ({a,ds}, del) => `<div class="annrow"><span style="font-size:20px">${esc(a.emoji)}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${a.lunar ? annivDate(a) + (ds?' · ':'') : ''}${ds?`${prettyDate(ds)}，還有 ${diffDays(t,ds)} 天`:annivDate(a)}</div></div>${del?`<button class="icon" data-act="edit" data-k="anniv" data-id="${esc(a.id)}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delAnn" data-id="${esc(a.id)}" title="刪除" aria-label="刪除">✕</button>`:''}</div>`;
   $('#annCount').textContent = list.length ? `共 ${list.length} 個` : '';
   $('#annNext').innerHTML = list.length ? '<div class="meta" style="margin-bottom:2px">接下來的日子</div>' + list.slice(0,2).map(x => row(x, false)).join('') : '<div class="empty">還沒有紀念日，按「新增日子」加一個</div>';
   $('#annList').innerHTML = list.length ? list.map(x => row(x, true)).join('') : '<div class="empty">還沒有紀念日</div>';
@@ -2479,6 +2502,66 @@ $('#reloadBtn').onclick = async () => {
   location.reload();
 };
 $('#testNotify').onclick = () => remind('測試提醒', '如果你看到這個，提醒功能正常 👍');
+
+// ---------- 共用編輯視窗 ----------
+const REMIND_OPTS = [['-1','不提醒'],['0','準時提醒'],['10','提前 10 分鐘'],['30','提前 30 分鐘'],['60','提前 1 小時'],['1440','提前 1 天']];
+const REPEAT_OPTS = [['','不重複'],['daily','每天'],['weekly','每週'],['biweekly','每兩週'],['monthly','每月'],['yearly','每年']];
+function findMoney(id){ for(const [k,a] of Object.entries(db.money||{})){ const m = (a||[]).find(x=>x.id===id); if(m) return m; } return null; }
+const EDITORS = {
+  todo: {title:'✏️ 編輯待辦', get:id => db.todos.find(x=>x.id===id), fields:o => [
+    ['title','要做什麼','text',null,true], ['tag','標籤','select',[['','不分類']].concat(db.tags.map(t=>[t.name,t.name]))],
+    ['pri','重要程度','select',Object.entries(PRI)], ['start','開始日','date'], ['due','期限','date'], ['remindAt','提醒時間','datetime-local']],
+    after:(o,old) => { if(o.remindAt !== old.remindAt) o.notified = false; if(!o.due) o.countdown = false; }},
+  step: {title:'✏️ 編輯步驟', get:(id,sid) => { const t = db.todos.find(x=>x.id===id); return t && t.steps.find(x=>x.id===sid); }, fields:() => [['title','步驟','text',null,true]]},
+  ev: {title:'✏️ 編輯行程', get:id => db.events.find(x=>x.id===id), note:o => o.repeat ? '🔁 這是重複行程，修改會套用到每一次。' : '',
+    fields:o => [['title','行程','text',null,true], ['date', o.repeat?'開始日':'日期','date',null,true], ['time','時間（空白＝全天）','time'],
+      ['remind','提醒','select',REMIND_OPTS,false,'num'], ['repeat','重複','select',REPEAT_OPTS], ['until','重複到（可不填）','date'], ['note','備註、地點','text']],
+    after:(o,old) => { if(o.date!==old.date || o.time!==old.time || o.remind!==old.remind){ o.notified = false; o.notifiedOn = []; } if(!o.repeat) delete o.until; }},
+  shop: {title:'✏️ 編輯要買的', get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
+    ['cat','分類','select',SHOP_CATS.map(c=>[c[0], c[1]+' '+c[2]])], ['store','在哪買','select',[['','不限']].concat(SHOP_STORES.map(x=>[x,x]))]]},
+  money: {title:'✏️ 編輯記帳', get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入']]], ['amt','金額','number',null,true,'num'],
+    ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, [o.cat]))].map(c=>[c,c])], ['note','備註','text']]},
+  habit: {title:'✏️ 編輯習慣', get:id => myHabits().find(x=>x.id===id), fields:() => [['emoji','圖示','select',[...new Set(HABIT_EMOJIS)].map(e=>[e,e])],
+    ['name','習慣','text',null,true], ['target','每天目標','number',null,true,'num'], ['unit','單位','text']]},
+  idea: {title:'✏️ 編輯靈感', get:id => db.ideas.find(x=>x.id===id), fields:() => [['text','內容','textarea',null,true]]},
+  anniv: {title:'✏️ 編輯紀念日', get:id => db.anniv.find(x=>x.id===id), fields:() => [['emoji','圖示','select',['🎂','💍','💕','🎉','🕯️','🐾'].map(e=>[e,e])],
+    ['name','名稱','text',null,true], ['m','月','select',Array.from({length:12},(_,i)=>[String(i+1), (i+1)+' 月']),false,'num'],
+    ['d','日','select',Array.from({length:31},(_,i)=>[String(i+1), (i+1)+' 日']),false,'num'], ['lunar','農曆','check']]}
+};
+let edCur = null;
+function openEdit(k, id, sid){
+  const E = EDITORS[k], o = E && E.get(id, sid); if(!o){ toast('找不到這筆資料'); return; }
+  edCur = {E, o, fields:E.fields(o)};
+  $('#edTitle').textContent = E.title;
+  const note = E.note ? E.note(o) : ''; $('#edNote').textContent = note; $('#edNote').classList.toggle('hidden', !note);
+  $('#edForm').innerHTML = edCur.fields.map(([f,label,type,opts,req], i) => {
+    const v = o[f] == null ? '' : String(o[f]), idA = `ed_${i}`;
+    if(type === 'check') return `<label class="edck"><input type="checkbox" id="${idA}" ${o[f]?'checked':''}> ${esc(label)}</label>`;
+    const ctl = type === 'select' ? `<select id="${idA}">${opts.map(([val,txt]) => `<option value="${esc(val)}" ${String(val)===v?'selected':''}>${esc(txt)}</option>`).join('')}</select>`
+      : type === 'textarea' ? `<textarea id="${idA}" rows="4">${esc(v)}</textarea>`
+      : `<input type="${type}" id="${idA}" value="${esc(v)}" ${type==='number'?'inputmode="decimal" min="0"':''}>`;
+    return `<label for="${idA}">${esc(label)}${req?' <span style="color:#E2401C">*</span>':''}</label>${ctl}`;
+  }).join('');
+  if(k === 'ev') edRepeatToggle();
+  $('#edSheet').classList.add('on');
+}
+function edRepeatToggle(){ const i = edCur.fields.findIndex(f=>f[0]==='repeat'), u = edCur.fields.findIndex(f=>f[0]==='until'); if(i<0||u<0) return;
+  const on = !!$('#ed_'+i).value; $('#ed_'+u).style.display = $('label[for=ed_'+u+']').style.display = on ? '' : 'none'; }
+$('#edForm').addEventListener('change', e => { if(edCur && edCur.E === EDITORS.ev) edRepeatToggle(); });
+function closeEdit(){ $('#edSheet').classList.remove('on'); edCur = null; }
+$('#edClose').onclick = $('#edCancel').onclick = closeEdit;
+$('#edSheet').onclick = e => { if(e.target.id==='edSheet') closeEdit(); };
+$('#edSave').onclick = () => {
+  if(!edCur) return; const {E, o, fields} = edCur, old = Object.assign({}, o), nv = {};
+  for(let i=0; i<fields.length; i++){ const [f,label,type,,req,num] = fields[i], el = $('#ed_'+i);
+    let v = type === 'check' ? el.checked : el.value.trim();
+    if(num) v = type === 'number' ? Math.round((+v || 0) * 100) / 100 : +v;
+    if(req && (v === '' || (num && !v))){ toast('請填寫「' + label + '」'); el.focus(); return; }
+    nv[f] = v; }
+  Object.assign(o, nv); if(E.after) E.after(o, old);
+  closeEdit(); save(); toast('改好了 ✏️');
+};
+document.addEventListener('keydown', e => { if(e.key==='Escape' && edCur) closeEdit(); });
 
 // ---------- 備份 ----------
 $('#exportBtn').onclick = () => {
