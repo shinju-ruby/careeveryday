@@ -340,7 +340,11 @@ nav#nav button.on span{display:inline}
 .ed{cursor:pointer}
 .edform{display:grid;grid-template-columns:auto 1fr;gap:9px 10px;align-items:center;margin-top:12px}
 .edform label{font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap}
-.edform input,.edform select,.edform textarea{width:100%;min-width:0}
+.edform{grid-template-columns:auto minmax(0,1fr)}
+.edform input,.edform select,.edform textarea{width:100%;min-width:0;max-width:100%;display:block}
+.edform input[type=date],.edform input[type=time],.edform input[type=datetime-local]{-webkit-appearance:none;appearance:none;min-height:42px;text-align:left}
+.edform input::-webkit-date-and-time-value{text-align:left}
+#edSheet .card{overflow-x:hidden}
 .edform .edck{grid-column:1/-1;display:flex;gap:8px;align-items:center;color:var(--ink)}
 .edform textarea{grid-column:1/-1}
 #edSheet .card{max-width:480px}
@@ -400,7 +404,8 @@ details.fold.small>summary::after{width:24px;height:24px;font-size:16px}
   .card{padding:14px;border-radius:16px;margin-bottom:14px;box-shadow:2.5px 2.5px 0 var(--ink)}
   .card.peek{margin-top:40px}
   .card .pet{width:62px;top:-40px}
-  .dash{grid-template-columns:1fr}
+  .dash{grid-template-columns:minmax(0,1fr)}
+  .dash > .card{min-width:0;max-width:100%}
   .dash > .card{margin-top:0} .dash > .card.peek{margin-top:0}
   .dash > .card .pet{display:none}
   .card.w{padding:11px 13px;margin-bottom:10px;border-radius:14px}
@@ -908,7 +913,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 可編輯版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 可編輯版 2</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
