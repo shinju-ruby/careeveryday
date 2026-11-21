@@ -337,6 +337,26 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+.rp{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.rp-sec{background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:10px 12px}
+.rp-sec.rp-prog{background:var(--soft-mint)}
+.rp-h{font-weight:900;font-size:15.5px;margin-bottom:4px}
+.rp-sub{font-weight:700;font-size:14px;margin:8px 0 2px;display:flex;align-items:center;gap:6px}
+.rp-sub:first-of-type{margin-top:2px}
+.rp-l{font-size:14px;color:var(--ink);margin:3px 0}
+.rp-l.muted{color:var(--muted)}
+.rp-it{background:#fff;border-radius:10px;padding:7px 10px;margin:5px 0;font-size:14px;line-height:1.4}
+.rp-it .tt{font-weight:700}
+.rp-it .mt{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:3px;font-size:12px;color:var(--muted)}
+.rp-it .chipt{font-size:11.5px;font-weight:700;border-radius:999px;padding:0 8px;background:var(--soft-yellow);color:var(--ink)}
+.rp-it .tm{display:inline-block;min-width:44px;font-weight:900;color:var(--blue);margin-right:6px}
+.rp-it .pbar{flex:1;min-width:60px;max-width:120px;height:6px;border-radius:99px;background:#E9E3D3;overflow:hidden}
+.rp-it .pbar i{display:block;height:100%;background:var(--mint)}
+.rp-tip{background:var(--soft-yellow);border:2px solid var(--ink);border-radius:14px;padding:9px 12px;font-size:14px;line-height:1.5}
+.rp-tip b{display:block;font-size:13px;margin-bottom:2px}
+#reportModal .card{display:flex;flex-direction:column}
+.ask-answer.rich{white-space:normal;background:transparent;border:0;padding:0}
+.rfoot{position:sticky;bottom:-18px;background:#fff;padding:8px 0 4px;margin-top:4px}
 .ed{cursor:pointer}
 .edform{display:grid;grid-template-columns:auto 1fr;gap:9px 10px;align-items:center;margin-top:12px}
 .edform label{font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -913,7 +933,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 可編輯版 2</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 報告排版版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -974,7 +994,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <button data-tab="diary" title="日記" aria-label="日記"><i>📔</i><span>日記</span></button>
       <button data-tab="settings" title="設定" aria-label="設定"><i>⚙️</i><span>設定</span></button>
 </nav>
-<div class="modal" id="reportModal"><div class="card peek" style="margin-top:50px"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2 id="rTitle"></h2><pre id="rBody"></pre><div class="row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
+<div class="modal" id="reportModal"><div class="card peek" style="margin-top:50px"><img class="pet right" src="icons/pets/shiba.svg" alt=""><h2 id="rTitle"></h2><div id="rBody" class="rp"></div><div class="rfoot row" style="justify-content:flex-end"><button class="btn" id="rClose">知道了</button></div></div></div>
 
 <script>
 (function(){
@@ -1076,6 +1096,13 @@ function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d
     habits:Array.isArray(d.habits)?d.habits:null, habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:null,
     habitsBy:(d.habitsBy && typeof d.habitsBy==='object')?d.habitsBy:{}, habitLogBy:(d.habitLogBy && typeof d.habitLogBy==='object')?d.habitLogBy:{},
     trips:Array.isArray(d.trips)?d.trips:[], anniv:Array.isArray(d.anniv)?d.anniv:DEFAULT_ANNIV(), hwBy:(d.hwBy && typeof d.hwBy==='object')?d.hwBy:{}, media:Array.isArray(d.media)?d.media:[], shop:Array.isArray(d.shop)?d.shop:[], shopFreq:(d.shopFreq && typeof d.shopFreq==='object')?d.shopFreq:{}}; }
+// 標籤：待辦還在用但標籤不見了 → 補回來；「生活」被誤刪 2026-11-21 → 補回一次
+function fixTags(once){
+  let ch = false; const has = n => db.tags.some(t => t.name === n);
+  db.todos.forEach(td => { if(td.tag && !has(td.tag)){ const d = DEFAULT_TAGS.find(x=>x.name===td.tag); db.tags.push({name:td.tag, color:d ? d.color : '#FFC93C'}); ch = true; } });
+  if(once && !db.settings.fixLife1){ db.settings.fixLife1 = true; ch = true; if(!has('生活')) db.tags.push({name:'生活', color:'#22C39A'}); }
+  return ch;
+}
 // 習慣是每個人自己的：依登入帳號分開存
 const meKey = () => (typeof Sync !== 'undefined' && Sync.uid()) || 'local';
 function myHabits(){
@@ -1101,7 +1128,7 @@ function normTodo(t){
 }
 function load(){
   try{ const raw = localStorage.getItem(KEY);
-    if(raw){ db = makeDb(JSON.parse(raw)); } }
+    if(raw){ db = makeDb(JSON.parse(raw)); fixTags(); } }
   catch(e){ console.warn('讀取失敗', e); }
 }
 function saveQuiet(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); Sync.push(); return true; }catch(e){ toast('⚠️ 存檔失敗：' + e.message); return false; } }
@@ -1145,7 +1172,7 @@ const Sync = (() => {
   const pick = (o, keys) => { const r = {}; keys.forEach(k => { if(o[k] !== undefined) r[k] = o[k]; }); return r; };
   const omit = (o, keys) => { const r = Object.assign({}, o); keys.forEach(k => delete r[k]); return r; };
   function applyRemote(data){
-    db = makeDb(data);
+    db = makeDb(data); fixTags();
     try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
     if(document.activeElement !== $('#dText')) dShownFor = null;
     renderAll();
@@ -1179,7 +1206,7 @@ const Sync = (() => {
     }
     if(mergeLocal) next = merge(next, db);
     if(uData || sData || mergeLocal) applyRemote(next);
-    ready = true; lastU = lastS = ''; push(true);
+    ready = true; lastU = lastS = ''; if(fixTags(true)){ saveQuiet(); renderAll(); } push(true);
     unsub = uRef.onSnapshot(sn => {
       const d = sn.data(); if(!d || !d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenU || d.json === lastU) return;
       seenU = d.json; const nu = JSON.parse(d.json); lastU = d.json;
@@ -2280,6 +2307,35 @@ $('#cheer').onclick = nextCheer;
 const listTodos = arr => arr.map(t=>`  • ${t.tag?'['+t.tag+'] ':''}${t.title}${t.due?`（${prettyDate(t.due)}）`:''}${t.steps.length?` 進度 ${progress(t)}%`:''}${t.pri==='high'?' 🔥':''}`).join('\n');
 const listEvents = (arr, withDate) => arr.map(e=>`  • ${withDate?prettyDate(e.date)+' ':''}${e.time||'全天'} ${e.title}`).join('\n');
 function nextStep(t){ const s = t.steps.find(x=>!x.done); return s ? `「${t.title}」的下一步：${s.title}` : `「${t.title}」`; }
+// 把報告文字排成好讀的卡片（文字版仍用在 Email、手機通知）
+function reportHtml(text){
+  const secs = []; let cur = null, tips = [];
+  const item = raw => {
+    let t = raw.replace(/^\s*•\s*/, ''), tag = '', tm = '', date = '', pct = null, hot = false, extra = '';
+    if(/ 🔥$/.test(t)){ hot = true; t = t.replace(/ 🔥$/, ''); }
+    let m = t.match(/ 進度 (\d+)%$/); if(m){ pct = +m[1]; t = t.slice(0, m.index); }
+    m = t.match(/ (\d+)%（(\d+\/\d+) 步）$/); if(m){ pct = +m[1]; extra = m[2] + ' 步'; t = t.slice(0, m.index); }
+    m = t.match(/^\[(.+?)\] /); if(m){ tag = m[1]; t = t.slice(m[0].length); }
+    m = t.match(/（([^（）]*(?:（.）)?[^（）]*)）$/); if(m){ date = m[1]; t = t.slice(0, m.index); }
+    m = t.match(/^((?:\d+\/\d+（.）\s)?(?:\d\d:\d\d|全天))\s(.+)$/); if(m){ tm = m[1]; t = m[2]; }
+    const meta = [tag ? `<span class="chipt">${esc(tag)}</span>` : '', date ? `<span>📅 ${esc(date)}</span>` : '', hot ? '<span>🔥 重要</span>' : '',
+      pct !== null ? `<span class="pbar"><i style="width:${pct}%"></i></span><span>${pct}%${extra ? ' · ' + esc(extra) : ''}</span>` : ''].join('');
+    return `<div class="rp-it"><div>${tm ? `<span class="tm">${esc(tm)}</span>` : ''}<span class="tt">${esc(t)}</span></div>${meta ? `<div class="mt">${meta}</div>` : ''}</div>`;
+  };
+  text.split('\n').forEach(line => {
+    if(!line.trim()) return;
+    let m = line.match(/^【(.+)】$/);
+    if(m){ cur = {h:m[1], body:[]}; secs.push(cur); return; }
+    if(!cur){ cur = {h:'', body:[]}; secs.push(cur); }
+    m = line.match(/^(建議先做|下一步建議)：(.+)$/);
+    if(m){ if(!tips.includes(m[2])) tips.push(m[2]); return; }
+    if(/^\s*•/.test(line)){ cur.body.push(item(line)); return; }
+    if(/：$/.test(line)){ cur.body.push(`<div class="rp-sub">${esc(line.slice(0,-1))}</div>`); return; }
+    cur.body.push(`<div class="rp-l ${/^(📅 沒有|🎯 沒有|本週沒有|👍)/.test(line) ? 'muted' : ''}">${esc(line)}</div>`);
+  });
+  return secs.map(x => `<div class="rp-sec ${x.h === '進度報告' ? 'rp-prog' : ''}">${x.h ? `<div class="rp-h">${esc(x.h)}</div>` : ''}${x.body.join('')}</div>`).join('')
+    + tips.map(t => `<div class="rp-tip"><b>💡 建議先做</b>${esc(t)}</div>`).join('');
+}
 function dayReport(ds, label){
   const t = today(), evs = eventsOn(ds);
   const tds = db.todos.filter(td => !td.done && td.due && (td.due===ds || (ds===t && td.due<t))).sort(tdSort);
@@ -2343,7 +2399,7 @@ function answer(q){
   if(/今天|今日|現在|待會|等等/.test(q)) return dayReport(today(), '今天');
   return '我目前看得懂這些問題：今天／明天／後天要做什麼、這週或下週要完成什麼、進度如何、有什麼逾期、最近的靈感。\n\n先幫你看今天：\n\n' + dayReport(today(),'今天');
 }
-function ask(q){ if(!q.trim()) return; const box = $('#askAnswer'); box.textContent = answer(q); box.style.display = 'block'; }
+function ask(q){ if(!q.trim()) return; const box = $('#askAnswer'), a = answer(q); if(/【/.test(a)){ box.innerHTML = reportHtml(a); box.classList.add('rich'); } else { box.textContent = a; box.classList.remove('rich'); } box.style.display = 'block'; }
 $('#askBtn').onclick = () => ask($('#askInput').value);
 $('#askInput').onkeydown = e => { if(e.key==='Enter' && !e.isComposing) ask(e.target.value); };
 $$('.chips button').forEach(b => b.onclick = () => { $('#askInput').value = b.dataset.q; ask(b.dataset.q); });
@@ -2444,7 +2500,7 @@ function weeklyText(){ return weekReport(1) + '\n\n' + progressReport(); }
 function showReport(parts){
   const title = parts.includes('weekly') ? '🗓️ 下週預告' : '🌙 明天預告';
   const body = parts.includes('weekly') ? weeklyText() : dailyText();
-  $('#rTitle').textContent = title; $('#rBody').textContent = body; $('#reportModal').classList.add('on'); beep();
+  $('#rTitle').textContent = title; $('#rBody').innerHTML = reportHtml(body); $('#rBody').scrollTop = 0; $('#reportModal').classList.add('on'); beep();
   try{ if('Notification' in window && Notification.permission==='granted') new Notification(title, {body: body.split('\n').slice(0,6).join('\n')}); }catch(e){}
 }
 $('#rClose').onclick = () => $('#reportModal').classList.remove('on');
