@@ -337,6 +337,10 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+.invbtn{padding:3px 12px !important;font-size:13px;box-shadow:1.5px 1.5px 0 var(--ink)}
+#invItems{margin-top:10px;max-height:30vh;overflow:auto}
+#invItems .mini{font-size:13.5px}
+.invbusy{position:fixed;inset:0;z-index:70;background:rgba(29,37,71,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:17px}
 .rp{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
 .rp-sec{background:var(--soft-blue);border:2px solid var(--ink);border-radius:14px;padding:10px 12px}
 .rp-sec.rp-prog{background:var(--soft-mint)}
@@ -800,7 +804,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <div class="meta" id="dSaved" style="text-align:right">會自動儲存</div>
       <div class="subhead">🏆 這天完成的事</div>
       <ul class="donelog" id="dDone" style="margin:0;padding-left:20px"></ul>
-      <div class="subhead">💰 記帳 <span class="meta" style="font-weight:700">👨‍👩‍👧 全家共用</span></div>
+      <div class="subhead">💰 記帳 <span class="meta" style="font-weight:700">👨‍👩‍👧 全家共用</span><span class="sp" style="flex:1"></span><label class="btn blue invbtn">📷 拍發票<input type="file" id="invFile" accept="image/*" class="hidden"></label></div>
       <div class="row">
         <select id="mKind"><option value="out">支出</option><option value="in">收入</option></select>
         <input type="number" id="mAmt" placeholder="金額" min="0" inputmode="decimal" style="width:100px">
@@ -933,7 +937,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-21 報告排版版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-22 拍發票版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -974,6 +978,18 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <p class="meta hidden" id="edNote" style="margin:6px 0 0"></p>
   <div id="edForm" class="edform"></div>
   <div class="row between" style="margin-top:14px"><button class="btn white" id="edCancel">取消</button><button class="btn" id="edSave">儲存</button></div>
+</div></div>
+<div class="modal" id="invSheet"><div class="card sheet">
+  <div class="row between"><h2 style="margin:0">🧾 發票記帳</h2><button class="icon" id="invClose" style="font-size:20px" aria-label="關閉">✕</button></div>
+  <div id="invInfo" class="meta" style="margin:6px 0 2px"></div>
+  <div class="edform">
+    <label for="invDate">日期</label><input type="date" id="invDate">
+    <label for="invAmt">金額</label><input type="number" id="invAmt" inputmode="decimal" min="0">
+    <label for="invCat">分類</label><select id="invCat"></select>
+    <label for="invNote">備註</label><input type="text" id="invNote" maxlength="80">
+  </div>
+  <div id="invItems"></div>
+  <div class="row between" style="margin-top:14px"><button class="btn white" id="invCancel">取消</button><button class="btn mint" id="invSave">記一筆</button></div>
 </div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
@@ -1077,7 +1093,7 @@ function extractMoney(d){
 }
 function cleanDiary(dy){ const o = {}; Object.entries(dy||{}).forEach(([k,v]) => { if(v) o[k] = {mood:v.mood||'', text:v.text||''}; }); return o; }
 // 安全：從雲端、家人或備份檔讀進來的資料，先把會被放進畫面標籤裡的欄位清乾淨
-const SAFE_KEYS = new Set(['id','emoji','mood','kind','status','pri','type','repeat','cat','tag','date','start','end','due','time','until','country','unit','store','by','gotBy']);
+const SAFE_KEYS = new Set(['id','emoji','mood','kind','status','pri','type','repeat','cat','tag','date','start','end','due','time','until','country','unit','store','by','gotBy','inv']);
 function scrub(o, depth){
   if(depth > 8 || !o || typeof o !== 'object') return o;
   if(Array.isArray(o)){ o.forEach(x => scrub(x, depth+1)); return o; }
@@ -1615,6 +1631,95 @@ $('#dText').addEventListener('input', () => {
   $('#dSaved').textContent = '儲存中…'; clearTimeout(dTimer);
   dTimer = setTimeout(() => { entry(dDate).text = $('#dText').value; if(saveQuiet()) $('#dSaved').textContent = '✓ 已儲存 ' + hm(Date.now()); renderEntries(); }, 600);
 });
+// ---------- 拍發票記帳（讀電子發票上的兩個 QR Code，不用上傳照片） ----------
+let jsqrP = null;
+function loadJsQR(){
+  return jsqrP || (jsqrP = new Promise((ok, no) => { const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'; sc.integrity = 'sha384-b5Ya4Bq3qCyz39m2ISh+4DxjAIljdeFwK/BsXLuj9gugaNwAcj/ia15fxNZL9Nlx'; sc.crossOrigin = 'anonymous';
+    sc.onload = () => ok(window.jsQR); sc.onerror = () => { jsqrP = null; no(new Error('掃描工具載入失敗，請確認有連上網路')); }; document.head.appendChild(sc); }));
+}
+function qrText(code){
+  const b = new Uint8Array(code.binaryData || []); if(!b.length) return code.data || '';
+  try{ return new TextDecoder('utf-8', {fatal:true}).decode(b); }catch(e){}
+  try{ return new TextDecoder('big5').decode(b); }catch(e){ return code.data || ''; }
+}
+async function scanInvoiceImage(file){
+  const jsQR = await loadJsQR();
+  const img = await new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => no(new Error('照片讀不到，換一張試試')); im.src = URL.createObjectURL(file); });
+  const found = {};
+  const take = txt => { if(/^[A-Z]{2}\d{8}\d{7}/.test(txt)) found.left = found.left || txt; else if(/^\*\*/.test(txt)) found.right = found.right || txt; };
+  for(const max of [1600, 1100, 2400]){
+    const sc = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), W = Math.round(img.naturalWidth*sc), H = Math.round(img.naturalHeight*sc);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const cx = cv.getContext('2d', {willReadFrequently:true}); cx.drawImage(img, 0, 0, W, H);
+    for(const [x0,w] of [[0,1],[0,.58],[.42,.58]]){
+      const X = Math.round(W*x0), WW = Math.round(W*w);
+      for(let k=0; k<3; k++){ // 找到一個就把它塗白，再找下一個
+        const data = cx.getImageData(X, 0, WW, H), code = jsQR(data.data, WW, H, {inversionAttempts:'attemptBoth'});
+        if(!code) break; take(qrText(code));
+        const L = code.location, xs = [L.topLeftCorner,L.topRightCorner,L.bottomRightCorner,L.bottomLeftCorner];
+        cx.fillStyle = '#fff'; cx.beginPath(); xs.forEach((p,i) => cx[i?'lineTo':'moveTo'](X+p.x, p.y)); cx.closePath(); cx.fill(); cx.lineWidth = 12; cx.strokeStyle = '#fff'; cx.stroke();
+      }
+      if(found.left && found.right) break;
+    }
+    if(found.left) break;
+  }
+  URL.revokeObjectURL(img.src);
+  return found.left ? parseInvoice(found.left, found.right) : null;
+}
+function parseInvoice(left, right){
+  const no = left.slice(0,10), dt = left.slice(10,17), y = +dt.slice(0,3) + 1911;
+  const date = `${y}-${dt.slice(3,5)}-${dt.slice(5,7)}`, total = parseInt(left.slice(29,37), 16), seller = left.slice(45,53);
+  if(!/^\d{4}-\d\d-\d\d$/.test(date) || isNaN(parse(date)) || !(total >= 0)) return null;
+  let rest = left.slice(77), enc = '', items = [];
+  const m = rest.match(/^:?[^:]{0,10}:(\d+):(\d+):(\d):?([\s\S]*)$/);
+  let txt = m ? m[4] : ''; if(m) enc = m[3];
+  if(right) txt += (txt && !/:$/.test(txt) ? ':' : '') + right.replace(/^\*\*/, '');
+  if(enc === '2'){ try{ txt = new TextDecoder().decode(Uint8Array.from(atob(txt.replace(/:/g,'')), c => c.charCodeAt(0))); }catch(e){ txt = ''; } }
+  const f = txt.split(':');
+  for(let i=0; i+2<f.length; i+=3){ const name = f[i].trim(), q = +f[i+1], pr = +f[i+2]; if(name && !isNaN(q) && !isNaN(pr)) items.push({name:name.slice(0,40), q, pr}); }
+  return {no, date, total, seller, items};
+}
+function guessMoneyCat(items){
+  const t = items.map(x=>x.name).join(' ');
+  if(/便當|飯|麵|粥|餐|咖啡|拿鐵|美式|茶|奶茶|飲|果汁|可樂|漢堡|堡|雞排|披薩|壽司|早餐|午餐|晚餐|三明治|吐司|飯糰|關東煮|甜點|蛋糕|麵包|冰/.test(t)) return '餐飲';
+  if(/加油|汽油|柴油|95|92|98|停車|悠遊|捷運|高鐵|台鐵|客運|計程|Uber/i.test(t)) return '交通';
+  if(/藥|醫|診|口罩|維他命|保健/.test(t)) return '醫療';
+  if(/書|文具|筆|課|學費|補習/.test(t)) return '學習';
+  if(/電影|門票|遊樂|KTV|票/.test(t)) return '娛樂';
+  if(/衛生紙|洗|皂|牙|垃圾袋|電池|尿布|貓|狗|飼料|菜|肉|蛋|奶|米|油|鹽/.test(t)) return '生活';
+  return '購物';
+}
+let invCur = null;
+function openInvoice(inv){
+  invCur = inv;
+  $('#invCat').innerHTML = CATS.out.map(c=>`<option>${c}</option>`).join('');
+  $('#invDate').value = inv.date; $('#invAmt').value = inv.total; $('#invCat').value = guessMoneyCat(inv.items);
+  $('#invNote').value = inv.items.length ? inv.items.map(x=>x.name).join('、').slice(0,60) : '發票 ' + inv.no;
+  $('#invInfo').textContent = `發票 ${inv.no.slice(0,2)}-${inv.no.slice(2)} · ${prettyDate(inv.date)}${inv.seller && !/^0+$/.test(inv.seller) ? ' · 店家統編 ' + inv.seller : ''}`;
+  $('#invItems').innerHTML = inv.items.length ? '<div class="subhead" style="margin-top:4px">買了什麼</div>' + inv.items.map(x=>`<div class="mini"><span class="t">${esc(x.name)}</span><span class="meta">×${x.q}</span><b>$${money(x.pr * (x.q||1))}</b></div>`).join('')
+    : '<p class="meta">這張發票的 QR Code 沒有品項明細（有些店家只放在右邊那個，記得兩個都要拍到）。</p>';
+  $('#invSheet').classList.add('on');
+}
+function closeInvoice(){ $('#invSheet').classList.remove('on'); invCur = null; }
+$('#invClose').onclick = $('#invCancel').onclick = closeInvoice;
+$('#invSheet').onclick = e => { if(e.target.id==='invSheet') closeInvoice(); };
+$('#invSave').onclick = () => {
+  if(!invCur) return; const amt = Math.round(+$('#invAmt').value), ds = $('#invDate').value;
+  if(!(amt > 0)){ toast('請輸入金額'); return; } if(!ds){ toast('請選日期'); return; }
+  mlistW(ds).push({id:uid(), by:Sync.name(), kind:'out', amt, cat:$('#invCat').value, note:$('#invNote').value.trim(), inv:invCur.no});
+  closeInvoice(); dDate = ds; save(); celebrate(`發票記好了：$${money(amt)}`);
+};
+$('#invFile').onchange = async e => {
+  const file = e.target.files && e.target.files[0]; e.target.value = ''; if(!file) return;
+  const busy = document.createElement('div'); busy.className = 'invbusy'; busy.textContent = '🧾 讀取發票中…'; document.body.appendChild(busy);
+  try{
+    const inv = await scanInvoiceImage(file);
+    if(!inv){ toast('找不到電子發票的 QR Code，請拍近一點、清楚一點，兩個 QR Code 都要入鏡', true); return; }
+    if(Object.values(db.money||{}).some(a => (a||[]).some(x => x.inv === inv.no))){ toast(`這張發票（${inv.no}）已經記過了`, true); return; }
+    openInvoice(inv);
+  }catch(err){ toast(err.message || String(err), true); }
+  finally{ busy.remove(); }
+};
 function addMoney(){
   const amt = parseFloat($('#mAmt').value);
   if(!(amt>0)){ toast('請輸入金額'); return; }
