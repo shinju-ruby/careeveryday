@@ -337,6 +337,7 @@ nav#nav button.on span{display:inline}
 #dsList .mini{font-size:14px}
 /* bottom nav (mobile) */
 .bnav{display:none}
+#invItems .invic{padding:2px 4px;font-size:13px;border-radius:8px;width:auto;flex:none}
 .invbtn{padding:3px 12px !important;font-size:13px;box-shadow:1.5px 1.5px 0 var(--ink)}
 #invItems{margin-top:10px;max-height:30vh;overflow:auto}
 #invItems .mini{font-size:13.5px}
@@ -937,7 +938,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-22 拍發票版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-22 拍發票版 2</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1696,17 +1697,36 @@ function openInvoice(inv){
   $('#invDate').value = inv.date; $('#invAmt').value = inv.total; $('#invCat').value = guessMoneyCat(inv.items);
   $('#invNote').value = inv.items.length ? inv.items.map(x=>x.name).join('、').slice(0,60) : '發票 ' + inv.no;
   $('#invInfo').textContent = `發票 ${inv.no.slice(0,2)}-${inv.no.slice(2)} · ${prettyDate(inv.date)}${inv.seller && !/^0+$/.test(inv.seller) ? ' · 店家統編 ' + inv.seller : ''}`;
-  $('#invItems').innerHTML = inv.items.length ? '<div class="subhead" style="margin-top:4px">買了什麼</div>' + inv.items.map(x=>`<div class="mini"><span class="t">${esc(x.name)}</span><span class="meta">×${x.q}</span><b>$${money(x.pr * (x.q||1))}</b></div>`).join('')
+  const cats = inv.items.map(x => guessMoneyCat([x])), multi = new Set(cats).size > 1;
+  const catSel = (c, i) => `<select class="invic" data-i="${i}">${CATS.out.map(o=>`<option ${o===c?'selected':''}>${o}</option>`).join('')}</select>`;
+  $('#invItems').innerHTML = inv.items.length ? `<label class="edck" style="display:flex;gap:8px;align-items:center;font-weight:700;margin:4px 0"><input type="checkbox" id="invSplit" ${multi?'checked':''}> 依品項分類分開記（大賣場適用）</label>`
+    + '<div class="subhead" style="margin-top:4px">買了什麼</div>' + inv.items.map((x,i)=>`<div class="mini"><span class="t">${esc(x.name)}</span><span class="meta">×${x.q}</span><b>$${money(Math.round(x.pr * (x.q||1)))}</b>${catSel(cats[i], i)}</div>`).join('')
+    + '<div id="invSum" class="meta" style="margin-top:6px"></div>'
     : '<p class="meta">這張發票的 QR Code 沒有品項明細（有些店家只放在右邊那個，記得兩個都要拍到）。</p>';
-  $('#invSheet').classList.add('on');
+  invSplitUI(); $('#invSheet').classList.add('on');
 }
+function invGroups(){
+  const g = {}; invCur.items.forEach((x,i) => { const el = $(`.invic[data-i="${i}"]`), c = el ? el.value : '購物'; g[c] = g[c] || {amt:0, names:[]}; g[c].amt += x.pr * (x.q||1); if(x.pr > 0) g[c].names.push(x.name); });
+  return g;
+}
+function invSplitUI(){
+  const on = !!($('#invSplit') && $('#invSplit').checked);
+  $$('.invic').forEach(el => el.style.display = on ? '' : 'none');
+  $('#invCat').disabled = on; $('#invNote').disabled = on;
+  if($('#invSum')) $('#invSum').textContent = on ? '會記成：' + Object.entries(invGroups()).map(([c,v]) => `${c} $${money(Math.round(v.amt))}`).join('、') : '';
+}
+$('#invItems').addEventListener('change', invSplitUI);
 function closeInvoice(){ $('#invSheet').classList.remove('on'); invCur = null; }
 $('#invClose').onclick = $('#invCancel').onclick = closeInvoice;
 $('#invSheet').onclick = e => { if(e.target.id==='invSheet') closeInvoice(); };
 $('#invSave').onclick = () => {
   if(!invCur) return; const amt = Math.round(+$('#invAmt').value), ds = $('#invDate').value;
   if(!(amt > 0)){ toast('請輸入金額'); return; } if(!ds){ toast('請選日期'); return; }
-  mlistW(ds).push({id:uid(), by:Sync.name(), kind:'out', amt, cat:$('#invCat').value, note:$('#invNote').value.trim(), inv:invCur.no});
+  if($('#invSplit') && $('#invSplit').checked){
+    const gs = Object.entries(invGroups()).map(([cat,v]) => ({cat, amt:Math.round(v.amt), names:v.names})).filter(x => x.amt > 0);
+    const diff = amt - gs.reduce((a,x)=>a+x.amt, 0); if(gs.length){ gs.sort((a,b)=>b.amt-a.amt); gs[0].amt += diff; } // 折扣、四捨五入的差額算進最大的那一類
+    gs.filter(x => x.amt > 0).forEach(x => mlistW(ds).push({id:uid(), by:Sync.name(), kind:'out', amt:x.amt, cat:x.cat, note:x.names.join('、').slice(0,60), inv:invCur.no}));
+  } else mlistW(ds).push({id:uid(), by:Sync.name(), kind:'out', amt, cat:$('#invCat').value, note:$('#invNote').value.trim(), inv:invCur.no});
   closeInvoice(); dDate = ds; save(); celebrate(`發票記好了：$${money(amt)}`);
 };
 $('#invFile').onchange = async e => {
