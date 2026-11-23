@@ -643,7 +643,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         <label>期限</label><input type="date" id="tdDue">
         <label>優先</label>
         <select id="tdPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select>
-        <label>提醒</label><input type="datetime-local" id="tdRemind">
+        <label>提醒</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="tdRemindD" style="flex:1;min-width:0"><select id="tdRemindT" aria-label="提醒時間"></select></div>
         <label>倒數</label><select id="tdCd"><option value="1">⏳ 顯示倒數小提示</option><option value="0">不顯示</option></select>
       </div>
       <div style="margin-top:12px">
@@ -926,6 +926,8 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
     </div>
     <div class="card">
       <h2 style="margin-bottom:6px">⏰ 固定提醒</h2>
+      <div class="remrow"><label class="sw"><input type="checkbox" id="sMorningOn"><i></i></label><b class="grow">☀️ 今天的安排</b>
+        <span class="meta">每天</span><select id="sMorningTime" class="tsel" aria-label="今天提醒時間"></select><button class="icon eye" id="sMorningPreview" title="預覽" aria-label="預覽今天的安排">👀</button></div>
       <div class="remrow"><label class="sw"><input type="checkbox" id="sDailyOn"><i></i></label><b class="grow">🌙 明天預告</b>
         <span class="meta">每天</span><select id="sDailyTime" class="tsel" aria-label="明天預告時間"></select><button class="icon eye" id="sDailyPreview" title="預覽" aria-label="預覽明天預告">👀</button></div>
       <div class="remrow"><label class="sw"><input type="checkbox" id="sWeeklyOn"><i></i></label><b class="grow">🗓️ 下週預告</b>
@@ -938,6 +940,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         </div>
         <div class="row">
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailEmail"> 也寄 Email</label>
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailMorning"> 今天的安排</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailDaily"> 明天預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailWeekly"> 下週預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailItems"> 行程和待辦的提醒</label>
@@ -947,7 +950,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 家人動態版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 早上提醒版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1011,7 +1014,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <div id="dsList" style="margin:8px 0"></div>
   <div class="seg" id="dsKind"><button data-k="ev" class="on">📅 行程</button><button data-k="td">✅ 待辦</button></div>
   <input type="text" id="dsText" placeholder="要做什麼？" style="width:100%">
-  <div class="row" id="dsEvOpts" style="margin-top:8px"><input type="time" id="dsTime"><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
+  <div class="row" id="dsEvOpts" style="margin-top:8px"><select id="dsTime" aria-label="時間"></select><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
   <div class="row hidden" id="dsTdOpts" style="margin-top:8px"><select id="dsPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select><select id="dsTag"></select></div>
   <div class="row between" style="margin-top:12px"><button class="btn white" id="dsGoDay">看這天的日計畫</button><button class="btn" id="dsAdd">新增</button></div>
 </div></div>
@@ -1099,7 +1102,7 @@ const TAG_COLORS = ['#FF7EB6','#38B6FF','#22C39A','#FFC93C','#8B6CFF','#FF6B3D',
 const DEFAULT_ANNIV = () => [['a-hub','老公生日',6,11,0,'🎂'],['a-me','我的生日',10,29,0,'🎂'],['a-mumu','慕慕生日',10,17,0,'🎂'],['a-man','蔓蔓生日',1,21,0,'🎂'],
   ['a-dad','爸爸生日',4,3,0,'🎂'],['a-mom','媽媽生日',11,23,0,'🎂'],['a-wed','結婚紀念日',6,2,0,'💍'],['a-date','交往紀念日',9,23,0,'💕'],['a-mil','婆婆生日',9,23,1,'🎂']]
   .map(([id,name,m,d,lunar,emoji]) => ({id,name,m,d,lunar:!!lunar,emoji}));
-const DEFAULT_SETTINGS = () => ({daily:{on:true,time:'21:00'}, weekly:{on:true,time:'21:00',day:0}, fired:{}});
+const DEFAULT_SETTINGS = () => ({morning:{on:true,time:'10:00'}, daily:{on:true,time:'17:00'}, weekly:{on:true,time:'21:00',day:0}, fired:{}});
 // 記帳：以前放在日記裡（diary[日期].money），現在獨立成 db.money，才能和家人共用
 function extractMoney(d){
   const m = (d.money && typeof d.money==='object' && !Array.isArray(d.money)) ? JSON.parse(JSON.stringify(d.money)) : {};
@@ -1121,7 +1124,7 @@ function scrub(o, depth){
   return o;
 }
 function makeDb(d){ return scrub(makeDb0(d), 0); }
-function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{});
+function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d.settings||{}); if(!st.morning || typeof st.morning !== 'object') st.morning = {on:true, time:'10:00'};
   return {events:d.events||[], todos:(d.todos||[]).map(normTodo), ideas:d.ideas||[], tags:Array.isArray(d.tags)?d.tags:DEFAULT_TAGS.slice(),
     diary:cleanDiary(d.diary), money:extractMoney(d), settings:st,
     habits:Array.isArray(d.habits)?d.habits:null, habitLog:(d.habitLog && typeof d.habitLog==='object')?d.habitLog:null,
@@ -1131,6 +1134,7 @@ function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d
 function fixTags(once){
   let ch = false; const has = n => db.tags.some(t => t.name === n);
   db.todos.forEach(td => { if(td.tag && !has(td.tag)){ const d = DEFAULT_TAGS.find(x=>x.name===td.tag); db.tags.push({name:td.tag, color:d ? d.color : '#FFC93C'}); ch = true; } });
+  if(once && !db.settings.rem1723){ db.settings.rem1723 = true; ch = true; db.settings.morning = {on:true, time:'10:00'}; db.settings.daily = Object.assign({}, db.settings.daily, {on:true, time:'17:00'}); delete db.settings.fired.daily; }
   if(once && !db.settings.fixLife1){ db.settings.fixLife1 = true; ch = true; if(!has('生活')) db.tags.push({name:'生活', color:'#22C39A'}); }
   return ch;
 }
@@ -1626,14 +1630,16 @@ function todoCard(td){
 }
 
 $('#tdStart').value = today();
+$('#tdRemindT').innerHTML = timeOpts('09:00');
+$('#dsTime').innerHTML = timeOpts('', '全天');
 $('#tdAdd').onclick = () => {
   const title = $('#tdTitle').value.trim(); if(!title){ toast('請填寫要做的事'); return; }
   let start = $('#tdStart').value, due = $('#tdDue').value;
   if(start && due && start > due){ toast('開始日不能晚於期限喔'); return; }
   const steps = $('#tdSteps').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>({id:uid(), title:s, done:false}));
-  const td = newTodo({title, tag:pickTag, countdown:$('#tdCd').value==='1', start, due, pri:$('#tdPri').value, remindAt:$('#tdRemind').value, steps});
+  const td = newTodo({title, tag:pickTag, countdown:$('#tdCd').value==='1', start, due, pri:$('#tdPri').value, remindAt:($('#tdRemindD').value ? $('#tdRemindD').value + 'T' + ($('#tdRemindT').value || '09:00') : ''), steps});
   db.todos.push(td); if(steps.length) expanded.add(td.id);
-  $('#tdTitle').value=''; $('#tdRemind').value=''; $('#tdSteps').value=''; $('#tdDue').value='';
+  $('#tdTitle').value=''; $('#tdRemindD').value=''; $('#tdSteps').value=''; $('#tdDue').value='';
   save(); toast('已新增待辦 ✅');
 };
 $('#tdFilter').onchange = renderTodos;
@@ -2747,6 +2753,7 @@ function checkReminders(){
   });
   const st = db.settings, d = new Date(), t = today(), nowHM = pad(d.getHours())+':'+pad(d.getMinutes());
   const parts = [];
+  if(st.morning && st.morning.on && nowHM >= st.morning.time && hmMin(nowHM) - hmMin(st.morning.time) < 240 && st.fired.morning !== t){ st.fired.morning = t; changed = true; parts.push('morning'); }
   if(st.daily.on && nowHM >= st.daily.time && st.fired.daily !== t){ st.fired.daily = t; changed = true; parts.push('daily'); }
   if(st.weekly.on && d.getDay()===weeklyDay() && nowHM >= st.weekly.time && st.fired.weekly !== t){ st.fired.weekly = t; changed = true; parts.push('weekly'); }
   if(parts.length) showReport(parts);
@@ -2754,20 +2761,24 @@ function checkReminders(){
 }
 function dailyText(){ return dayReport(ymd(addDays(new Date(),1)), '明天') + '\n\n' + progressReport(); }
 function weeklyText(){ return weekReport(1) + '\n\n' + progressReport(); }
+function hmMin(x){ const [h,m] = String(x).split(":"); return (+h)*60 + (+m||0); }
+function morningText(){ return dayReport(today(), '今天') + '\n\n' + progressReport(); }
 function showReport(parts){
-  const title = parts.includes('weekly') ? '🗓️ 下週預告' : '🌙 明天預告';
-  const body = parts.includes('weekly') ? weeklyText() : dailyText();
+  if(parts.includes('morning') && parts.length > 1){ showReport(parts.filter(x => x !== 'morning')); return; }   // 同時到時，先看比較晚的那份
+  const title = parts.includes('weekly') ? '🗓️ 下週預告' : parts.includes('morning') ? '☀️ 今天的安排' : '🌙 明天預告';
+  const body = parts.includes('weekly') ? weeklyText() : parts.includes('morning') ? morningText() : dailyText();
   $('#rTitle').textContent = title; $('#rBody').innerHTML = reportHtml(body); $('#rBody').scrollTop = 0; $('#reportModal').classList.add('on'); beep();
   try{ if('Notification' in window && Notification.permission==='granted') new Notification(title, {body: body.split('\n').slice(0,6).join('\n')}); }catch(e){}
 }
 $('#rClose').onclick = () => $('#reportModal').classList.remove('on');
 $('#reportModal').onclick = e => { if(e.target.id==='reportModal') $('#reportModal').classList.remove('on'); };
 $('#sDailyPreview').onclick = () => showReport(['daily']);
+$('#sMorningPreview').onclick = () => showReport(['morning']);
 $('#sWeeklyPreview').onclick = () => showReport(['weekly']);
 function renderAnniv(){
   const t = today();
   const list = (db.anniv||[]).map(a => ({a, ds:nextAnniv(a, t)})).sort((x,y)=>(x.ds||'9').localeCompare(y.ds||'9'));
-  const row = ({a,ds}, del) => `<div class="annrow"><span style="font-size:20px">${esc(a.emoji)}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${a.lunar ? annivDate(a) + (ds?' · ':'') : ''}${ds?`${prettyDate(ds)}，還有 ${diffDays(t,ds)} 天`:annivDate(a)}</div></div>${del?`<button class="icon" data-act="edit" data-k="anniv" data-id="${esc(a.id)}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delAnn" data-id="${esc(a.id)}" title="刪除" aria-label="刪除">✕</button>`:''}</div>`;
+  const row = ({a,ds}, del) => `<div class="annrow"><span style="font-size:20px">${esc(a.emoji)}</span><div class="grow"><b>${esc(a.name)}</b><div class="meta">${a.lunar ? annivDate(a) + (ds?' · ':'') : ''}${ds?`${prettyDate(ds)}，${diffDays(t,ds) ? '還有 ' + diffDays(t,ds) + ' 天' : '就是今天 🎉'}`:annivDate(a)}</div></div>${del?`<button class="icon" data-act="edit" data-k="anniv" data-id="${esc(a.id)}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delAnn" data-id="${esc(a.id)}" title="刪除" aria-label="刪除">✕</button>`:''}</div>`;
   $('#annCount').textContent = list.length ? `共 ${list.length} 個` : '';
   $('#annNext').innerHTML = list.length ? '<div class="meta" style="margin-bottom:2px">接下來的日子</div>' + list.slice(0,2).map(x => row(x, false)).join('') : '<div class="empty">還沒有紀念日，按「新增日子」加一個</div>';
   $('#annList').innerHTML = list.length ? list.map(x => row(x, true)).join('') : '<div class="empty">還沒有紀念日</div>';
@@ -2783,18 +2794,25 @@ $$('#annSeg button').forEach(b => b.onclick = () => annTab(b.dataset.k));
 $('#annOpenList').onclick = () => openAnn('list'); $('#annOpenAdd').onclick = () => openAnn('add');
 $('#annClose').onclick = () => $('#annSheet').classList.remove('on');
 $('#annSheet').onclick = e => { if(e.target.id==='annSheet') $('#annSheet').classList.remove('on'); };
+// 24 小時制的時間選單（iPhone 內建時間選擇器會顯示上午／下午，所以自己做）
+function timeOpts(v, allDay){
+  const list = []; for(let h=0; h<24; h++) for(const m of ['00','15','30','45']) list.push(pad(h)+':'+m);
+  if(v && !list.includes(v)) { list.push(v); list.sort(); }
+  return (allDay ? `<option value="">${allDay}</option>` : '') + list.map(t => `<option value="${t}" ${t===v?'selected':''}>${t}</option>`).join('');
+}
 function fillTimes(sel, v){
   const list = []; for(let h=6; h<24; h++) for(const m of ['00','30']) list.push(pad(h)+':'+m);
   if(v && !list.includes(v)){ list.push(v); list.sort(); }
-  $(sel).innerHTML = list.map(t => `<option value="${t}">${+t.slice(0,2) < 12 ? '早上' : +t.slice(0,2) < 18 ? '下午' : '晚上'} ${t}</option>`).join(''); $(sel).value = v;
+  $(sel).innerHTML = list.map(t => `<option value="${t}">${t}</option>`).join(''); $(sel).value = v;
 }
 function weeklyDay(){ const d = +(db.settings.weekly||{}).day; return [0,5,6].includes(d) ? d : 0; }
 function renderSettings(){
   renderAnniv();
   const st = db.settings;
+  $('#sMorningOn').checked = st.morning.on; fillTimes('#sMorningTime', st.morning.time);
   $('#sDailyOn').checked = st.daily.on; fillTimes('#sDailyTime', st.daily.time);
   $('#sWeeklyOn').checked = st.weekly.on; fillTimes('#sWeeklyTime', st.weekly.time); $('#sWeeklyDay').value = String(weeklyDay());
-  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false; $('#sNotifyFam').checked = st.notifyFamily!==false;
+  const ml = st.mail || {}; $('#sMailMorning').checked = ml.morning!==false; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false; $('#sNotifyFam').checked = st.notifyFamily!==false;
   const on = Sync.pushOn(); $('#pushBtn').textContent = on ? '🔕 關閉這支手機的通知' : '📱 開啟這支手機的通知'; $('#pushInfo').textContent = on ? '✅ 這支手機已開啟通知' : '';
 }
 $('#pushBtn').onclick = async () => {
@@ -2803,9 +2821,9 @@ $('#pushBtn').onclick = async () => {
   renderSettings();
 };
 $('#sNotifyFam').addEventListener('change', e => { db.settings.notifyFamily = e.target.checked; saveQuiet(); toast(e.target.checked ? '家人有變動時會通知你' : '不會再推播家人動態'); });
-[['#sMailEmail','email'],['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
+[['#sMailEmail','email'],['#sMailMorning','morning'],['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
   db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));
-[['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time'],['#sWeeklyDay','weekly','day']].forEach(([sel,k,f]) =>
+[['#sMorningOn','morning','on'],['#sMorningTime','morning','time'],['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time'],['#sWeeklyDay','weekly','day']].forEach(([sel,k,f]) =>
   $(sel).addEventListener('change', e => { const v = f==='on' ? e.target.checked : f==='day' ? +e.target.value : e.target.value; if(f==='time' && !v) return; if(f==='day') delete db.settings.fired[k];
     db.settings[k][f] = v; if(f==='time') delete db.settings.fired[k]; saveQuiet(); toast('提醒設定已更新'); }));
 function updateNotice(){
@@ -2832,11 +2850,11 @@ function findMoney(id){ for(const [k,a] of Object.entries(db.money||{})){ const 
 const EDITORS = {
   todo: {title:'✏️ 編輯待辦', get:id => db.todos.find(x=>x.id===id), fields:o => [
     ['title','要做什麼','text',null,true], ['tag','標籤','select',[['','不分類']].concat(db.tags.map(t=>[t.name,t.name]))],
-    ['pri','重要程度','select',Object.entries(PRI)], ['start','開始日','date'], ['due','期限','date'], ['remindAt','提醒時間','datetime-local']],
+    ['pri','重要程度','select',Object.entries(PRI)], ['start','開始日','date'], ['due','期限','date'], ['remindAt','提醒時間','dt24']],
     after:(o,old) => { if(o.remindAt !== old.remindAt) o.notified = false; if(!o.due) o.countdown = false; }},
   step: {title:'✏️ 編輯步驟', get:(id,sid) => { const t = db.todos.find(x=>x.id===id); return t && t.steps.find(x=>x.id===sid); }, fields:() => [['title','步驟','text',null,true]]},
   ev: {title:'✏️ 編輯行程', get:id => db.events.find(x=>x.id===id), note:o => o.repeat ? '🔁 這是重複行程，修改會套用到每一次。' : '',
-    fields:o => [['title','行程','text',null,true], ['date', o.repeat?'開始日':'日期','date',null,true], ['time','時間（空白＝全天）','time'],
+    fields:o => [['title','行程','text',null,true], ['date', o.repeat?'開始日':'日期','date',null,true], ['time','時間','time24'],
       ['remind','提醒','select',REMIND_OPTS,false,'num'], ['repeat','重複','select',REPEAT_OPTS], ['until','重複到（可不填）','date'], ['note','備註、地點','text']],
     after:(o,old) => { if(o.date!==old.date || o.time!==old.time || o.remind!==old.remind){ o.notified = false; o.notifiedOn = []; } if(!o.repeat) delete o.until; }},
   shop: {title:'✏️ 編輯要買的', get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
@@ -2859,6 +2877,8 @@ function openEdit(k, id, sid){
   $('#edForm').innerHTML = edCur.fields.map(([f,label,type,opts,req], i) => {
     const v = o[f] == null ? '' : String(o[f]), idA = `ed_${i}`;
     if(type === 'check') return `<label class="edck"><input type="checkbox" id="${idA}" ${o[f]?'checked':''}> ${esc(label)}</label>`;
+    if(type === 'time24') return `<label for="${idA}">${esc(label)}</label><select id="${idA}">${timeOpts(v, '全天')}</select>`;
+    if(type === 'dt24') return `<label for="${idA}">${esc(label)}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="${idA}" value="${esc(v.slice(0,10))}" style="flex:1;min-width:0"><select id="${idA}_t">${timeOpts(v.slice(11,16) || '09:00')}</select></div>`;
     const ctl = type === 'select' ? `<select id="${idA}">${opts.map(([val,txt]) => `<option value="${esc(val)}" ${String(val)===v?'selected':''}>${esc(txt)}</option>`).join('')}</select>`
       : type === 'textarea' ? `<textarea id="${idA}" rows="4">${esc(v)}</textarea>`
       : `<input type="${type}" id="${idA}" value="${esc(v)}" ${type==='number'?'inputmode="decimal" min="0"':''}>`;
@@ -2877,6 +2897,7 @@ $('#edSave').onclick = () => {
   if(!edCur) return; const {E, o, fields} = edCur, old = Object.assign({}, o), nv = {};
   for(let i=0; i<fields.length; i++){ const [f,label,type,,req,num] = fields[i], el = $('#ed_'+i);
     let v = type === 'check' ? el.checked : el.value.trim();
+    if(type === 'dt24') v = v ? v + 'T' + ($('#ed_'+i+'_t').value || '09:00') : '';
     if(num) v = type === 'number' ? Math.round((+v || 0) * 100) / 100 : +v;
     if(req && (v === '' || (num && !v))){ toast('請填寫「' + label + '」'); el.focus(); return; }
     nv[f] = v; }

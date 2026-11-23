@@ -34,6 +34,13 @@ function tick(){
   const mark = k => { sent.push(k); changed = true; }, was = k => sent.indexOf(k) >= 0;
   // 固定提醒
   const parts = [];
+  // 早上：今天的安排（設定時間後 4 小時內才送，避免太晚才補送）
+  const mins = x => { const p = String(x).split(':'); return (+p[0])*60 + (+p[1]||0); };
+  const mo = st.morning || {on:true, time:'10:00'};
+  if(mail.morning !== false && mo.on && hm >= mo.time && mins(hm) - mins(mo.time) < 240 && !was('morning:'+t)){
+    mark('morning:'+t); sendPush_('☀️ 今天的安排', daySummary(t));
+    if(mail.email !== false) send_('☀️ 今天的安排', dayReport(t, '今天') + '\n\n' + progressReport());
+  }
   if(mail.daily !== false && st.daily && st.daily.on && hm >= st.daily.time && !was('daily:'+t)){ mark('daily:'+t); parts.push('daily'); }
   if(mail.weekly !== false && st.weekly && st.weekly.on && wday(t) === ([0,5,6].indexOf(+st.weekly.day) >= 0 ? +st.weekly.day : 0) && hm >= st.weekly.time && !was('weekly:'+t)){ mark('weekly:'+t); parts.push('weekly'); }
   if(parts.length){
