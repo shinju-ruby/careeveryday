@@ -391,6 +391,20 @@ nav#nav button.on span{display:inline}
 .tdgrp-h .fold{font-size:14px;color:var(--muted);width:14px;text-align:center}
 .tdgrp .todo{background:#fff}
 .tdgrp .tmeta .tag:has(.tdot){display:none}
+select.twsel{display:none !important}
+.twbtn{font:inherit;font-weight:800;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 11px;cursor:pointer;min-width:84px;text-align:left;white-space:nowrap}
+.twbtn::after{content:' ▾';color:var(--muted);font-weight:400}
+.twbtn.none{color:var(--muted);font-weight:700}
+#twSheet{z-index:65} #chSheet{z-index:70}
+.tw-sheet,.ch-sheet{max-width:360px;width:100%}
+.tw-wheels{position:relative;display:flex;justify-content:center;align-items:stretch;gap:6px;height:200px;margin:14px 0;-webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent);mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)}
+.tw-band{position:absolute;left:12%;right:12%;top:80px;height:40px;border:2.5px solid var(--ink);border-radius:12px;background:var(--soft-yellow);pointer-events:none}
+.tw-col{position:relative;width:86px;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;text-align:center;overscroll-behavior:contain}
+.tw-col::-webkit-scrollbar{display:none}
+.tw-col [data-v]{height:40px;line-height:40px;font-size:22px;font-weight:700;color:var(--muted);scroll-snap-align:center;cursor:pointer;font-variant-numeric:tabular-nums}
+.tw-col [data-v].on{color:var(--ink);font-weight:900;font-size:26px}
+.tw-col .pad{height:80px}
+.tw-colon{position:relative;align-self:center;font-size:26px;font-weight:900}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -652,7 +666,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         <label>期限</label><input type="date" id="tdDue">
         <label>優先</label>
         <select id="tdPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select>
-        <label>提醒</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="tdRemindD" style="flex:1;min-width:0"><select id="tdRemindT" aria-label="提醒時間"></select></div>
+        <label>提醒</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="tdRemindD" style="flex:1;min-width:0"><select id="tdRemindT" class="tw" aria-label="提醒時間"></select></div>
         <label>倒數</label><select id="tdCd"><option value="1">⏳ 顯示倒數小提示</option><option value="0">不顯示</option></select>
       </div>
       <div style="margin-top:12px">
@@ -936,11 +950,11 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
     <div class="card">
       <h2 style="margin-bottom:6px">⏰ 固定提醒</h2>
       <div class="remrow"><label class="sw"><input type="checkbox" id="sMorningOn"><i></i></label><b class="grow">☀️ 今天的安排</b>
-        <span class="meta">每天</span><select id="sMorningTime" class="tsel" aria-label="今天提醒時間"></select><button class="icon eye" id="sMorningPreview" title="預覽" aria-label="預覽今天的安排">👀</button></div>
+        <span class="meta">每天</span><select id="sMorningTime" class="tsel tw" aria-label="今天提醒時間"></select><button class="icon eye" id="sMorningPreview" title="預覽" aria-label="預覽今天的安排">👀</button></div>
       <div class="remrow"><label class="sw"><input type="checkbox" id="sDailyOn"><i></i></label><b class="grow">🌙 明天預告</b>
-        <span class="meta">每天</span><select id="sDailyTime" class="tsel" aria-label="明天預告時間"></select><button class="icon eye" id="sDailyPreview" title="預覽" aria-label="預覽明天預告">👀</button></div>
+        <span class="meta">每天</span><select id="sDailyTime" class="tsel tw" aria-label="明天預告時間"></select><button class="icon eye" id="sDailyPreview" title="預覽" aria-label="預覽明天預告">👀</button></div>
       <div class="remrow"><label class="sw"><input type="checkbox" id="sWeeklyOn"><i></i></label><b class="grow">🗓️ 下週預告</b>
-        <select id="sWeeklyDay" class="tsel" aria-label="下週預告是星期幾"><option value="5">週五</option><option value="6">週六</option><option value="0">週日</option></select><select id="sWeeklyTime" class="tsel" aria-label="下週預告時間"></select><button class="icon eye" id="sWeeklyPreview" title="預覽" aria-label="預覽下週預告">👀</button></div>
+        <select id="sWeeklyDay" class="tsel" aria-label="下週預告是星期幾"><option value="5">週五</option><option value="6">週六</option><option value="0">週日</option></select><select id="sWeeklyTime" class="tsel tw" aria-label="下週預告時間"></select><button class="icon eye" id="sWeeklyPreview" title="預覽" aria-label="預覽下週預告">👀</button></div>
       <details class="fold small" style="margin-top:10px"><summary><b>📱 手機通知 ＆ 📧 Email</b></summary>
         <p class="meta" style="margin:4px 0 8px">要先在 Google Apps Script 安裝一次，<a href="https://github.com/shinju-ruby/careeveryday/blob/main/email-reminder/安裝說明.md" target="_blank" rel="noopener">看安裝說明</a>。裝好以後，下面勾選的提醒會跳到手機、寄到信箱：</p>
         <div class="row" style="margin-bottom:8px">
@@ -959,7 +973,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 待辦分格版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 行程彈性版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -999,7 +1013,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <div class="row between"><h2 id="edTitle" style="margin:0"></h2><button class="icon" id="edClose" style="font-size:20px" aria-label="關閉">✕</button></div>
   <p class="meta hidden" id="edNote" style="margin:6px 0 0"></p>
   <div id="edForm" class="edform"></div>
-  <div class="row between" style="margin-top:14px"><button class="btn white" id="edCancel">取消</button><button class="btn" id="edSave">儲存</button></div>
+  <div class="row between" style="margin-top:14px"><button class="btn white" id="edDel" style="color:#E2401C">🗑 刪除</button><span style="flex:1"></span><button class="btn white" id="edCancel">取消</button><button class="btn" id="edSave">儲存</button></div>
 </div></div>
 <div class="modal" id="invSheet"><div class="card sheet">
   <div class="row between"><h2 style="margin:0">🧾 發票記帳</h2><button class="icon" id="invClose" style="font-size:20px" aria-label="關閉">✕</button></div>
@@ -1018,12 +1032,21 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <p class="meta" style="margin:4px 0 8px">最近 40 筆共用資料的新增和修改</p>
   <div id="actList"></div>
 </div></div>
+<div class="modal" id="twSheet"><div class="card sheet tw-sheet">
+  <div class="row between"><h2 id="twTitle" style="margin:0;font-size:18px">⏰ 選擇時間</h2><button class="icon" id="twClose" style="font-size:20px" aria-label="關閉">✕</button></div>
+  <div class="tw-wheels"><div class="tw-band"></div><div class="tw-col" id="twH" aria-label="小時"></div><div class="tw-colon">:</div><div class="tw-col" id="twM" aria-label="分鐘"></div></div>
+  <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn white hidden" id="twNone" style="flex:1">全天</button><button class="btn" id="twOk" style="flex:1">確定</button></div>
+</div></div>
+<div class="modal" id="chSheet"><div class="card sheet ch-sheet">
+  <h2 id="chTitle" style="margin:0 0 4px;font-size:18px"></h2><p class="meta" id="chMsg" style="margin:0"></p>
+  <div id="chBtns" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
+</div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
   <div id="dsList" style="margin:8px 0"></div>
   <div class="seg" id="dsKind"><button data-k="ev" class="on">📅 行程</button><button data-k="td">✅ 待辦</button></div>
   <input type="text" id="dsText" placeholder="要做什麼？" style="width:100%">
-  <div class="row" id="dsEvOpts" style="margin-top:8px"><select id="dsTime" aria-label="時間"></select><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
+  <div class="row" id="dsEvOpts" style="margin-top:8px"><select id="dsTime" class="tw" aria-label="開始時間"></select><select id="dsEnd" class="tw" data-from="dsTime" aria-label="結束時間"></select><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
   <div class="row hidden" id="dsTdOpts" style="margin-top:8px"><select id="dsPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select><select id="dsTag"></select></div>
   <div class="row between" style="margin-top:12px"><button class="btn white" id="dsGoDay">看這天的日計畫</button><button class="btn" id="dsAdd">新增</button></div>
 </div></div>
@@ -1529,6 +1552,7 @@ function shift(n){
   else cursor = addDays(cursor, view==='week' ? 7*n : n);
   renderPlan();
 }
+const evTime = ev => ev.time ? ev.time + (ev.end ? '–' + ev.end : '') : '全天';
 const evSort = (a,b) => (a.date+(a.time||'99:99')).localeCompare(b.date+(b.time||'99:99'));
 const tdSort = (a,b) => (a.done-b.done) || (a.due||'9999').localeCompare(b.due||'9999') || PRI_ORDER[a.pri]-PRI_ORDER[b.pri];
 const REPEAT = {daily:'每天', weekly:'每週', biweekly:'每兩週', monthly:'每月', yearly:'每年'};
@@ -1589,7 +1613,7 @@ function renderPlan(){
     for(let i=0;i<7;i++){
       const ds = ymd(addDays(s,i));
       const hs = holidaysOn(ds).map(h=>`<div class="witem"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`);
-      const evs = eventsOn(ds).map(ev=>`<div class="witem ev ed" data-act="edit" data-k="ev" data-id="${ev.id}"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
+      const evs = eventsOn(ds).map(ev=>`<div class="witem ev ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
       const tds = todosDue(ds).map(td=>`<div class="witem td ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}${td.steps.length?` <b>${progress(td)}%</b>`:''}</span></div>`);
       html += `<div class="wcol ${ds===t?'today':''}"><div class="wh" data-act="openDay" data-date="${ds}">週${WD[(i+1)%7]} <span class="meta">${md(ds)}</span> <span class="wlunar">${lunarLabel(ds)}</span> <span style="float:right">＋</span></div><div class="wb" data-act="openDayBg" data-date="${ds}">${hs.concat(evs,tds).join('') || '<span class="meta">點這裡新增</span>'}</div></div>`;
     }
@@ -1604,7 +1628,7 @@ function renderPlan(){
     html += `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn mint" data-act="openDay" data-date="${ds}" style="padding:5px 14px">＋ 在這天新增</button></div>`;
     const evs = eventsOn(ds);
     html += '<div class="subhead">📅 行程</div>';
-    html += evs.length ? evs.map(ev=>`<div class="dayline ed" data-act="edit" data-k="ev" data-id="${ev.id}"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div><span class="icon">✏️</span></div>`).join('') : '<div class="empty">這天沒有行程</div>';
+    html += evs.length ? evs.map(ev=>`<div class="dayline ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><span class="time">${evTime(ev)}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div><span class="icon">✏️</span><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('') : '<div class="empty">這天沒有行程</div>';
     const due = db.todos.filter(td => td.due===ds || (ds===t && isLate(td))).sort(tdSort);
     html += '<div class="subhead">🎯 這天要完成</div>' + (due.length ? due.map(todoCard).join('') : '<div class="empty">這天沒有到期的待辦</div>');
     const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=ds && td.due>ds).sort(tdSort);
@@ -1641,6 +1665,7 @@ function todoCard(td){
 $('#tdStart').value = today();
 $('#tdRemindT').innerHTML = timeOpts('09:00');
 $('#dsTime').innerHTML = timeOpts('', '全天');
+$('#dsEnd').innerHTML = timeOpts('', '結束時間');
 $('#tdAdd').onclick = () => {
   const title = $('#tdTitle').value.trim(); if(!title){ toast('請填寫要做的事'); return; }
   let start = $('#tdStart').value, due = $('#tdDue').value;
@@ -1987,15 +2012,15 @@ function renderEvents(){
   const list = eventsBetween(from, to).concat(db.events.filter(e => !e.repeat && e.date > to)).sort(evSort);
   const series = db.events.filter(e => e.repeat && (!e.until || e.until >= t));
   let html = '', cur = '';
-  if(series.length) html += '<div class="subhead">🔁 重複行程</div>' + series.map(ev => `<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${esc(ev.title)}</b>
-      <div class="meta">${repeatText(ev)} · 從 ${md(ev.date)} 開始${ev.icsUid?' · 📥 Google 日曆':''}</div></div><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delSeries" data-id="${ev.id}" title="刪除整個系列">✕</button></div>`).join('')
+  if(series.length) html += '<div class="subhead">🔁 重複行程</div>' + series.map(ev => `<div class="dayline"><span class="time">${evTime(ev)}</span><div class="grow"><b>${esc(ev.title)}</b>
+      <div class="meta">${repeatText(ev)} · 從 ${md(ev.date)} 開始${ev.icsUid?' · 📥 Google 日曆':''}</div></div><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delSeries" data-id="${ev.id}" title="刪除整個系列">✕</button></div>`).join('')
       + '<div class="subhead" style="margin-top:20px">📅 接下來 30 天</div>';
   if(!list.length) html += '<div class="empty" style="margin-top:8px">目前沒有行程</div>';
   list.forEach(ev => {
     if(ev.date !== cur){ cur = ev.date; html += `<div class="subhead">${prettyDate(cur)}${cur===t?' · 今天':''}</div>`; }
-    html += `<div class="dayline"><span class="time">${ev.time||'全天'}</span><div class="grow"><b>${ev.repeat?'🔁 ':''}${esc(ev.title)}</b>
+    html += `<div class="dayline"><span class="time">${evTime(ev)}</span><div class="grow"><b>${ev.repeat?'🔁 ':''}${esc(ev.title)}</b>
       <div class="meta">${ev.remind>=0?'🔔 '+remindText(ev.remind):'不提醒'}${ev.note?' · '+esc(ev.note):''}</div></div>
-      <button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" title="刪除">✕</button></div>`;
+      <button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" title="編輯" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" title="刪除">✕</button></div>`;
   });
   $('#evList').innerHTML = html;
 }
@@ -2125,7 +2150,7 @@ document.addEventListener('click', e => {
   const td = id && db.todos.find(x => x.id===id);
   switch(act){
     case 'gotoDay': view='day'; cursor=parse(date); goTab('calendar'); renderPlan(); return;
-    case 'edit': if(b.tagName === 'INPUT') return; openEdit(b.dataset.k, id, sid); return;
+    case 'edit': if(b.tagName === 'INPUT') return; openEdit(b.dataset.k, id, sid, date); return;
     case 'tdGrpFold': { if(e.target.closest('.act')) return; const n = b.dataset.tag; tdFold.has(n) ? tdFold.delete(n) : tdFold.add(n); renderTodos(); return; }
     case 'tdGrpAdd': { e.stopPropagation(); pickTag = b.dataset.tag; const det = $('#tdFormDet'); if(det) det.open = true; renderTagBars(); det && det.scrollIntoView({behavior:'smooth', block:'start'}); setTimeout(() => $('#tdTitle').focus(), 300); return; }
     case 'openDay': openDay(date || today(), b.dataset.k); return;
@@ -2174,10 +2199,8 @@ document.addEventListener('click', e => {
     case 'toggleCd': if(td){ td.countdown = !td.countdown; toast(td.countdown?'已開啟倒數小提示 ⏳':'已關閉倒數小提示'); } break;
     case 'delStep': if(td) td.steps = td.steps.filter(x=>x.id!==sid); break;
     case 'delTodo': if(!confirm('確定刪除這個待辦？')) return; db.todos = db.todos.filter(x=>x.id!==id); break;
-    case 'delEv': { const ev = db.events.find(x=>x.id===id); if(!ev) return;
-      if(ev.repeat && date){ if(!confirm(`「${ev.title}」是重複行程。\n按「確定」只刪除 ${md(date)} 這一次（整個系列請到行事曆的「清單」刪除）。`)) return; (ev.skip = ev.skip || []).push(date); }
-      else db.events = db.events.filter(x=>x.id!==id); break; }
-    case 'delSeries': if(!confirm('刪除這個重複行程的所有日期？')) return; db.events = db.events.filter(x=>x.id!==id); break;
+    case 'delEv': { const ev = db.events.find(x=>x.id===id); if(ev) delEvent(ev, date); return; }
+    case 'delSeries': { const ev = db.events.find(x=>x.id===id); if(ev) delEvent(ev, ''); return; }
     case 'delAnn': { const a = db.anniv.find(x=>x.id===id); if(!a || !confirm(`刪除「${a.name}」？`)) return; db.anniv = db.anniv.filter(x=>x.id!==id); break; }
     case 'delIdea': db.ideas = db.ideas.filter(x=>x.id!==id); break;
     case 'pin': { const i = db.ideas.find(x=>x.id===id); if(i) i.pinned = !i.pinned; break; }
@@ -2218,7 +2241,7 @@ function openDay(ds, kind){
 function renderDaySheet(){
   $('#dsTitle').innerHTML = esc(prettyDate(dsDate) + (dsDate===today()?' · 今天':'')) + `<div class="meta" style="font-size:13px;margin-top:2px">${lunarFull(dsDate)}</div>`;
   const evs = eventsOn(dsDate), tds = todosDue(dsDate), hs = holidaysOn(dsDate), hws = hwDueOn(dsDate);
-  $('#dsList').innerHTML = hs.map(h=>`<div class="mini"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`).join('') + ((evs.length||tds.length||hs.length||hws.length) ? evs.map(ev=>`<div class="mini"><span class="time">${ev.time||'全天'}</span><span class="t ed" data-act="edit" data-k="ev" data-id="${ev.id}">${ev.repeat?'🔁 ':''}${esc(ev.title)}</span><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('')
+  $('#dsList').innerHTML = hs.map(h=>`<div class="mini"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`).join('') + ((evs.length||tds.length||hs.length||hws.length) ? evs.map(ev=>`<div class="mini"><span class="time">${evTime(ev)}</span><span class="t ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}">${ev.repeat?'🔁 ':''}${esc(ev.title)}</span><button class="icon" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" aria-label="編輯">✏️</button><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('')
     + tds.map(td=>`<div class="mini ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}</span></div>`).join('')
     + hwDueOn(dsDate).map(h=>`<div class="mini ${h.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleHw" data-hid="${h.id}" ${h.done?'checked':''}><span class="t">📚 ${h.course?esc(h.course)+'：':''}${esc(h.content.split('\n')[0])}</span></div>`).join('')
     : '<div class="empty">這天還沒有安排，新增一個吧！</div>');
@@ -2230,9 +2253,11 @@ function renderDaySheet(){
 $('#dsKind').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if(!b) return; dsKind = b.dataset.k; renderDaySheet(); $('#dsText').focus(); });
 function dsAdd(){
   const v = $('#dsText').value.trim(); if(!v){ toast('請輸入內容'); return; }
-  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsDate, time:$('#dsTime').value, note:$('#dsNote').value.trim(), remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:$('#dsRepeat').value ? $('#dsUntil').value : ''});
+  const dsT = $('#dsTime').value, dsE = dsT ? $('#dsEnd').value : '';
+  if(dsKind==='ev' && dsE && dsE <= dsT){ toast('結束時間要比開始時間晚喔'); return; }
+  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsDate, time:dsT, end:dsE, note:$('#dsNote').value.trim(), remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:$('#dsRepeat').value ? $('#dsUntil').value : ''});
   else db.todos.push(newTodo({title:v, due:dsDate, start:dsDate<today()?dsDate:today(), pri:$('#dsPri').value, tag:$('#dsTag').value}));
-  $('#dsText').value = ''; $('#dsTime').value = ''; $('#dsRepeat').value = ''; $('#dsUntil').value = ''; $('#dsNote').value = ''; $('#dsUntilWrap').classList.add('hidden'); save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
+  $('#dsText').value = ''; $('#dsTime').value = ''; $('#dsEnd').value = ''; $('#dsRepeat').value = ''; $('#dsUntil').value = ''; $('#dsNote').value = ''; $('#dsUntilWrap').classList.add('hidden'); save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
 }
 $('#dsAdd').onclick = dsAdd;
 $('#dsRepeat').onchange = e => $('#dsUntilWrap').classList.toggle('hidden', !e.target.value);
@@ -2541,7 +2566,7 @@ function renderTrips(){
 function renderDash(){
   const t = today();
   const evs = eventsOn(t);
-  $('#wEvents').innerHTML = evs.length ? evs.map(ev=>`<div class="mini ed" data-act="edit" data-k="ev" data-id="${ev.id}"><span class="time">${ev.time||'全天'}</span><span class="t">${esc(ev.title)}</span></div>`).join('') : '<div class="empty">今天沒有行程，好好享受 ☕</div>';
+  $('#wEvents').innerHTML = evs.length ? evs.map(ev=>`<div class="mini ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><span class="time">${evTime(ev)}</span><span class="t">${esc(ev.title)}</span></div>`).join('') : '<div class="empty">今天沒有行程，好好享受 ☕</div>';
   const tds = db.todos.filter(x => (!x.done && x.due && x.due<=t) || (x.done && x.doneAt && ymd(new Date(x.doneAt))===t && x.due)).sort(tdSort);
   const hws = myHw().filter(h => (!h.done && h.due && diffDays(t, h.due) <= 2) || (h.done && h.doneAt && ymd(new Date(h.doneAt))===t)).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
   const hwHtml = hws.map(h=>`<div class="mini ${h.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleHw" data-hid="${h.id}" ${h.done?'checked':''}><span class="t">📚 ${h.course?esc(h.course)+'：':''}${esc(h.content.split('\n')[0])}</span><span class="meta" style="font-size:12px">${h.done?'已交':h.due===t?'今天截止':h.due<t?'<span class=overdue>逾期</span>':md(h.due)+' 截止'}</span></div>`).join('');
@@ -2592,7 +2617,7 @@ $('#cheer').onclick = nextCheer;
 
 // ---------- 問答 ----------
 const listTodos = arr => arr.map(t=>`  • ${t.tag?'['+t.tag+'] ':''}${t.title}${t.due?`（${prettyDate(t.due)}）`:''}${t.steps.length?` 進度 ${progress(t)}%`:''}${t.pri==='high'?' 🔥':''}`).join('\n');
-const listEvents = (arr, withDate) => arr.map(e=>`  • ${withDate?prettyDate(e.date)+' ':''}${e.time||'全天'} ${e.title}`).join('\n');
+const listEvents = (arr, withDate) => arr.map(e=>`  • ${withDate?prettyDate(e.date)+' ':''}${evTime(e)} ${e.title}`).join('\n');
 function nextStep(t){ const s = t.steps.find(x=>!x.done); return s ? `「${t.title}」的下一步：${s.title}` : `「${t.title}」`; }
 // 把報告文字排成好讀的卡片（文字版仍用在 Email、手機通知）
 function reportHtml(text){
@@ -2762,13 +2787,13 @@ function checkReminders(){
     [today(), ymd(addDays(new Date(),1))].forEach(d => {
       if(!occurs(ev, d) || (ev.notifiedOn||[]).includes(d)) return;
       const at = new Date(d+'T'+(ev.time||'09:00')).getTime(), fire = at - ev.remind*60000;
-      if(now >= fire && now < at + 3600000){ remind(ev.title, `${prettyDate(d)} ${ev.time||'全天'}${ev.remind?'（'+remindText(ev.remind)+'）':''}`); ev.notifiedOn = (ev.notifiedOn||[]).concat(d).slice(-10); changed = true; }
+      if(now >= fire && now < at + 3600000){ remind(ev.title, `${prettyDate(d)} ${evTime(ev)}${ev.remind?'（'+remindText(ev.remind)+'）':''}`); ev.notifiedOn = (ev.notifiedOn||[]).concat(d).slice(-10); changed = true; }
     });
   });
   db.events.forEach(ev => {
     if(ev.repeat || ev.notified || ev.remind<0) return;
     const at = new Date(ev.date+'T'+(ev.time||'09:00')).getTime(), fire = at - ev.remind*60000;
-    if(now >= fire && now < at + 3600000){ remind(ev.title, `${prettyDate(ev.date)} ${ev.time||'全天'}${ev.remind?'（'+remindText(ev.remind)+'）':''}`); ev.notified = true; changed = true; }
+    if(now >= fire && now < at + 3600000){ remind(ev.title, `${prettyDate(ev.date)} ${evTime(ev)}${ev.remind?'（'+remindText(ev.remind)+'）':''}`); ev.notified = true; changed = true; }
     else if(now >= at + 3600000){ ev.notified = true; changed = true; }
   });
   db.todos.forEach(td => {
@@ -2820,7 +2845,7 @@ $('#annClose').onclick = () => $('#annSheet').classList.remove('on');
 $('#annSheet').onclick = e => { if(e.target.id==='annSheet') $('#annSheet').classList.remove('on'); };
 // 24 小時制的時間選單（iPhone 內建時間選擇器會顯示上午／下午，所以自己做）
 function timeOpts(v, allDay){
-  const list = []; for(let h=0; h<24; h++) for(const m of ['00','15','30','45']) list.push(pad(h)+':'+m);
+  const list = []; for(let h=0; h<24; h++) for(let m=0; m<60; m+=5) list.push(pad(h)+':'+pad(m));
   if(v && !list.includes(v)) { list.push(v); list.sort(); }
   return (allDay ? `<option value="">${allDay}</option>` : '') + list.map(t => `<option value="${t}" ${t===v?'selected':''}>${t}</option>`).join('');
 }
@@ -2872,43 +2897,47 @@ const REMIND_OPTS = [['-1','不提醒'],['0','準時提醒'],['10','提前 10 �
 const REPEAT_OPTS = [['','不重複'],['daily','每天'],['weekly','每週'],['biweekly','每兩週'],['monthly','每月'],['yearly','每年']];
 function findMoney(id){ for(const [k,a] of Object.entries(db.money||{})){ const m = (a||[]).find(x=>x.id===id); if(m) return m; } return null; }
 const EDITORS = {
-  todo: {title:'✏️ 編輯待辦', get:id => db.todos.find(x=>x.id===id), fields:o => [
+  todo: {title:'✏️ 編輯待辦', name:o => o.title, del:o => { db.todos = db.todos.filter(x=>x!==o); }, get:id => db.todos.find(x=>x.id===id), fields:o => [
     ['title','要做什麼','text',null,true], ['tag','標籤','select',[['','不分類']].concat(db.tags.map(t=>[t.name,t.name]))],
     ['pri','重要程度','select',Object.entries(PRI)], ['start','開始日','date'], ['due','期限','date'], ['remindAt','提醒時間','dt24']],
     after:(o,old) => { if(o.remindAt !== old.remindAt) o.notified = false; if(!o.due) o.countdown = false; }},
-  step: {title:'✏️ 編輯步驟', get:(id,sid) => { const t = db.todos.find(x=>x.id===id); return t && t.steps.find(x=>x.id===sid); }, fields:() => [['title','步驟','text',null,true]]},
+  step: {title:'✏️ 編輯步驟', name:o => o.title, del:(o,id) => { const t = db.todos.find(x=>x.id===id); if(t) t.steps = t.steps.filter(x=>x!==o); }, get:(id,sid) => { const t = db.todos.find(x=>x.id===id); return t && t.steps.find(x=>x.id===sid); }, fields:() => [['title','步驟','text',null,true]]},
   ev: {title:'✏️ 編輯行程', get:id => db.events.find(x=>x.id===id), note:o => o.repeat ? '🔁 這是重複行程，修改會套用到每一次。' : '',
-    fields:o => [['title','行程','text',null,true], ['date', o.repeat?'開始日':'日期','date',null,true], ['time','時間','time24'],
+    fields:o => [['title','行程','text',null,true], ['date', o.repeat?'開始日':'日期','date',null,true], ['time','開始時間','time24'], ['end','結束時間','time24','不設定'],
       ['remind','提醒','select',REMIND_OPTS,false,'num'], ['repeat','重複','select',REPEAT_OPTS], ['until','重複到（可不填）','date'], ['note','備註、地點','text']],
-    after:(o,old) => { if(o.date!==old.date || o.time!==old.time || o.remind!==old.remind){ o.notified = false; o.notifiedOn = []; } if(!o.repeat) delete o.until; }},
-  shop: {title:'✏️ 編輯要買的', get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
+    check:nv => { if(!nv.time) nv.end = ''; if(nv.end && nv.end <= nv.time) return '結束時間要比開始時間晚喔'; },
+    del:true,
+    after:(o,old) => { if(!o.end) delete o.end; if(o.date!==old.date || o.time!==old.time || o.remind!==old.remind){ o.notified = false; o.notifiedOn = []; } if(!o.repeat) delete o.until; }},
+  shop: {title:'✏️ 編輯要買的', name:o => o.name, del:o => { db.shop = db.shop.filter(x=>x!==o); }, get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
     ['cat','分類','select',SHOP_CATS.map(c=>[c[0], c[1]+' '+c[2]])], ['store','在哪買','select',[['','不限']].concat(SHOP_STORES.map(x=>[x,x]))]]},
-  money: {title:'✏️ 編輯記帳', get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入']]], ['amt','金額','number',null,true,'num'],
+  money: {title:'✏️ 編輯記帳', name:o => `${o.cat||''} $${o.amt}`, del:o => { Object.values(db.money||{}).forEach(a => { const i = (a||[]).indexOf(o); if(i>=0) a.splice(i,1); }); }, get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入']]], ['amt','金額','number',null,true,'num'],
     ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, [o.cat]))].map(c=>[c,c])], ['note','備註','text']]},
   habit: {title:'✏️ 編輯習慣', get:id => myHabits().find(x=>x.id===id), fields:() => [['emoji','圖示','select',[...new Set(HABIT_EMOJIS)].map(e=>[e,e])],
     ['name','習慣','text',null,true], ['target','每天目標','number',null,true,'num'], ['unit','單位','text']]},
-  idea: {title:'✏️ 編輯靈感', get:id => db.ideas.find(x=>x.id===id), fields:() => [['text','內容','textarea',null,true]]},
-  anniv: {title:'✏️ 編輯紀念日', get:id => db.anniv.find(x=>x.id===id), fields:() => [['emoji','圖示','select',['🎂','💍','💕','🎉','🕯️','🐾'].map(e=>[e,e])],
+  idea: {title:'✏️ 編輯靈感', name:o => String(o.text).slice(0,20), del:o => { db.ideas = db.ideas.filter(x=>x!==o); }, get:id => db.ideas.find(x=>x.id===id), fields:() => [['text','內容','textarea',null,true]]},
+  anniv: {title:'✏️ 編輯紀念日', name:o => o.name, del:o => { db.anniv = db.anniv.filter(x=>x!==o); }, get:id => db.anniv.find(x=>x.id===id), fields:() => [['emoji','圖示','select',['🎂','💍','💕','🎉','🕯️','🐾'].map(e=>[e,e])],
     ['name','名稱','text',null,true], ['m','月','select',Array.from({length:12},(_,i)=>[String(i+1), (i+1)+' 月']),false,'num'],
     ['d','日','select',Array.from({length:31},(_,i)=>[String(i+1), (i+1)+' 日']),false,'num'], ['lunar','農曆','check']]}
 };
 let edCur = null;
-function openEdit(k, id, sid){
+function openEdit(k, id, sid, date){
   const E = EDITORS[k], o = E && E.get(id, sid); if(!o){ toast('找不到這筆資料'); return; }
-  edCur = {E, o, fields:E.fields(o)};
+  edCur = {E, o, k, id, date, fields:E.fields(o)}; $('#edDel').classList.toggle('hidden', !E.del);
   $('#edTitle').textContent = E.title;
   const note = E.note ? E.note(o) : ''; $('#edNote').textContent = note; $('#edNote').classList.toggle('hidden', !note);
   $('#edForm').innerHTML = edCur.fields.map(([f,label,type,opts,req], i) => {
     const v = o[f] == null ? '' : String(o[f]), idA = `ed_${i}`;
     if(type === 'check') return `<label class="edck"><input type="checkbox" id="${idA}" ${o[f]?'checked':''}> ${esc(label)}</label>`;
-    if(type === 'time24') return `<label for="${idA}">${esc(label)}</label><select id="${idA}">${timeOpts(v, '全天')}</select>`;
-    if(type === 'dt24') return `<label for="${idA}">${esc(label)}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="${idA}" value="${esc(v.slice(0,10))}" style="flex:1;min-width:0"><select id="${idA}_t">${timeOpts(v.slice(11,16) || '09:00')}</select></div>`;
+    if(type === 'time24'){ const from = f === 'end' ? edCur.fields.findIndex(x => x[0] === 'time') : -1;
+      return `<label for="${idA}">${esc(label)}</label><select id="${idA}" class="tw" aria-label="${esc(label)}" ${from >= 0 ? `data-from="ed_${from}"` : ''}>${timeOpts(v, opts || '全天')}</select>`; }
+    if(type === 'dt24') return `<label for="${idA}">${esc(label)}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input type="date" id="${idA}" value="${esc(v.slice(0,10))}" style="flex:1;min-width:0"><select id="${idA}_t" class="tw" aria-label="${esc(label)}">${timeOpts(v.slice(11,16) || '09:00')}</select></div>`;
     const ctl = type === 'select' ? `<select id="${idA}">${opts.map(([val,txt]) => `<option value="${esc(val)}" ${String(val)===v?'selected':''}>${esc(txt)}</option>`).join('')}</select>`
       : type === 'textarea' ? `<textarea id="${idA}" rows="4">${esc(v)}</textarea>`
       : `<input type="${type}" id="${idA}" value="${esc(v)}" ${type==='number'?'inputmode="decimal" min="0"':''}>`;
     return `<label for="${idA}">${esc(label)}${req?' <span style="color:#E2401C">*</span>':''}</label>${ctl}`;
   }).join('');
   if(k === 'ev') edRepeatToggle();
+  syncTw();
   $('#edSheet').classList.add('on');
 }
 function edRepeatToggle(){ const i = edCur.fields.findIndex(f=>f[0]==='repeat'), u = edCur.fields.findIndex(f=>f[0]==='until'); if(i<0||u<0) return;
@@ -2925,10 +2954,71 @@ $('#edSave').onclick = () => {
     if(num) v = type === 'number' ? Math.round((+v || 0) * 100) / 100 : +v;
     if(req && (v === '' || (num && !v))){ toast('請填寫「' + label + '」'); el.focus(); return; }
     nv[f] = v; }
+  if(E.check){ const err = E.check(nv); if(err){ toast(err); return; } }
   Object.assign(o, nv); if(E.after) E.after(o, old);
   closeEdit(); save(); toast('改好了 ✏️');
 };
+$('#edDel').onclick = () => {
+  if(!edCur || !edCur.E.del) return; const {E, o, k, id, date} = edCur;
+  if(k === 'ev'){ closeEdit(); delEvent(o, date); return; }
+  askChoice(`刪除「${E.name ? E.name(o) : ''}」？`, '刪除後就不見了喔', [['🗑 刪除', () => E.del(o, id)]]);
+};
 document.addEventListener('keydown', e => { if(e.key==='Escape' && edCur) closeEdit(); });
+
+// ---------- 小選單（刪除確認等） ----------
+function askChoice(title, msg, opts){
+  $('#chTitle').textContent = title; $('#chMsg').textContent = msg || ''; $('#chMsg').classList.toggle('hidden', !msg);
+  $('#chBtns').innerHTML = opts.map(([t], i) => `<button class="btn ${i ? 'white' : ''}" data-i="${i}" style="${i ? '' : 'background:#E2401C'}">${esc(t)}</button>`).join('') + '<button class="btn white" data-i="-1">取消</button>';
+  $('#chBtns').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('#chSheet').classList.remove('on'); const i = +b.dataset.i;
+    if(i >= 0){ if(edCur) closeEdit(); opts[i][1](); save(); toast('刪除了 🗑'); } };
+  $('#chSheet').classList.add('on');
+}
+$('#chSheet').onclick = e => { if(e.target.id==='chSheet') $('#chSheet').classList.remove('on'); };
+function delEvent(ev, date){
+  const rm = () => { db.events = db.events.filter(x => x.id !== ev.id); };
+  if(ev.repeat && date) askChoice(`「${ev.title}」是重複行程`, '要刪除哪一個？', [[`只刪 ${md(date)} 這一次`, () => { (ev.skip = ev.skip || []).push(date); }], ['整個系列都刪除', rm]]);
+  else askChoice(`刪除「${ev.title}」？`, ev.repeat ? `這是重複行程（${repeatText(ev)}），每一次都會刪掉` : `${md(ev.date)} ${evTime(ev)}`, [[ev.repeat ? '整個系列都刪除' : '🗑 刪除', rm]]);
+}
+
+// ---------- 時間滾輪（固定視窗） ----------
+let twSel = null;
+function syncTw(){
+  $$('select.tw').forEach(sel => {
+    let b = sel.nextElementSibling;
+    if(!b || !b.classList.contains('twbtn')){ b = document.createElement('button'); b.type = 'button'; b.className = 'twbtn'; sel.after(b); sel.classList.add('twsel');
+      b.onclick = () => openTw(sel); sel.addEventListener('change', syncTw); }
+    const o = sel.selectedOptions[0]; b.textContent = o ? o.textContent : (sel.value || '—'); b.classList.toggle('none', !sel.value);
+    b.setAttribute('aria-label', (sel.getAttribute('aria-label') || '時間') + '：' + b.textContent);
+  });
+}
+function twFill(col, vals, cur){ col.innerHTML = '<div class="pad"></div>' + vals.map(x => `<div data-v="${x}">${x}</div>`).join('') + '<div class="pad"></div>'; col._i = Math.max(0, vals.indexOf(cur)); }
+function twIdx(col){ const n = col.querySelectorAll('[data-v]').length; return Math.max(0, Math.min(n - 1, Math.round(col.scrollTop / 40))); }
+function twMark(col){ const i = twIdx(col); col.querySelectorAll('[data-v]').forEach((d, j) => d.classList.toggle('on', j === i)); }
+function openTw(sel){
+  twSel = sel; let v = sel.value;
+  if(!v && sel.dataset.from){ const f = $('#' + sel.dataset.from); if(f && f.value){ const m = Math.min(hmMin(f.value) + 60, 23*60 + 55); v = pad(Math.floor(m/60)) + ':' + pad(m%60); } }
+  if(!v) v = '09:00';
+  const [h, m] = v.split(':'), mins = []; for(let i=0; i<60; i+=5) mins.push(pad(i)); if(!mins.includes(m)){ mins.push(m); mins.sort(); }
+  twFill($('#twH'), Array.from({length:24}, (_, i) => pad(i)), h); twFill($('#twM'), mins, m);
+  const none = [...sel.options].find(o => o.value === '');
+  $('#twNone').classList.toggle('hidden', !none); if(none) $('#twNone').textContent = none.textContent === '全天' ? '全天（不設時間）' : '不設定';
+  $('#twTitle').textContent = '⏰ ' + (sel.getAttribute('aria-label') || '選擇時間');
+  $('#twSheet').classList.add('on');
+  [$('#twH'), $('#twM')].forEach(c => { c.scrollTop = c._i * 40; twMark(c); });
+}
+[$('#twH'), $('#twM')].forEach(c => {
+  c.addEventListener('scroll', () => twMark(c), {passive:true});
+  c.addEventListener('click', e => { const d = e.target.closest('[data-v]'); if(!d) return; const i = [...c.querySelectorAll('[data-v]')].indexOf(d); c.scrollTo({top:i*40, behavior:'smooth'}); });
+});
+function twSet(v){
+  const sel = twSel; $('#twSheet').classList.remove('on'); if(!sel) return;
+  if(v && ![...sel.options].some(o => o.value === v)){ const o = document.createElement('option'); o.value = o.textContent = v; sel.appendChild(o); }
+  sel.value = v; sel.dispatchEvent(new Event('change', {bubbles:true})); syncTw();
+}
+$('#twOk').onclick = () => { const h = $('#twH').querySelectorAll('[data-v]')[twIdx($('#twH'))].dataset.v, m = $('#twM').querySelectorAll('[data-v]')[twIdx($('#twM'))].dataset.v; twSet(h + ':' + m); };
+$('#twNone').onclick = () => twSet('');
+$('#twClose').onclick = () => $('#twSheet').classList.remove('on');
+$('#twSheet').onclick = e => { if(e.target.id==='twSheet') $('#twSheet').classList.remove('on'); };
 
 // ---------- 備份 ----------
 $('#exportBtn').onclick = () => {
@@ -2944,7 +3034,7 @@ $('#importFile').onchange = e => {
 };
 $('#wipeBtn').onclick = () => { if(confirm('真的要清空所有行程、待辦、靈感、日記、習慣和旅行紀錄嗎？這無法復原。')){ db = makeDb(); save(); toast('已清空'); } };
 
-function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderHeroIdeas(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); renderHw(); renderMedia(); renderShop(); }
+function renderAll(){ if($('#daySheet').classList.contains('on')) renderDaySheet(); renderHero(); renderHeroIdeas(); renderDash(); renderHabits(); renderTrips(); renderPlan(); renderTodos(); renderGantt(); renderEvents(); renderIdeas(); renderDiary(); renderSettings(); renderHw(); renderMedia(); renderShop(); syncTw(); }
 
 load(); renderAll(); updateNotice(); checkReminders(); Sync.init();
 setInterval(checkReminders, 20000);

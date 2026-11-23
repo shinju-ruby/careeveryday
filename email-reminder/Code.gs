@@ -56,7 +56,7 @@ function tick(){
     [t, addD(t,1)].forEach(d => db.events.forEach(ev => {
       if(!(ev.remind >= 0) || !occurs(ev, d)) return;
       const at = Date.parse(d + 'T' + (ev.time || '09:00') + ':00+08:00'), fire = at - ev.remind*60000, k = 'ev:' + ev.id + ':' + d;
-      if(now >= fire && now < at + 3600000 && !was(k)){ mark(k); items.push('📅 ' + ev.title + '\n   ' + pretty(d) + ' ' + (ev.time || '全天') + (ev.note ? '（' + ev.note + '）' : '')); }
+      if(now >= fire && now < at + 3600000 && !was(k)){ mark(k); items.push('📅 ' + ev.title + '\n   ' + pretty(d) + ' ' + evT_(ev) + (ev.note ? '（' + ev.note + '）' : '')); }
     }));
     db.todos.forEach(td => {
       if(td.done || !td.remindAt) return;
@@ -138,7 +138,7 @@ function daySummary(ds){
   const evs = eventsOn(ds), tds = DB.todos.filter(td => !td.done && td.due === ds), hs = holidaysOn(ds);
   let out = pretty(ds) + '：' + (evs.length ? '行程 ' + evs.length + ' 個' : '沒有行程') + '、' + (tds.length ? '待辦 ' + tds.length + ' 件' : '沒有到期待辦');
   if(hs.length) out += '\n' + hs.join('、');
-  if(evs.length) out += '\n' + evs.slice(0, 3).map(e => (e.time || '全天') + ' ' + e.title).join('、');
+  if(evs.length) out += '\n' + evs.slice(0, 3).map(e => evT_(e) + ' ' + e.title).join('、');
   if(tds.length) out += '\n✅ ' + tds.slice(0, 3).map(t => t.title).join('、');
   return out;
 }
@@ -190,6 +190,7 @@ function occurs(ev, d){
   }
   return false;
 }
+const evT_ = e => e.time ? e.time + (e.end ? '–' + e.end : '') : '全天';
 const evSort = (a,b) => (a.time || '').localeCompare(b.time || '');
 const eventsOn = d => DB.events.filter(e => occurs(e, d)).map(e => Object.assign({}, e, {date: d})).sort(evSort);
 function eventsBetween(a, b){ const out = []; for(let d = a; d <= b; d = addD(d,1)) out.push.apply(out, eventsOn(d)); return out; }
@@ -199,7 +200,7 @@ const startOf = t => t.start || (t.due && t.createdAt && Utilities.formatDate(ne
 const isLate = t => !t.done && t.due && t.due < todayT();
 const tdSort = (a,b) => (a.done - b.done) || (a.due || '9999').localeCompare(b.due || '9999') || (PRI_ORDER[a.pri] || 1) - (PRI_ORDER[b.pri] || 1);
 const listTodos = arr => arr.map(t => '  • ' + (t.tag ? '[' + t.tag + '] ' : '') + t.title + (t.due ? '（' + pretty(t.due) + '）' : '') + (t.steps.length ? ' 進度 ' + progress(t) + '%' : '') + (t.pri === 'high' ? ' 🔥' : '')).join('\n');
-const listEvents = (arr, withDate) => arr.map(e => '  • ' + (withDate ? pretty(e.date) + ' ' : '') + (e.time || '全天') + ' ' + e.title).join('\n');
+const listEvents = (arr, withDate) => arr.map(e => '  • ' + (withDate ? pretty(e.date) + ' ' : '') + evT_(e) + ' ' + e.title).join('\n');
 function nextStep(t){ const s = t.steps.find(x => !x.done); return s ? '「' + t.title + '」的下一步：' + s.title : '「' + t.title + '」'; }
 
 function dayReport(ds, label){
