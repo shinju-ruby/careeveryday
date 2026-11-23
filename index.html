@@ -382,6 +382,15 @@ nav#nav button.on span{display:inline}
 #actN{position:absolute;top:-6px;right:-6px;background:#E2401C;color:#fff;font-size:10.5px;min-width:17px;height:17px;line-height:17px;border-radius:99px;padding:0 4px;border:1.5px solid #fff}
 .actrow{padding:8px 10px;border-radius:12px;margin-bottom:6px;background:var(--soft-yellow)}
 .actrow.new{background:var(--soft-pink);border:2px solid var(--pink)}
+.tdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;align-items:start}
+.tdgrp{border:2.5px solid var(--ink);border-radius:16px;background:color-mix(in srgb, var(--tc) 12%, #fff);padding:8px 10px 4px;min-width:0}
+.tdgrp-h{display:flex;align-items:center;gap:8px;padding:2px 2px 8px;cursor:pointer;user-select:none}
+.tdgrp-h .dot{width:14px;height:14px;border-radius:50%;background:var(--tc);border:2px solid var(--ink);flex:none}
+.tdgrp-h b{font-size:16px}
+.tdgrp-h .act{font:inherit;font-weight:900;border:2px solid var(--ink);background:#fff;border-radius:50%;width:28px;height:28px;padding:0;cursor:pointer;color:var(--ink);line-height:1}
+.tdgrp-h .fold{font-size:14px;color:var(--muted);width:14px;text-align:center}
+.tdgrp .todo{background:#fff}
+.tdgrp .tmeta .tag:has(.tdot){display:none}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -950,7 +959,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 早上提醒版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 待辦分格版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1655,9 +1664,22 @@ function renderTodos(){
   if(f==='log'){ renderDoneLog(); renderTagBars(); return; }
   const list = db.todos.filter(td => !filterTag || td.tag===filterTag).filter(td => f==='all' || (f==='done'&&td.done) || (f==='open'&&!td.done)
     || (f==='today'&&!td.done&&td.due&&td.due<=t) || (f==='week'&&!td.done&&td.due&&td.due<=we)).sort(tdSort);
-  $('#tdList').innerHTML = list.length ? list.map(todoCard).join('') : '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/shiba.svg" alt="">這裡空空的，柴柴陪你休息一下 🎉</div>';
+  if(!list.length) $('#tdList').innerHTML = '<div class="empty" style="text-align:center"><img class="empty-pet" src="icons/pets/shiba.svg" alt="">這裡空空的，柴柴陪你休息一下 🎉</div>';
+  else if(filterTag) $('#tdList').innerHTML = list.map(todoCard).join('');
+  else {  // 依標籤分格子
+    const groups = db.tags.map(tg => ({name:tg.name, color:tg.color})).concat([{name:'', color:'#9AA0B5'}]);
+    $('#tdList').innerHTML = '<div class="tdgrid">' + groups.map(g => {
+      const items = list.filter(td => (td.tag||'') === g.name || (!g.name && td.tag && !db.tags.some(x => x.name === td.tag)));
+      if(!items.length && !g.name) return '';
+      const open = !tdFold.has(g.name), late = items.filter(isLate).length;
+      return `<div class="tdgrp" style="--tc:${g.color}"><div class="tdgrp-h" data-act="tdGrpFold" data-tag="${esc(g.name)}"><i class="dot"></i><b>${esc(g.name || '不分類')}</b><span class="meta">${items.length} 件${late ? ` · <span class="overdue">${late} 件逾期</span>` : ''}</span><span class="sp" style="flex:1"></span>`
+        + (g.name ? `<button class="act" data-act="tdGrpAdd" data-tag="${esc(g.name)}" aria-label="新增${esc(g.name)}待辦">＋</button>` : '') + `<span class="fold">${open ? '▾' : '▸'}</span></div>`
+        + (open ? (items.length ? items.map(todoCard).join('') : '<div class="empty" style="padding:4px 2px 8px">沒有事項 🎉</div>') : '') + '</div>';
+    }).join('') + '</div>';
+  }
   renderTagBars();
 }
+const tdFold = new Set();
 
 function doneOn(ds){ // 這天完成的待辦和步驟
   const out = [];
@@ -2104,6 +2126,8 @@ document.addEventListener('click', e => {
   switch(act){
     case 'gotoDay': view='day'; cursor=parse(date); goTab('calendar'); renderPlan(); return;
     case 'edit': if(b.tagName === 'INPUT') return; openEdit(b.dataset.k, id, sid); return;
+    case 'tdGrpFold': { if(e.target.closest('.act')) return; const n = b.dataset.tag; tdFold.has(n) ? tdFold.delete(n) : tdFold.add(n); renderTodos(); return; }
+    case 'tdGrpAdd': { e.stopPropagation(); pickTag = b.dataset.tag; const det = $('#tdFormDet'); if(det) det.open = true; renderTagBars(); det && det.scrollIntoView({behavior:'smooth', block:'start'}); setTimeout(() => $('#tdTitle').focus(), 300); return; }
     case 'openDay': openDay(date || today(), b.dataset.k); return;
     case 'openDayBg': if(e.target === b) openDay(date); return;
     case 'tab': goTab(b.dataset.tab); return;
