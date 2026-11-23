@@ -378,6 +378,10 @@ nav#nav button.on span{display:inline}
 .edform textarea{grid-column:1/-1}
 #edSheet .card{max-width:480px}
 .reload{border:2px solid var(--ink);background:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;line-height:1;cursor:pointer;padding:0;box-shadow:1.5px 1.5px 0 var(--ink);flex:none}
+#actBtn{position:relative}
+#actN{position:absolute;top:-6px;right:-6px;background:#E2401C;color:#fff;font-size:10.5px;min-width:17px;height:17px;line-height:17px;border-radius:99px;padding:0 4px;border:1.5px solid #fff}
+.actrow{padding:8px 10px;border-radius:12px;margin-bottom:6px;background:var(--soft-yellow)}
+.actrow.new{background:var(--soft-pink);border:2px solid var(--pink)}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -538,7 +542,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <div class="wrap">
     <div class="top">
       <div class="logo"><img src="icons/icon-192.png" alt=""><div><span class="kr">갓생 살자!</span><small>認真過好每一天</small></div></div>
-      <div class="toprt"><span class="today-label" id="syncBadge" style="background:#fff;display:none"></span><span class="trow"><span class="today-label" id="todayLabel"></span><button class="reload" id="reloadBtn" title="重新整理" aria-label="重新整理">🔄</button></span></div>
+      <div class="toprt"><span class="today-label" id="syncBadge" style="background:#fff;display:none"></span><span class="trow"><span class="today-label" id="todayLabel"></span><button class="reload hidden" id="actBtn" title="家人動態" aria-label="家人動態">🔔<b id="actN" class="hidden">0</b></button><button class="reload" id="reloadBtn" title="重新整理" aria-label="重新整理">🔄</button></span></div>
     </div>
     <nav id="nav">
       <button data-tab="home" title="主頁" aria-label="主頁" class="on"><i>🏠</i><span>主頁</span></button>
@@ -937,12 +941,13 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailDaily"> 明天預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailWeekly"> 下週預告</label>
           <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sMailItems"> 行程和待辦的提醒</label>
+          <label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="sNotifyFam"> 家人新增或修改時通知我</label>
         </div>
         <div class="row" style="margin-top:10px"><button class="btn white" id="testNotify" style="padding:4px 12px">🔔 測試提醒</button><span class="meta">網頁開著時：時間到會跳出整理好的清單</span></div>
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 發票截圖版 2</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 家人動態版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -995,6 +1000,11 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   </div>
   <div id="invItems"></div>
   <div class="row between" style="margin-top:14px"><button class="btn white" id="invCancel">取消</button><button class="btn mint" id="invSave">記一筆</button></div>
+</div></div>
+<div class="modal" id="actSheet"><div class="card sheet">
+  <div class="row between"><h2 style="margin:0">🔔 家人動態</h2><button class="icon" id="actClose" style="font-size:20px" aria-label="關閉">✕</button></div>
+  <p class="meta" style="margin:4px 0 8px">最近 40 筆共用資料的新增和修改</p>
+  <div id="actList"></div>
 </div></div>
 <div class="modal" id="daySheet"><div class="card sheet">
   <div class="row between"><h2 id="dsTitle" style="margin:0"></h2><button class="icon" id="dsClose" style="font-size:20px">✕</button></div>
@@ -1124,6 +1134,51 @@ function fixTags(once){
   if(once && !db.settings.fixLife1){ db.settings.fixLife1 = true; ch = true; if(!has('生活')) db.tags.push({name:'生活', color:'#22C39A'}); }
   return ch;
 }
+// ---------- 家人動態 ----------
+function parseActs(v){ try{ const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a.filter(x => x && x.t && Array.isArray(x.items)).slice(-40) : []; }catch(e){ return []; } }
+const AUTO_KEYS = ['notified','notifiedOn'];
+const clean = o => { const c = Object.assign({}, o); AUTO_KEYS.forEach(k => delete c[k]); return JSON.stringify(c); };
+function diffShared(a, b){
+  const out = [], flatMoney = m => Object.entries(m||{}).flatMap(([d, arr]) => (arr||[]).map(x => Object.assign({date:d}, x)));
+  const amt = x => `${x.cat||''} $${Number(x.amt||0).toLocaleString()}${x.note ? ' ' + String(x.note).slice(0,16) : ''}`;
+  const kinds = [
+    ['events', '行程', x => x.title + `（${x.date ? md(x.date) : ''}${x.time ? ' ' + x.time : ''}）`],
+    ['todos', '待辦', x => x.title], ['shop', '要買的', x => x.name + (x.qty ? ' ' + x.qty : '')],
+    ['money', '記帳', amt, flatMoney], ['trips', '旅行', x => x.title || x.place || ''], ['anniv', '紀念日', x => x.name]];
+  kinds.forEach(([k, label, nm, get]) => {
+    const A = new Map((get ? get(a[k]) : a[k] || []).map(x => [x.id, x])), B = new Map((get ? get(b[k]) : b[k] || []).map(x => [x.id, x]));
+    B.forEach((x, id) => { const o = A.get(id);
+      if(!o) out.push(k === 'money' ? `記了一筆：${nm(x)}` : k === 'shop' ? `購物清單加了：${nm(x)}` : `新增${label}：${nm(x)}`);
+      else if(clean(o) !== clean(x)){
+        if(k === 'todos' && !!o.done !== !!x.done) out.push(x.done ? `完成待辦：${nm(x)} 🎉` : `待辦改回未完成：${nm(x)}`);
+        else if(k === 'todos' && JSON.stringify(o.steps) !== JSON.stringify(x.steps) && o.title === x.title) out.push(`更新進度：${nm(x)}（${progress(normTodo(Object.assign({}, x)))}%）`);
+        else if(k === 'shop' && !!o.done !== !!x.done) out.push(x.done ? `買好了：${nm(x)}` : `又要買：${nm(x)}`);
+        else out.push(`修改${label}：${nm(x)}`);
+      } });
+    A.forEach((x, id) => { if(!B.has(id)) out.push(`刪除${label}：${nm(x)}`); });
+  });
+  return out;
+}
+const ACT_KEY = 'gs-act-seen';
+function actSeen(){ try{ return +localStorage.getItem(ACT_KEY) || 0; }catch(e){ return 0; } }
+function gotActs(live){
+  const me = Sync.uid(), seen = actSeen(), fresh = Sync.acts().filter(a => a.t > seen && a.uid !== me);
+  if(!seen){ markActsSeen(); return; }   // 第一次：不要一次跳出一堆舊的
+  if(live) fresh.slice(-3).forEach(a => toast(`👨‍👩‍👧 ${a.by}：${a.items[0]}${a.items.length > 1 ? ` 等 ${a.items.length} 項` : ''}`));
+  renderActBadge();
+}
+function markActsSeen(){ const a = Sync.acts(); try{ localStorage.setItem(ACT_KEY, String(a.length ? Math.max(Date.now(), a[a.length-1].t) : Date.now())); }catch(e){} renderActBadge(); }
+function renderActBadge(){
+  const btn = $('#actBtn'); if(!btn) return; const me = Sync.uid(), n = Sync.acts().filter(a => a.t > actSeen() && a.uid !== me).length;
+  btn.classList.toggle('hidden', !Sync.acts().length && !Sync.inSpace()); $('#actN').textContent = n > 9 ? '9+' : n; $('#actN').classList.toggle('hidden', !n);
+}
+function agoText(t){ const m = Math.round((Date.now() - t) / 60000); if(m < 1) return '剛剛'; if(m < 60) return m + ' 分鐘前'; const h = Math.round(m/60); if(h < 24) return h + ' 小時前'; const d = new Date(t); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function openActs(){
+  const me = Sync.uid(), seen = actSeen(), list = Sync.acts().slice().reverse();
+  $('#actList').innerHTML = list.length ? list.map(a => `<div class="actrow ${a.t > seen && a.uid !== me ? 'new' : ''}"><div class="row between"><b>${a.uid === me ? '我' : esc(a.by)}</b><span class="meta">${agoText(a.t)}</span></div>${a.items.map(x => `<div class="meta" style="color:var(--ink)">• ${esc(x)}</div>`).join('')}</div>`).join('')
+    : '<div class="empty">還沒有動態。家人新增或修改行程、待辦、記帳、購物清單、旅行時，會出現在這裡。</div>';
+  $('#actSheet').classList.add('on'); markActsSeen();
+}
 // 習慣是每個人自己的：依登入帳號分開存
 const meKey = () => (typeof Sync !== 'undefined' && Sync.uid()) || 'local';
 function myHabits(){
@@ -1201,7 +1256,7 @@ const Sync = (() => {
   const userRef = () => firebase.firestore().collection('users').doc(user.uid);
   const spaceRef = id => firebase.firestore().collection('spaces').doc(id);
   let memberIds = [], profiles = {}, ownerId = '';
-  let spaceId = null, members = 0, uRef = null, sRef = null, unsubS = null, lastU = '', lastS = '', seenU = '', seenS = '';
+  let spaceId = null, members = 0, uRef = null, sRef = null, unsubS = null, lastU = '', lastS = '', seenU = '', seenS = '', baseS = '', acts = [];
   function detach(){ if(unsub){ unsub(); unsub = null; } if(unsubS){ unsubS(); unsubS = null; } ref = uRef = sRef = null; ready = false; spaceId = null; members = 0; renderFamily(); }
   const okBadge = () => badge(spaceId ? '👨‍👩‍👧 已同步' : '☁️ 已同步');
   async function attach(sid, mergeLocal){
@@ -1212,7 +1267,7 @@ const Sync = (() => {
       let ss = null; try{ ss = await sRef.get(); }catch(e){ ss = null; }
       if(!ss || !ss.exists || !(ss.data().members||[]).includes(user.uid)) return kicked();
       const sd = ss.data();
-      sData = sd.json ? JSON.parse(sd.json) : null; seenS = sd.json || ''; members = (sd.members||[]).length; memberIds = sd.members||[]; profiles = sd.profiles||{}; ownerId = sd.owner||'';
+      sData = sd.json ? JSON.parse(sd.json) : null; seenS = sd.json || ''; acts = parseActs(sd.activity); gotActs(false); members = (sd.members||[]).length; memberIds = sd.members||[]; profiles = sd.profiles||{}; ownerId = sd.owner||'';
       const mine = {name:(user.displayName || (user.email||'').split('@')[0]).slice(0,40), email:user.email||'', photo:/^https:\/\//.test(user.photoURL||'') ? user.photoURL : ''};
       if(JSON.stringify(profiles[user.uid]) !== JSON.stringify(mine)) sRef.update({['profiles.' + user.uid]: mine}).catch(e => console.warn('profile', e));
       // 舊版把全部資料都放在家庭空間；第一次用新版時，把個人的部分複製回自己的帳號
@@ -1227,6 +1282,7 @@ const Sync = (() => {
     }
     if(mergeLocal) next = merge(next, db);
     if(uData || sData || mergeLocal) applyRemote(next);
+    baseS = JSON.stringify(pick(db, SHARED));
     ready = true; lastU = lastS = ''; if(fixTags(true)){ saveQuiet(); renderAll(); } push(true);
     unsub = uRef.onSnapshot(sn => {
       const d = sn.data(); if(!d || !d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenU || d.json === lastU) return;
@@ -1237,8 +1293,9 @@ const Sync = (() => {
       const d = sn.data(); if(!d) return;
       if(!(d.members||[]).includes(user.uid)) return kicked();
       members = (d.members||[]).length; memberIds = d.members||[]; profiles = d.profiles||{}; ownerId = d.owner||''; renderFamily();
+      if(!sn.metadata.hasPendingWrites && d.activity){ acts = parseActs(d.activity); gotActs(true); }
       if(!d.json || d.device === DEVICE || sn.metadata.hasPendingWrites || d.json === seenS || d.json === lastS) return;
-      seenS = d.json; lastS = d.json;
+      seenS = d.json; lastS = d.json; baseS = d.json;
       applyRemote(Object.assign({}, omit(db, SHARED), pick(makeDb(JSON.parse(d.json)), SHARED))); okBadge();
     }, e => { console.warn(e); if(e && e.code === 'permission-denied') kicked(); else badge('⚠️ 同步失敗'); });
     renderFamily();
@@ -1285,7 +1342,7 @@ const Sync = (() => {
     toast('已離開家庭空間');
   }
   const inviteLink = () => location.origin + location.pathname + '?join=' + spaceId;
-  function renderFamily(){
+  function renderFamily(){ try{ renderActBadge(); }catch(e){}
     const box = $('#familyBox'); if(!box) return;
     if(!user){ box.innerHTML = '<p class="meta">登入後才能使用家庭共用。</p>'; return; }
     if(!spaceId){
@@ -1314,7 +1371,10 @@ const Sync = (() => {
       const ts = firebase.firestore.FieldValue.serverTimestamp(), jobs = [];
       const uj = JSON.stringify(spaceId ? omit(db, SHARED) : db);
       if(force || uj !== lastU){ lastU = uj; jobs.push(uRef.set({json:uj, device:DEVICE, v2:true, updatedAt:ts}, {merge:true})); }
-      if(sRef){ const sj = JSON.stringify(pick(db, SHARED)); if(force || sj !== lastS){ lastS = sj; jobs.push(sRef.set({json:sj, device:DEVICE, updatedAt:ts}, {merge:true})); } }
+      if(sRef){ const sj = JSON.stringify(pick(db, SHARED)); if(force || sj !== lastS){ lastS = sj; const upd = {json:sj, device:DEVICE, updatedAt:ts};
+        if(!force && baseS && sj !== baseS){ let items = []; try{ items = diffShared(JSON.parse(baseS), JSON.parse(sj)); }catch(e){}
+          if(items.length){ acts = acts.concat({t:Date.now(), uid:user.uid, by:(Sync.name() || '家人').slice(0,20), items:items.slice(0,6).concat(items.length > 6 ? [`…還有 ${items.length-6} 項`] : [])}).slice(-40); upd.activity = JSON.stringify(acts); } }
+        baseS = sj; jobs.push(sRef.set(upd, {merge:true})); } }
       if(!jobs.length) return;
       badge('☁️ 同步中…');
       Promise.all(jobs).then(okBadge).catch(e => { badge('⚠️ 同步失敗'); console.warn(e); });
@@ -1402,7 +1462,7 @@ const Sync = (() => {
     if(t && user) await userRef().update({pushTokens: firebase.firestore.FieldValue.arrayRemove(t)}).catch(()=>{});
     try{ if(firebase.messaging) await firebase.messaging().deleteToken(); }catch(e){}
   }
-  return {push, init, uid: () => user ? user.uid : null, name: () => user ? (user.displayName || (user.email||'').split('@')[0] || '').split(' ')[0] : '', enablePush, disablePush, pushOn};
+  return {inSpace: () => !!spaceId, acts: () => acts, push, init, uid: () => user ? user.uid : null, name: () => user ? (user.displayName || (user.email||'').split('@')[0] || '').split(' ')[0] : '', enablePush, disablePush, pushOn};
 })();
 const progress = t => t.steps.length ? Math.round(t.steps.filter(s=>s.done).length / t.steps.length * 100) : (t.done ? 100 : 0);
 const startOf = t => t.start || (t.due && ymd(new Date(t.createdAt)) > t.due ? t.due : ymd(new Date(t.createdAt)));
@@ -2734,7 +2794,7 @@ function renderSettings(){
   const st = db.settings;
   $('#sDailyOn').checked = st.daily.on; fillTimes('#sDailyTime', st.daily.time);
   $('#sWeeklyOn').checked = st.weekly.on; fillTimes('#sWeeklyTime', st.weekly.time); $('#sWeeklyDay').value = String(weeklyDay());
-  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false;
+  const ml = st.mail || {}; $('#sMailDaily').checked = ml.daily!==false; $('#sMailWeekly').checked = ml.weekly!==false; $('#sMailItems').checked = ml.items===true; $('#sMailEmail').checked = ml.email!==false; $('#sNotifyFam').checked = st.notifyFamily!==false;
   const on = Sync.pushOn(); $('#pushBtn').textContent = on ? '🔕 關閉這支手機的通知' : '📱 開啟這支手機的通知'; $('#pushInfo').textContent = on ? '✅ 這支手機已開啟通知' : '';
 }
 $('#pushBtn').onclick = async () => {
@@ -2742,6 +2802,7 @@ $('#pushBtn').onclick = async () => {
   catch(e){ toast(e.message || String(e)); }
   renderSettings();
 };
+$('#sNotifyFam').addEventListener('change', e => { db.settings.notifyFamily = e.target.checked; saveQuiet(); toast(e.target.checked ? '家人有變動時會通知你' : '不會再推播家人動態'); });
 [['#sMailEmail','email'],['#sMailDaily','daily'],['#sMailWeekly','weekly'],['#sMailItems','items']].forEach(([sel,k]) => $(sel).addEventListener('change', e => {
   db.settings.mail = Object.assign({}, db.settings.mail, {[k]: e.target.checked}); saveQuiet(); toast('Email 提醒設定已更新'); }));
 [['#sDailyOn','daily','on'],['#sDailyTime','daily','time'],['#sWeeklyOn','weekly','on'],['#sWeeklyTime','weekly','time'],['#sWeeklyDay','weekly','day']].forEach(([sel,k,f]) =>
@@ -2753,6 +2814,9 @@ function updateNotice(){
   $('#notifyNotice').style.display = (!ok && can) ? 'block' : 'none';
 }
 $('#enableNotify').onclick = async () => { try{ await Notification.requestPermission(); }catch(e){} updateNotice(); };
+$('#actBtn').onclick = openActs;
+$('#actClose').onclick = () => $('#actSheet').classList.remove('on');
+$('#actSheet').onclick = e => { if(e.target.id==='actSheet') $('#actSheet').classList.remove('on'); };
 $('#reloadBtn').onclick = async () => {
   $('#reloadBtn').classList.add('spin');
   await new Promise(r => setTimeout(r, 1200)); // 讓剛改的資料先同步上去

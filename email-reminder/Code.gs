@@ -60,6 +60,23 @@ function tick(){
     if(items.length && mail.email !== false) send_('🔔 提醒：' + items[0].split('\n')[0].replace(/^\S+\s/, '') + (items.length > 1 ? ' 等 ' + items.length + ' 項' : ''), items.join('\n\n'));
   }
   if(changed) props.setProperty('sent', JSON.stringify(sent.slice(-300)));
+  familyActivity_(props);
+}
+
+// ===== 家人動態：家人新增或修改共用資料時，推播給其他人 =====
+function familyActivity_(props){
+  if(!SPACE_DOC) return;
+  let acts = []; try{ acts = JSON.parse(fv_(SPACE_DOC, 'activity') || '[]'); }catch(e){ acts = []; }
+  const last = acts.length ? acts[acts.length - 1].t : 0, seen = +(props.getProperty('actSeen') || 0);
+  if(!seen){ props.setProperty('actSeen', String(last || Date.now())); return; }   // 第一次執行：舊的不推
+  const fresh = acts.filter(a => a.t > seen); if(!fresh.length) return;
+  MEMBERS.forEach(m => {
+    if(m.off || !m.tokens.length) return;
+    const mine = fresh.filter(a => a.uid !== m.uid); if(!mine.length) return;
+    const lines = []; mine.forEach(a => a.items.forEach(x => lines.push(a.by + '：' + x)));
+    pushTo_(m.tokens, '👨‍👩‍👧 家人動態', lines.slice(0, 6).join('\n') + (lines.length > 6 ? '\n…還有 ' + (lines.length - 6) + ' 項' : ''));
+  });
+  props.setProperty('actSeen', String(last));
 }
 
 // ===== 讀取 App 資料（Firestore） =====
@@ -71,7 +88,7 @@ function fsGet_(path){
   return JSON.parse(r.getContentText());
 }
 const fv_ = (doc, k) => doc.fields && doc.fields[k] && doc.fields[k].stringValue;
-let PUSH_TOKENS = [];
+let PUSH_TOKENS = [], SPACE_DOC = null, MEMBERS = [];
 const tokens_ = d => ((d.fields && d.fields.pushTokens && d.fields.pushTokens.arrayValue.values) || []).map(v => v.stringValue).filter(Boolean);
 function loadDb(){
   const me = myEmail_().toLowerCase(); let pageToken = '', mine = null; const all = [];
@@ -86,6 +103,9 @@ function loadDb(){
   PUSH_TOKENS = tokens_(mine);
   if(space) all.forEach(d => { if(d !== mine && fv_(d, 'space') === space) PUSH_TOKENS = PUSH_TOKENS.concat(tokens_(d)); });
   PUSH_TOKENS = PUSH_TOKENS.filter((x, i, a) => a.indexOf(x) === i);
+  SPACE_DOC = space ? doc : null; MEMBERS = [];
+  if(space) all.forEach(d => { if(fv_(d, 'space') !== space) return; let st = {}; try{ st = JSON.parse(fv_(d, 'json') || '{}').settings || {}; }catch(e){}
+    MEMBERS.push({uid: (d.name || '').split('/').pop(), tokens: tokens_(d), off: st.notifyFamily === false}); });
   // 新版：個人資料（提醒設定、作業）在自己的帳號，共用資料（行程、待辦、紀念日）在家庭空間
   const pj = JSON.parse(fv_(mine, 'json') || '{}'), sj = space ? JSON.parse(fv_(doc, 'json') || '{}') : pj;
   const d = Object.assign({}, sj, {settings: pj.settings || sj.settings, hwBy: pj.hwBy});
@@ -96,9 +116,10 @@ function loadDb(){
 function myEmail_(){ return Session.getEffectiveUser().getEmail(); }
 
 // ===== 手機通知 =====
-function sendPush_(title, body){
+function sendPush_(title, body){ return pushTo_(PUSH_TOKENS, title, body); }
+function pushTo_(tokens, title, body){
   let ok = 0;
-  PUSH_TOKENS.forEach(token => {
+  tokens.forEach(token => {
     const r = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + PROJECT_ID + '/messages:send', {method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'x-goog-user-project': PROJECT_ID},
       payload: JSON.stringify({message: {token: token, webpush: {notification: {title: title, body: body.slice(0, 600), icon: APP_URL + 'icons/icon-192.png'}, fcm_options: {link: APP_URL}}}})});
