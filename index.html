@@ -405,6 +405,41 @@ select.twsel{display:none !important}
 .tw-col [data-v].on{color:var(--ink);font-weight:900;font-size:26px}
 .tw-col .pad{height:80px}
 .tw-colon{position:relative;align-self:center;font-size:26px;font-weight:900}
+.tl{display:grid;grid-template-columns:36px repeat(var(--n),minmax(0,1fr));margin-top:12px;border:1.5px solid var(--ink);border-radius:14px;background:#fff;overflow:hidden}
+.tl-g{border-right:1px solid #E6DFCC}
+.tl-dh{text-align:center;padding:4px 0 5px;border-bottom:1px solid #E6DFCC;cursor:pointer;line-height:1.15;min-width:0}
+.tl-dh span{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.tl-dh b{display:inline-block;font-size:16px;min-width:26px;height:26px;line-height:26px;border-radius:50%}
+.tl-dh i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-dh i.fest{color:#E2401C;font-weight:700}
+.tl-dh.today b{background:var(--orange);color:#fff}
+.tl-alll{font-size:10px;color:var(--muted);text-align:center;padding-top:6px;border-bottom:1px solid #E6DFCC}
+.tl-all{padding:3px 2px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid #E6DFCC;border-left:1px solid #F0E8D6;min-width:0}
+.tl-chip{font-size:11px;line-height:1.35;border-radius:6px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--soft-blue)}
+.tl-chip.ann{background:var(--soft-pink)} .tl-chip.fest{background:none;color:#E2401C;font-weight:700} .tl-chip.hw{background:var(--soft-purple)}
+.tl-chip.td{background:var(--soft-orange)} .tl-chip.td.done{background:var(--soft-mint);text-decoration:line-through;opacity:.7}
+.tl-hours{position:relative}
+.tl-hours span{position:absolute;right:5px;transform:translateY(-50%);font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tl-hours span:first-child{transform:none}
+.tl-hours span:last-child{transform:translateY(-100%)}
+.tl-col{position:relative;border-left:1px solid #F0E8D6;cursor:copy;background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--hh) - 1px),#EFE8D8 calc(var(--hh) - 1px),#EFE8D8 var(--hh))}
+.tl.one .tl-col{border-left:0}
+.tl-col.today{background-color:#FFFBEF}
+.tl-ev{position:absolute;overflow:hidden;background:var(--soft-blue);border-left:3.5px solid var(--blue);border-radius:6px;padding:2px 5px;font-size:12px;line-height:1.25;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.tl-ev b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+.tl-ev span{display:block;font-size:10.5px;color:var(--muted)}
+.tl-ev .nt{color:var(--ink);opacity:.7}
+.tl-ev.short{display:flex;gap:4px;align-items:baseline;white-space:nowrap}
+.tl-ev.short b{flex:0 1 auto;min-width:0}
+.tl.wk .tl-ev{padding:1px 3px;font-size:10.5px;border-left-width:2.5px}
+.tl.wk .tl-ev b{font-size:11px;white-space:normal;word-break:break-all;line-height:1.2}
+.tl.wk .tl-ev span{font-size:9.5px}
+.tl.wk .tl-ev.short{display:block}
+.tl.wk .tl-ev.short span{display:none}
+.tl.wk .tl-chip{white-space:normal;word-break:break-all;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;font-size:10.5px;padding:1px 3px;line-height:1.25}
+@media (max-width:600px){ .tl{grid-template-columns:30px repeat(var(--n),minmax(0,1fr))} .tl.wk .tl-ev span{display:none} .tl.wk .tl-ev{padding:1px 2px} .tl.wk .tl-ev b{font-size:10.5px} }
+.tl-now{position:absolute;left:0;right:0;height:2px;background:#E2401C;pointer-events:none}
+.tl-now::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#E2401C}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -973,7 +1008,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 行程彈性版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-23 時間軸版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1582,6 +1617,38 @@ function repeatText(ev){ if(!ev.repeat) return ''; let t = REPEAT[ev.repeat] || 
   return '🔁 ' + t + (ev.until ? `，到 ${md(ev.until)}` : ''); }
 const todosDue = d => db.todos.filter(t => t.due===d).sort(tdSort);
 
+// ---------- 時間軸（06:00–24:00） ----------
+const TL_FROM = 6, TL_TO = 24, TL_H = 44;
+function tlLayout(evs){
+  const items = evs.map(ev => { const a = Math.max(TL_FROM*60, Math.min(hmMin(ev.time), TL_TO*60 - 30)); let b = ev.end ? hmMin(ev.end) : a + 60;
+    b = Math.min(TL_TO*60, Math.max(b, a + 30)); return {ev, a, b, lane:0, lanes:1}; }).sort((x,y) => x.a - y.a || y.b - x.b);
+  let cl = [], end = -1;
+  const flush = () => { const n = Math.max(1, ...cl.map(x => x.lane + 1)); cl.forEach(x => x.lanes = n); cl = []; };
+  items.forEach(it => { if(it.a >= end && cl.length){ flush(); end = -1; }
+    const used = cl.filter(x => x.b > it.a).map(x => x.lane); let l = 0; while(used.includes(l)) l++; it.lane = l; cl.push(it); end = Math.max(end, it.b); });
+  flush(); return items;
+}
+function timeline(days){
+  const n = days.length, t = today(), wk = n > 1, H = TL_TO - TL_FROM;
+  let h = `<div class="tl ${wk ? 'wk' : 'one'}" style="--n:${n};--hh:${TL_H}px">`;
+  if(wk) h += '<div class="tl-g"></div>' + days.map(ds => { const d = parse(ds), hs = holidaysOn(ds), fest = hs.find(x => x.kind === 'fest');
+    return `<div class="tl-dh ${ds===t?'today':''}" data-act="openDay" data-date="${ds}"><span>${WD[d.getDay()]}</span><b>${d.getDate()}</b><i class="${fest?'fest':''}">${fest ? esc(fest.name) : lunarLabel(ds)}</i></div>`; }).join('');
+  // 全天：節日、紀念日、沒時間的行程、（週檢視）到期待辦
+  const alls = days.map(ds => holidaysOn(ds).filter(x => wk ? x.kind === 'ann' : true).map(x => `<div class="tl-chip ${x.kind==='fest'?'fest':'ann'}">${esc(holText(x))}</div>`)
+    .concat(eventsOn(ds).filter(ev => !ev.time).map(ev => `<div class="tl-chip ev ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}">${ev.repeat?'🔁':''}${esc(ev.title)}</div>`),
+      wk ? hwDueOn(ds).filter(x => !x.done).map(x => `<div class="tl-chip hw">📚${esc(x.course||x.content)}</div>`) : [],
+      wk ? todosDue(ds).map(td => `<div class="tl-chip td ${td.done?'done':''} ed" data-act="edit" data-k="todo" data-id="${td.id}">${td.done?'✓':''}${esc(td.title)}</div>`) : []));
+  if(alls.some(a => a.length)) h += `<div class="tl-g tl-alll">全天</div>` + alls.map(a => `<div class="tl-all">${a.join('')}</div>`).join('');
+  h += '<div class="tl-g tl-hours">' + Array.from({length:H}, (_, i) => `<span style="top:${i*TL_H}px">${pad(TL_FROM+i)}</span>`).join('') + `<span style="top:${H*TL_H}px">24</span></div>`;
+  const now = new Date(), nm = now.getHours()*60 + now.getMinutes();
+  h += days.map(ds => {
+    const evs = tlLayout(eventsOn(ds).filter(ev => ev.time));
+    return `<div class="tl-col ${ds===t?'today':''}" data-act="tlSlot" data-date="${ds}" style="height:${H*TL_H}px">` + evs.map(it => { const ev = it.ev, top = (it.a - TL_FROM*60) / 60 * TL_H, ht = (it.b - it.a) / 60 * TL_H - 2;
+      return `<div class="tl-ev ed ${ht < 34 ? 'short' : ''}" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" style="top:${top}px;height:${ht}px;left:calc(${it.lane/it.lanes*100}% + 1px);width:calc(${100/it.lanes}% - 3px)"><b>${ev.repeat?'🔁':''}${esc(ev.title)}</b><span>${evTime(ev)}</span>${!wk && ev.note && ht >= 50 ? `<span class="nt">${esc(ev.note)}</span>` : ''}</div>`; }).join('')
+      + (ds === t && nm >= TL_FROM*60 && nm < TL_TO*60 ? `<div class="tl-now" style="top:${(nm - TL_FROM*60) / 60 * TL_H}px"></div>` : '') + '</div>';
+  }).join('');
+  return h + '</div>' + `<p class="meta" style="margin:6px 0 0;text-align:center">點時間軸上的空白處，就能在那個時間新增行程</p>`;
+}
 function renderPlan(){
   $$('#viewSeg button').forEach(b => b.classList.toggle('on', b.dataset.view===view));
   const t = today();
@@ -1609,15 +1676,14 @@ function renderPlan(){
     const wk = db.todos.filter(td => td.due && td.due>=ws && td.due<=we);
     const avg = wk.length ? Math.round(wk.reduce((a,x)=>a+progress(x),0)/wk.length) : 0;
     html = `<div class="prog" style="margin-top:12px"><b style="font-size:14px">本週整體進度</b><div class="bar"><div style="width:${avg}%"></div></div><span class="pct">${avg}%</span></div>`;
-    html += '<div class="week">';
-    for(let i=0;i<7;i++){
+    html += timeline(Array.from({length:7}, (_, i) => ymd(addDays(s,i))));
+    if(false) for(let i=0;i<7;i++){
       const ds = ymd(addDays(s,i));
       const hs = holidaysOn(ds).map(h=>`<div class="witem"><span class="t ${h.kind==='fest'?'fest':''}"><b>${esc(holText(h))}</b></span></div>`);
       const evs = eventsOn(ds).map(ev=>`<div class="witem ev ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><b>${ev.time||'全天'}</b><span class="t">${esc(ev.title)}</span></div>`);
       const tds = todosDue(ds).map(td=>`<div class="witem td ${td.done?'done':''}"><input type="checkbox" class="chk sm" data-act="toggleTodo" data-id="${td.id}" ${td.done?'checked':''}><span class="t ed" data-act="edit" data-k="todo" data-id="${td.id}">${tagDot(td.tag)}${esc(td.title)}${td.steps.length?` <b>${progress(td)}%</b>`:''}</span></div>`);
       html += `<div class="wcol ${ds===t?'today':''}"><div class="wh" data-act="openDay" data-date="${ds}">週${WD[(i+1)%7]} <span class="meta">${md(ds)}</span> <span class="wlunar">${lunarLabel(ds)}</span> <span style="float:right">＋</span></div><div class="wb" data-act="openDayBg" data-date="${ds}">${hs.concat(evs,tds).join('') || '<span class="meta">點這裡新增</span>'}</div></div>`;
     }
-    html += '</div>';
     const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=we && td.due>=ws && !(td.due>=ws && td.due<=we));
     if(active.length){ html += '<div class="subhead">🏃 本週進行中（期限在之後）</div>' + active.sort(tdSort).map(todoCard).join(''); }
   } else if(view==='day'){
@@ -1626,9 +1692,9 @@ function renderPlan(){
     const hs = holidaysOn(ds);
     html += `<p class="meta" style="margin:6px 0 0;text-align:center">${lunarFull(ds)}${hs.length?' · '+hs.map(h=>`<b class="${h.kind==='fest'?'fest':''}">${esc(holText(h))}</b>`).join('、'):''}</p>`;
     html += `<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn mint" data-act="openDay" data-date="${ds}" style="padding:5px 14px">＋ 在這天新增</button></div>`;
-    const evs = eventsOn(ds);
-    html += '<div class="subhead">📅 行程</div>';
-    html += evs.length ? evs.map(ev=>`<div class="dayline ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><span class="time">${evTime(ev)}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div><span class="icon">✏️</span><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('') : '<div class="empty">這天沒有行程</div>';
+    html += timeline([ds]);
+    const evs = [];
+    if(false) html += evs.length ? evs.map(ev=>`<div class="dayline ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}"><span class="time">${evTime(ev)}</span><div class="grow"><b>${esc(ev.title)}</b>${ev.note?`<div class="meta">${esc(ev.note)}</div>`:''}</div><span class="icon">✏️</span><button class="icon" data-act="delEv" data-id="${ev.id}" data-date="${ev.date}" aria-label="刪除">✕</button></div>`).join('') : '<div class="empty">這天沒有行程</div>';
     const due = db.todos.filter(td => td.due===ds || (ds===t && isLate(td))).sort(tdSort);
     html += '<div class="subhead">🎯 這天要完成</div>' + (due.length ? due.map(todoCard).join('') : '<div class="empty">這天沒有到期的待辦</div>');
     const active = db.todos.filter(td => !td.done && td.due && startOf(td)<=ds && td.due>ds).sort(tdSort);
@@ -2155,6 +2221,8 @@ document.addEventListener('click', e => {
     case 'tdGrpAdd': { e.stopPropagation(); pickTag = b.dataset.tag; const det = $('#tdFormDet'); if(det) det.open = true; renderTagBars(); det && det.scrollIntoView({behavior:'smooth', block:'start'}); setTimeout(() => $('#tdTitle').focus(), 300); return; }
     case 'openDay': openDay(date || today(), b.dataset.k); return;
     case 'openDayBg': if(e.target === b) openDay(date); return;
+    case 'tlSlot': { if(e.target !== b) return; const r = b.getBoundingClientRect(), m = Math.floor(((e.clientY - r.top) / TL_H * 60) / 30) * 30 + TL_FROM*60;
+      openDay(date, 'ev'); $('#dsTime').value = pad(Math.floor(m/60)) + ':' + pad(m%60); $('#dsEnd').value = ''; syncTw(); return; }
     case 'tab': goTab(b.dataset.tab); return;
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
     case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
