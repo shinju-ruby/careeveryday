@@ -55,6 +55,7 @@ function tick(){
     const items = [];
     [t, addD(t,1)].forEach(d => db.events.forEach(ev => {
       if(!(ev.remind >= 0) || !occurs(ev, d)) return;
+      if(ev.endDate && !ev.repeat && d !== ev.date) return;   // 多天行程只在第一天提醒
       const at = Date.parse(d + 'T' + (ev.time || '09:00') + ':00+08:00'), fire = at - ev.remind*60000, k = 'ev:' + ev.id + ':' + d;
       if(now >= fire && now < at + 3600000 && !was(k)){ mark(k); items.push('📅 ' + ev.title + '\n   ' + pretty(d) + ' ' + evT_(ev) + (ev.note ? '（' + ev.note + '）' : '')); }
     }));
@@ -175,7 +176,7 @@ function weekRange(off){ const s = addD(mondayOf(todayT()), off*7); return [s, a
 // ===== 行程、待辦（和 App 同樣的規則） =====
 function occurs(ev, d){
   if(d < ev.date) return false;
-  if(!ev.repeat) return d === ev.date;
+  if(!ev.repeat) return ev.endDate && ev.endDate > ev.date ? d <= ev.endDate : d === ev.date;
   if(ev.until && d > ev.until) return false;
   if(ev.skip && ev.skip.indexOf(d) >= 0) return false;
   switch(ev.repeat){
@@ -190,7 +191,7 @@ function occurs(ev, d){
   }
   return false;
 }
-const evT_ = e => e.time ? e.time + (e.end ? '–' + e.end : '') : '全天';
+const evT_ = e => (e.endDate && !e.repeat) ? ((e.time ? e.time + ' ' : '') + '到 ' + (+e.endDate.slice(5,7)) + '/' + (+e.endDate.slice(8,10)) + (e.end ? ' ' + e.end : '')) : e.time ? e.time + (e.end ? '–' + e.end : '') : '全天';
 const evSort = (a,b) => (a.time || '').localeCompare(b.time || '');
 const eventsOn = d => DB.events.filter(e => occurs(e, d)).map(e => Object.assign({}, e, {date: d})).sort(evSort);
 function eventsBetween(a, b){ const out = []; for(let d = a; d <= b; d = addD(d,1)) out.push.apply(out, eventsOn(d)); return out; }
