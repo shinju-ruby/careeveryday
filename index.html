@@ -917,7 +917,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       <ul class="donelog" id="dDone" style="margin:0;padding-left:20px"></ul>
       <div class="subhead">💰 記帳 <span class="meta" style="font-weight:700">👨‍👩‍👧 全家共用</span><span class="sp" style="flex:1"></span><label class="btn blue invbtn">📷 發票／截圖<input type="file" id="invFile" accept="image/*" multiple class="hidden"></label></div>
       <div class="row">
-        <select id="mKind"><option value="out">支出</option><option value="in">收入</option></select>
+        <select id="mKind"><option value="out">支出</option><option value="in">收入</option><option value="xfer">繳卡費（不算支出）</option></select>
         <input type="number" id="mAmt" placeholder="金額" min="0" inputmode="decimal" style="width:100px">
         <select id="mCat"></select>
         <select id="mPay" aria-label="付款方式"></select>
@@ -1867,7 +1867,7 @@ function renderDoneLog(){
 
 // ---------- 日記＋記帳 ----------
 const MOODS = ['😄','🙂','😐','😢','😡','😴','🥳'];
-const CATS = {out:['餐飲','食材','日用品','交通','購物','水電瓦斯','電信網路','房租房貸','保險','學費','學習','醫療','孩子','寵物','送禮人情','娛樂','旅遊','稅費','其他'], in:['薪水','獎金','零用','退款','其他']};
+const CATS = {out:['餐飲','食材','日用品','交通','購物','水電瓦斯','電信網路','房租房貸','保險','學費','學習','醫療','孩子','寵物','送禮人情','娛樂','旅遊','稅費','其他'], in:['薪水','獎金','零用','退款','其他'], xfer:['繳卡費','存錢／轉帳','其他']};
 const PAY_OPTS = [['','💵 現金'],['card','💳 信用卡'],['bank','🏦 轉帳'],['mobile','📱 行動支付']];
 let dDate = today(), dShownFor = null, dTimer = null;
 const entry = ds => db.diary[ds] || (db.diary[ds] = {mood:'', text:''});
@@ -2077,15 +2077,15 @@ function renderDiary(){
   const dn = doneOn(dDate);
   $('#dDone').innerHTML = dn.length ? dn.map(x=>`<li><span class="meta">${hm(x.at)}</span> ${x.html}</li>`).join('') : '<li class="empty" style="list-style:none;margin-left:-20px">這天還沒有勾掉的待辦</li>';
   const out = ml.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = ml.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
-  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${m.pay ? `<span title="${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(2)}">${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(0,2)}</span> ` : ''}${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="edit" data-k="money" data-id="${m.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delMoney" data-mid="${m.id}" aria-label="刪除">✕</button></div>`).join('')
+  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':m.kind==='in'?'var(--soft-mint)':'#ECEAF2'}">${esc(m.cat)}</span><span class="grow">${m.pay ? `<span title="${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(2)}">${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(0,2)}</span> ` : ''}${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':m.kind==='in'?'+':'🔁 '}$${money(m.amt)}</span><button class="icon" data-act="edit" data-k="money" data-id="${m.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delMoney" data-mid="${m.id}" aria-label="刪除">✕</button></div>`).join('')
     + `<div class="money" style="font-weight:900"><span class="grow">這天合計</span>${out?`<span class="amt out">支出 $${money(out)}</span>`:''}${inc?`<span class="amt in">收入 $${money(inc)}</span>`:''}</div>`
     : '<div class="empty">這天還沒有記帳</div>';
   // 本月
   const ym = dDate.slice(0,7); let mo = 0, mi = 0, card = 0; const byCat = {};
-  monthMoney(ym, m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; if(m.pay==='card') card += m.amt; } else mi += m.amt; });
+  let paid = 0; monthMoney(ym, m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; if(m.pay==='card') card += m.amt; } else if(m.kind==='in') mi += m.amt; else paid += m.amt; });
   $('#mMonthTitle').textContent = `📊 ${+ym.slice(5)} 月收支`;
   const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>` + (card ? `<p class="meta" style="margin:4px 0 6px">💳 這個月刷卡 $${money(card)}（可以拿來對信用卡帳單）</p>` : '')
+  $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>` + (card || paid ? `<p class="meta" style="margin:4px 0 6px">${card ? `💳 這個月刷卡 $${money(card)}（已算在支出裡）` : ''}${card && paid ? '<br>' : ''}${paid ? `🔁 繳卡費／轉帳 $${money(paid)}（不重複算支出）` : ''}</p>` : '')
     + (cats.length ? cats.map(([c,v])=>`<div class="catrow"><span style="width:70px;flex:none;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c)}</span><div class="bar"><div style="width:${Math.round(v/mo*100)}%"></div></div><span style="min-width:90px;text-align:right">$${money(v)} · ${Math.round(v/mo*100)}%</span></div>`).join('') : '<div class="empty">這個月還沒有支出紀錄</div>');
   renderEntries();
 }
@@ -2737,7 +2737,7 @@ function renderDash(){
     <div class="tile"><b>${db.trips.filter(x=>x.type==='travel').length} 次</b><span>旅遊</span></div><div class="tile"><b>${new Set(db.trips.map(ctry)).size}</b><span>去過的國家</span></div></div>`
     + (lastT ? `<div class="meta" style="margin-top:8px">最近一次：${prettyDate(lastT.start)} ${esc(lastT.title)}（${esc(placeOf(lastT))}）</div>` : '<div class="meta" style="margin-top:8px">還沒有紀錄，下次出門記得記一筆！</div>');
   const ym = t.slice(0,7); let mo = 0, mi = 0;
-  monthMoney(ym, m => m.kind==='out' ? mo += m.amt : mi += m.amt);
+  monthMoney(ym, m => m.kind==='out' ? mo += m.amt : m.kind==='in' ? mi += m.amt : 0);
   const todayOut = mlist(t).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
   $('#wMoney').innerHTML = `<div class="tiles"><div class="tile"><b>$${money(todayOut)}</b><span>今天支出</span></div><div class="tile"><b>$${money(mo)}</b><span>本月支出</span></div>
     <div class="tile"><b>$${money(mi)}</b><span>本月收入</span></div><div class="tile"><b>$${money(mi-mo)}</b><span>本月結餘</span></div></div>`;
@@ -2852,7 +2852,7 @@ function answer(q){
     const top = Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c,n])=>`${c} ${n} 次`).join('、');
     return `【旅行露營】\n累積露營：${camps.length} 露（${yr} 年 ${camps.filter(x=>x.start.startsWith(yr)).length} 露），共 ${camps.reduce((a,x)=>a+nights(x),0)} 晚\n旅遊：${tr.length} 次\n去過 ${Object.keys(by).length} 個縣市${top?`\n最常去：${top}`:''}${last?`\n最近一次：${prettyDate(last.start)} ${last.title}（${last.county}）`:''}`; }
   if(/喝水|習慣|運動/.test(q)){ const t = today(); return myHabits().length ? '【今天的習慣】\n' + myHabits().map(h=>`  ${h.emoji} ${h.name}：${hCount(t,h.id)}/${h.target} ${h.unit||''}${hCount(t,h.id)>=h.target?' ✓':''}${streak(h)>1?`（連續 ${streak(h)} 天）`:''}`).join('\n') : '還沒有設定習慣喔，到「習慣」新增一個吧！'; }
-  if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; monthMoney(ym, m=>m.kind==='out'?o+=m.amt:i+=m.amt);
+  if(/花|支出|記帳|錢|收入/.test(q)){ const ym = today().slice(0,7); let o=0,i=0; monthMoney(ym, m=>m.kind==='out'?o+=m.amt:m.kind==='in'?i+=m.amt:0);
     const td = mlist(today()).filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0);
     return `【記帳】\n今天支出：$${money(td)}\n本月支出：$${money(o)}\n本月收入：$${money(i)}\n本月結餘：$${money(i-o)}`; }
   if(/完成了什麼|做了什麼|完成紀錄/.test(q)){ const dn = doneOn(today()); return dn.length ? `【今天完成了 ${dn.length} 項】\n` + dn.map(x=>`  ✓ ${x.text}`).join('\n') : '今天還沒有勾掉任何事，挑一件小的開始吧！'; }
@@ -3066,8 +3066,8 @@ const EDITORS = {
     after:(o,old) => { if(!o.end) delete o.end; if(!o.endDate) delete o.endDate; if(o.date!==old.date || o.time!==old.time || o.remind!==old.remind){ o.notified = false; o.notifiedOn = []; } if(!o.repeat) delete o.until; }},
   shop: {title:'✏️ 編輯要買的', name:o => o.name, del:o => { db.shop = db.shop.filter(x=>x!==o); }, get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
     ['cat','分類','select',SHOP_CATS.map(c=>[c[0], c[1]+' '+c[2]])], ['store','在哪買','select',[['','不限']].concat(SHOP_STORES.map(x=>[x,x]))]]},
-  money: {title:'✏️ 編輯記帳', name:o => `${o.cat||''} $${o.amt}`, del:o => { Object.values(db.money||{}).forEach(a => { const i = (a||[]).indexOf(o); if(i>=0) a.splice(i,1); }); }, get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入']]], ['amt','金額','number',null,true,'num'],
-    ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, [o.cat]))].map(c=>[c,c])], ['pay','付款方式','select',PAY_OPTS], ['note','備註','text']]},
+  money: {title:'✏️ 編輯記帳', name:o => `${o.cat||''} $${o.amt}`, del:o => { Object.values(db.money||{}).forEach(a => { const i = (a||[]).indexOf(o); if(i>=0) a.splice(i,1); }); }, get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入'],['xfer','繳卡費（不算支出）']]], ['amt','金額','number',null,true,'num'],
+    ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, CATS.xfer, [o.cat]))].map(c=>[c,c])], ['pay','付款方式','select',PAY_OPTS], ['note','備註','text']]},
   habit: {title:'✏️ 編輯習慣', get:id => myHabits().find(x=>x.id===id), fields:() => [['emoji','圖示','select',[...new Set(HABIT_EMOJIS)].map(e=>[e,e])],
     ['name','習慣','text',null,true], ['target','每天目標','number',null,true,'num'], ['unit','單位','text']]},
   idea: {title:'✏️ 編輯靈感', name:o => String(o.text).slice(0,20), del:o => { db.ideas = db.ideas.filter(x=>x!==o); }, get:id => db.ideas.find(x=>x.id===id), fields:() => [['text','內容','textarea',null,true]]},
