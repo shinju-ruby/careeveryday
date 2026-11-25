@@ -451,6 +451,39 @@ select.twsel{display:none !important}
 @media (max-width:600px){ .tl{grid-template-columns:30px repeat(var(--n),minmax(0,1fr))} .tl.wk .tl-ev span{display:none} .tl.wk .tl-ev{padding:2px 3px} .tl.wk .tl-ev b{font-size:11px} }
 .tl-now{position:absolute;left:0;right:0;height:2px;background:#E2401C;pointer-events:none;z-index:2}
 .tl-now::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#E2401C}
+/* 月曆：格子相連（像 Google） */
+#planView .month{gap:0;border:1px solid #E3DACA;border-radius:14px;overflow:hidden;background:#fff}
+#planView .month .wd{padding:6px 0;font-weight:700;color:var(--muted);border-bottom:1px solid #EEE6D6;font-size:12px}
+#planView .month .cell{border:0;border-radius:0;border-right:1px solid #F1EBDD;border-bottom:1px solid #F1EBDD;overflow:visible;padding:4px 5px;min-width:0}
+#planView .month .cell:nth-of-type(7n){border-right:0}
+#planView .month .cell:hover{transform:none;background:#FFFCF3}
+#planView .month .cell.today{background:#FFF8E4}
+#planView .month .cell .num{font-weight:700}
+#planView .month .chip{font-weight:500}
+.mseg{display:block;height:19px;line-height:19px;font-size:11.5px;font-weight:500;margin:3px -6px 0;padding:0 6px;background:color-mix(in srgb, var(--tc) 55%, #fff);color:#2A2E45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1;cursor:pointer}
+.mseg.s{margin-left:0;border-radius:6px 0 0 6px;box-shadow:inset 3px 0 0 var(--tc)}
+.mseg.e{margin-right:0;border-top-right-radius:6px;border-bottom-right-radius:6px}
+.mseg.empty{background:none;cursor:default}
+@media (max-width:600px){ #planView .month .cell{padding:3px 3px;min-height:58px} .mseg{height:15px;line-height:15px;font-size:9.5px;margin:2px -4px 0;padding:0 3px} .mseg.s{margin-left:0} .mseg.e{margin-right:0} }
+/* 新增行程（像 Google） */
+.gcform{margin-top:10px;display:flex;flex-direction:column;gap:2px}
+.gcrow{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #F3EDE0}
+.gcrow:last-child{border-bottom:0}
+.gci{width:24px;flex:none;text-align:center;font-size:17px;line-height:38px}
+.gcb{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#dsEvTagPick{flex-direction:row;flex-wrap:wrap;gap:6px;padding-top:5px}
+.gcdates,.gctimes,.gcline{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.gcdates input{flex:1;min-width:0;border:0;border-bottom:1.5px solid #E3DACA;border-radius:0;padding:6px 2px;background:transparent;font-weight:600}
+.gcdates span,.gctimes span{color:var(--muted)}
+.gcline{justify-content:space-between}
+.gcsel{border:0;background:transparent;padding:6px 2px;color:var(--muted);font-size:14px}
+.gcin{width:100%;border:0;border-bottom:1.5px solid #E3DACA;border-radius:0;padding:8px 2px;background:transparent}
+.gcin:focus,.gcdates input:focus{outline:none;border-bottom-color:var(--blue)}
+.gcpill{font:inherit;font-size:14px;font-weight:700;border:1.5px solid #CFC6B3;background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap}
+.gclink{font:inherit;font-size:13px;border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
+.gctag{font:inherit;font-size:13px;border:1.5px solid #E3DACA;background:#fff;color:var(--ink);border-radius:999px;padding:3px 11px 3px 8px;cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+.gctag i{width:10px;height:10px;border-radius:50%;background:var(--tc)}
+.gctag.on{border-color:var(--tc);background:color-mix(in srgb, var(--tc) 22%, #fff);font-weight:700}
 .trow{display:flex;align-items:center;gap:6px}
 .reload.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -887,6 +920,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
         <select id="mKind"><option value="out">支出</option><option value="in">收入</option></select>
         <input type="number" id="mAmt" placeholder="金額" min="0" inputmode="decimal" style="width:100px">
         <select id="mCat"></select>
+        <select id="mPay" aria-label="付款方式"></select>
         <input type="text" id="mNote" placeholder="備註，例如：午餐便當">
         <button class="btn mint" id="mAdd">記一筆</button>
       </div>
@@ -1019,7 +1053,7 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
       </details>
     </div>
     <div class="card">
-      <p class="meta" style="margin:0 0 10px">版本：2026-11-24 多天行程版</p>
+      <p class="meta" style="margin:0 0 10px">版本：2026-11-25 日曆＋記帳分類版</p>
       <h2>🧹 清空所有資料</h2>
       <button class="btn white" id="wipeBtn" style="color:#E2401C">全部清空</button>
     </div>
@@ -1092,7 +1126,17 @@ body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
   <div id="dsList" style="margin:8px 0"></div>
   <div class="seg" id="dsKind"><button data-k="ev" class="on">📅 行程</button><button data-k="td">✅ 待辦</button></div>
   <input type="text" id="dsText" placeholder="要做什麼？" style="width:100%">
-  <div class="row" id="dsEvOpts" style="margin-top:8px"><select id="dsTime" class="tw" aria-label="開始時間"></select><select id="dsEnd" class="tw" data-from="dsTime" aria-label="結束時間"></select><label class="meta" style="display:flex;gap:6px;align-items:center;width:100%;margin:0">📆 多天行程到 <input type="date" id="dsEndDate" style="flex:1;min-width:0">（一天的不用填）</label><select id="dsRemind"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select><select id="dsRepeat"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span><input type="text" id="dsNote" placeholder="備註、地點（選填）" style="width:100%"></div>
+  <div id="dsEvOpts" class="gcform">
+    <div class="gcrow"><span class="gci">🕒</span><div class="gcb">
+      <div class="gcdates"><input type="date" id="dsStart" aria-label="開始日"><span>–</span><input type="date" id="dsEndDate" aria-label="結束日"></div>
+      <div class="gctimes hidden" id="dsTimesWrap"><select id="dsTime" class="tw" aria-label="開始時間"></select><span>–</span><select id="dsEnd" class="tw" data-from="dsTime" aria-label="結束時間"></select><button type="button" class="gclink" id="dsNoTime">全天</button></div>
+      <div class="gcline"><select id="dsRepeat" class="gcsel"><option value="">不重複</option><option value="daily">每天</option><option value="weekly">每週</option><option value="biweekly">每兩週</option><option value="monthly">每月</option><option value="yearly">每年</option></select><button type="button" class="gcpill" id="dsAddTime">新增時間</button></div>
+      <span class="meta hidden" id="dsUntilWrap">重複到 <input type="date" id="dsUntil">（可不填）</span>
+    </div></div>
+    <div class="gcrow"><span class="gci">🏷️</span><div class="gcb" id="dsEvTagPick"></div></div>
+    <div class="gcrow"><span class="gci">🔔</span><div class="gcb"><select id="dsRemind" class="gcsel"><option value="-1">不提醒</option><option value="0">準時提醒</option><option value="10" selected>提前 10 分鐘</option><option value="30">提前 30 分鐘</option><option value="60">提前 1 小時</option><option value="1440">提前 1 天</option></select></div></div>
+    <div class="gcrow"><span class="gci">📍</span><div class="gcb"><input type="text" id="dsNote" class="gcin" placeholder="新增地點或說明"></div></div>
+  </div>
   <div class="row hidden" id="dsTdOpts" style="margin-top:8px"><select id="dsPri"><option value="high">🔥 高</option><option value="mid" selected>⭐ 中</option><option value="low">🌱 低</option></select><select id="dsTag"></select></div>
   <div class="row between" style="margin-top:12px"><button class="btn white" id="dsGoDay">看這天的日計畫</button><button class="btn" id="dsAdd">新增</button></div>
 </div></div>
@@ -1189,7 +1233,7 @@ function extractMoney(d){
 }
 function cleanDiary(dy){ const o = {}; Object.entries(dy||{}).forEach(([k,v]) => { if(v) o[k] = {mood:v.mood||'', text:v.text||''}; }); return o; }
 // 安全：從雲端、家人或備份檔讀進來的資料，先把會被放進畫面標籤裡的欄位清乾淨
-const SAFE_KEYS = new Set(['id','emoji','mood','kind','status','pri','type','repeat','cat','tag','date','start','end','due','time','until','endDate','country','unit','store','by','gotBy','inv']);
+const SAFE_KEYS = new Set(['id','emoji','mood','kind','status','pri','type','repeat','cat','tag','date','start','end','due','time','until','endDate','country','unit','store','by','gotBy','inv','pay']);
 function scrub(o, depth){
   if(depth > 8 || !o || typeof o !== 'object') return o;
   if(Array.isArray(o)){ o.forEach(x => scrub(x, depth+1)); return o; }
@@ -1212,6 +1256,7 @@ function makeDb0(d){ d = d || {}; const st = Object.assign(DEFAULT_SETTINGS(), d
 function fixTags(once){
   let ch = false; const has = n => db.tags.some(t => t.name === n);
   db.todos.forEach(td => { if(td.tag && !has(td.tag)){ const d = DEFAULT_TAGS.find(x=>x.name===td.tag); db.tags.push({name:td.tag, color:d ? d.color : '#FFC93C'}); ch = true; } });
+  if(once && !db.settings.cat1125){ db.settings.cat1125 = true; ch = true; Object.values(db.money||{}).forEach(a => (a||[]).forEach(m => { if(m.kind==='out' && m.cat==='生活') m.cat = '日用品'; })); }
   if(once && !db.settings.rem1723){ db.settings.rem1723 = true; ch = true; db.settings.morning = {on:true, time:'10:00'}; db.settings.daily = Object.assign({}, db.settings.daily, {on:true, time:'17:00'}); delete db.settings.fired.daily; }
   if(once && !db.settings.fixLife1){ db.settings.fixLife1 = true; ch = true; if(!has('生活')) db.tags.push({name:'生活', color:'#22C39A'}); }
   return ch;
@@ -1599,6 +1644,8 @@ function shift(n){
   renderPlan();
 }
 const evTime = ev => ev.endDate && ev.endDate > ev.date ? `${md(ev.date)}${ev.time ? ' ' + ev.time : ''} – ${md(ev.endDate)}${ev.end ? ' ' + ev.end : ''}` : ev.time ? ev.time + (ev.end ? '–' + ev.end : '') : '全天';
+const evColor = ev => ev.tag && db.tags.some(t => t.name === ev.tag) ? tagColor(ev.tag) : '';
+const evStyle = ev => { const c = evColor(ev); return c ? `--evb:color-mix(in srgb, ${c} 22%, #fff);--evl:${c};--evt:#2A2E45` : ''; };
 const isMulti = ev => !!(ev.endDate && ev.endDate > ev.date && !ev.repeat);
 const evSort = (a,b) => (a.date+(a.time||'99:99')).localeCompare(b.date+(b.time||'99:99'));
 const tdSort = (a,b) => (a.done-b.done) || (a.due||'9999').localeCompare(b.due||'9999') || PRI_ORDER[a.pri]-PRI_ORDER[b.pri];
@@ -1648,7 +1695,7 @@ function timeline(days){
     return `<div class="tl-dh ${ds===t?'today':''}" data-act="openDay" data-date="${ds}"><span>${WD[d.getDay()]}</span><b>${d.getDate()}</b><i class="${fest?'fest':''}">${fest ? esc(fest.name) : lunarLabel(ds)}</i></div>`; }).join('');
   // 全天：節日、紀念日、沒時間的行程、（週檢視）到期待辦
   const alls = days.map(ds => holidaysOn(ds).filter(x => wk ? x.kind === 'ann' : true).map(x => `<div class="tl-chip ${x.kind==='fest'?'fest':'ann'}">${esc(holText(x))}</div>`)
-    .concat(eventsOn(ds).filter(ev => !ev.time || isMulti(ev)).map(ev => isMulti(ev) ? `<div class="tl-chip ev multi c${tlColor(ev.id)} ${ds === ev.date ? 'mfirst' : ''} ${ds === ev.endDate ? 'mlast' : ''} ed" data-act="edit" data-k="ev" data-id="${ev.id}" title="${esc(evTime(ev))}">${wk ? '' : ds === ev.date ? '' : '◂ '}${esc(ev.title)}${wk ? '' : ` <small>第 ${diffDays(ev.date, ds) + 1}/${diffDays(ev.date, ev.endDate) + 1} 天</small>`}${wk || ds === ev.endDate ? '' : ' ▸'}</div>` : `<div class="tl-chip ev ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}">${ev.repeat?'🔁':''}${esc(ev.title)}</div>`),
+    .concat(eventsOn(ds).filter(ev => !ev.time || isMulti(ev)).map(ev => isMulti(ev) ? `<div class="tl-chip ev multi c${tlColor(ev.id)} ${ds === ev.date ? 'mfirst' : ''} ${ds === ev.endDate ? 'mlast' : ''} ed" style="${evStyle(ev)}" data-act="edit" data-k="ev" data-id="${ev.id}" title="${esc(evTime(ev))}">${wk ? '' : ds === ev.date ? '' : '◂ '}${esc(ev.title)}${wk ? '' : ` <small>第 ${diffDays(ev.date, ds) + 1}/${diffDays(ev.date, ev.endDate) + 1} 天</small>`}${wk || ds === ev.endDate ? '' : ' ▸'}</div>` : `<div class="tl-chip ev ed" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}">${ev.repeat?'🔁':''}${esc(ev.title)}</div>`),
       wk ? hwDueOn(ds).filter(x => !x.done).map(x => `<div class="tl-chip hw">📚${esc(x.course||x.content)}</div>`) : [],
       wk ? todosDue(ds).map(td => `<div class="tl-chip td ${td.done?'done':''} ed" data-act="edit" data-k="todo" data-id="${td.id}">${td.done?'✓':''}${esc(td.title)}</div>`) : []));
   if(alls.some(a => a.length)) h += `<div class="tl-g tl-alll">全天</div>` + alls.map(a => `<div class="tl-all">${a.join('')}</div>`).join('');
@@ -1657,7 +1704,7 @@ function timeline(days){
   h += days.map(ds => {
     const evs = tlLayout(eventsOn(ds).filter(ev => ev.time && !isMulti(ev)));
     return `<div class="tl-col ${ds===t?'today':''}" data-act="tlSlot" data-date="${ds}" style="height:${H*TL_H}px">` + evs.map(it => { const ev = it.ev, top = (it.a - TL_FROM*60) / 60 * TL_H, ht = (it.b - it.a) / 60 * TL_H - 2;
-      const past = ds < t || (ds === t && it.b <= nm); return `<div class="tl-ev ed c${tlColor(ev.id)} ${past ? 'past' : ''} ${ht < 34 ? 'short' : ''}" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" style="top:${top}px;height:${ht}px;left:calc(${it.lane/it.lanes*100}% + 1px);width:calc(${100/it.lanes}% - 3px)"><b>${ev.repeat?'🔁':''}${esc(ev.title)}</b><span>${evTime(ev)}</span>${!wk && ev.note && ht >= 50 ? `<span class="nt">${esc(ev.note)}</span>` : ''}</div>`; }).join('')
+      const past = ds < t || (ds === t && it.b <= nm); return `<div class="tl-ev ed c${tlColor(ev.id)} ${past ? 'past' : ''} ${ht < 34 ? 'short' : ''}" data-act="edit" data-k="ev" data-id="${ev.id}" data-date="${ev._rep?ev.date:''}" style="${evStyle(ev)};top:${top}px;height:${ht}px;left:calc(${it.lane/it.lanes*100}% + 1px);width:calc(${100/it.lanes}% - 3px)"><b>${ev.repeat?'🔁':''}${esc(ev.title)}</b><span>${evTime(ev)}</span>${!wk && ev.note && ht >= 50 ? `<span class="nt">${esc(ev.note)}</span>` : ''}</div>`; }).join('')
       + (ds === t && nm >= TL_FROM*60 && nm < TL_TO*60 ? `<div class="tl-now" style="top:${(nm - TL_FROM*60) / 60 * TL_H}px"></div>` : '') + '</div>';
   }).join('');
   return h + '</div>' + `<p class="meta" style="margin:6px 0 0;text-align:center">點時間軸上的空白處，就能在那個時間新增行程</p>`;
@@ -1669,19 +1716,27 @@ function renderPlan(){
   if(view==='month'){
     const y = cursor.getFullYear(), m = cursor.getMonth();
     $('#periodLabel').textContent = `${y} 年 ${m+1} 月`;
-    const first = new Date(y, m, 1), start = addDays(first, -first.getDay());
+    const first = new Date(y, m, 1), start = addDays(first, -first.getDay()); let wkLanes = [];
     html = '<div class="month">' + WD.map(w=>`<div class="wd">${w}</div>`).join('');
     for(let i=0;i<42;i++){
       const d = addDays(start,i), ds = ymd(d);
       if(i===35 && d.getMonth()!==m) break;
       const hols = holidaysOn(ds), fest = hols.find(h=>h.kind==='fest');
-      const items = hols.filter(h=>h.kind==='ann').map(h=>`<span class="chip ann">${h.emoji}${esc(h.name)}</span>`).concat(hwDueOn(ds).filter(h=>!h.done).map(h=>`<span class="chip hw">📚 ${esc(h.course||h.content)}</span>`), eventsOn(ds).map(e=>`<span class="chip ev">${e.time?e.time+' ':''}${esc(e.title)}</span>`))
+      if(i % 7 === 0){ // 這一週的多天行程排成一條一條
+        const ws = ds, we = ymd(addDays(d, 6)); wkLanes = [];
+        db.events.filter(e => isMulti(e) && e.date <= we && e.endDate >= ws).sort((a,b) => a.date.localeCompare(b.date) || b.endDate.localeCompare(a.endDate)).forEach(e => {
+          let l = 0; while(wkLanes[l] && wkLanes[l].some(x => x.date <= e.endDate && x.endDate >= e.date)) l++; (wkLanes[l] = wkLanes[l] || []).push(e); });
+      }
+      const segs = wkLanes.map(lane => { const e = lane.find(x => x.date <= ds && x.endDate >= ds); if(!e) return '<span class="mseg empty"></span>';
+        const first = ds === e.date, last = ds === e.endDate, show = first || i % 7 === 0, c = evColor(e) || '#5DB3E8';
+        return `<span class="mseg ${first?'s':''} ${last?'e':''}" style="--tc:${c}" data-act="edit" data-k="ev" data-id="${e.id}" title="${esc(e.title)}">${show ? esc(e.title) : '&nbsp;'}</span>`; }).join('');
+      const items = hols.filter(h=>h.kind==='ann').map(h=>`<span class="chip ann">${h.emoji}${esc(h.name)}</span>`).concat(hwDueOn(ds).filter(h=>!h.done).map(h=>`<span class="chip hw">📚 ${esc(h.course||h.content)}</span>`), eventsOn(ds).filter(e => !isMulti(e)).map(e=>`<span class="chip ev" style="${evColor(e) ? `background:color-mix(in srgb, ${evColor(e)} 24%, #fff)` : ''}">${e.time?e.time+' ':''}${esc(e.title)}</span>`))
         .concat(todosDue(ds).map(td=>`<span class="chip td ${td.done?'done':''}">${tagDot(td.tag)}${td.done?'✓ ':''}${esc(td.title)}</span>`));
-      const shown = items.slice(0,3).join('') + (items.length>3 ? `<span class="chip more">還有 ${items.length-3} 項</span>` : '');
-      const dots = hols.filter(h=>h.kind==='ann').map(()=>'<i class="an"></i>').concat(hwDueOn(ds).filter(h=>!h.done).map(()=>'<i class="hw"></i>')).concat(eventsOn(ds).map(()=>'<i></i>')).concat(todosDue(ds).map(td=>`<i class="td ${td.done?'done':''}"></i>`)).slice(0,6).join('');
+      const room = Math.max(1, 3 - wkLanes.length), shown = segs + items.slice(0,room).join('') + (items.length>room ? `<span class="chip more">還有 ${items.length-room} 項</span>` : '');
+      const dots = hols.filter(h=>h.kind==='ann').map(()=>'<i class="an"></i>').concat(hwDueOn(ds).filter(h=>!h.done).map(()=>'<i class="hw"></i>')).concat(eventsOn(ds).filter(e => !isMulti(e)).map(()=>'<i></i>')).concat(todosDue(ds).map(td=>`<i class="td ${td.done?'done':''}"></i>`)).slice(0,6).join('');
       html += `<div class="cell ${d.getMonth()!==m?'out':''} ${ds===t?'today':''}" data-act="openDay" data-date="${ds}"><span class="num">${d.getDate()}</span><span class="lunar ${fest?'fest':''}">${fest?fest.name:lunarLabel(ds)}</span>${shown}<span class="dotrow">${dots}</span></div>`;
     }
-    html += '</div><p class="meta" style="margin:8px 0 0">點任何一天的格子，就能直接新增行程或待辦。藍色是行程，橘色是待辦期限，粉紅色是生日和紀念日，紅字是節日。</p>';
+    html += '</div><p class="meta" style="margin:8px 0 0">點任何一天的格子就能新增。多天的行程會連成一條，行程的顏色跟著標籤走；橘色是待辦期限，粉紅色是生日和紀念日，紅字是節日。</p>';
   } else if(view==='week'){
     const s = monday(cursor), e = addDays(s,6);
     $('#periodLabel').textContent = `${md(ymd(s))}–${md(ymd(e))}`;
@@ -1812,14 +1867,15 @@ function renderDoneLog(){
 
 // ---------- 日記＋記帳 ----------
 const MOODS = ['😄','🙂','😐','😢','😡','😴','🥳'];
-const CATS = {out:['餐飲','食材','交通','購物','生活','學習','娛樂','醫療','其他'], in:['薪水','獎金','零用','其他']};
+const CATS = {out:['餐飲','食材','日用品','交通','購物','水電瓦斯','電信網路','房租房貸','保險','學費','學習','醫療','孩子','寵物','送禮人情','娛樂','旅遊','稅費','其他'], in:['薪水','獎金','零用','退款','其他']};
+const PAY_OPTS = [['','💵 現金'],['card','💳 信用卡'],['bank','🏦 轉帳'],['mobile','📱 行動支付']];
 let dDate = today(), dShownFor = null, dTimer = null;
 const entry = ds => db.diary[ds] || (db.diary[ds] = {mood:'', text:''});
 const mlist = ds => db.money[ds] || [];
 const mlistW = ds => db.money[ds] || (db.money[ds] = []);
 const monthMoney = (ym, f) => Object.keys(db.money).filter(k=>k.startsWith(ym)).forEach(k => db.money[k].forEach(f));
 const money = n => Number(n).toLocaleString('zh-TW');
-function fillCats(){ $('#mCat').innerHTML = CATS[$('#mKind').value].map(c=>`<option>${c}</option>`).join(''); }
+function fillCats(){ $('#mCat').innerHTML = CATS[$('#mKind').value].map(c=>`<option>${c}</option>`).join(''); const pe = document.getElementById('mPay'); if(pe) pe.classList.toggle('hidden', $('#mKind').value !== 'out'); }
 $('#mKind').onchange = fillCats; fillCats();
 $('#dPrev').onclick = () => { dDate = ymd(addDays(parse(dDate),-1)); renderDiary(); };
 $('#dNext').onclick = () => { dDate = ymd(addDays(parse(dDate),1)); renderDiary(); };
@@ -1879,7 +1935,7 @@ function parseInvoice(left, right){
 function guessItemCat(name){
   const t = name;
   if(/藥|醫|診|口罩|維他命|維生素|保健|魚油|益生菌|葉黃素/.test(t)) return '醫療';
-  if(/衛生紙|面紙|紙巾|洗衣|洗碗|洗髮|沐浴|洗手|皂|牙膏|牙刷|牙線|垃圾袋|保鮮|電池|燈泡|尿布|濕紙巾|貓砂|飼料|罐罐|清潔|漂白|柔軟精|一匙靈|靈|芳香|除濕|拖把|菜瓜布/.test(t)) return '生活';
+  if(/衛生紙|面紙|紙巾|洗衣|洗碗|洗髮|沐浴|洗手|皂|牙膏|牙刷|牙線|垃圾袋|保鮮|電池|燈泡|尿布|濕紙巾|貓砂|飼料|罐罐|清潔|漂白|柔軟精|一匙靈|靈|芳香|除濕|拖把|菜瓜布/.test(t)) return '日用品';
   if(/加油|汽油|柴油|停車|悠遊|捷運|高鐵|台鐵|客運|計程|Uber/i.test(t)) return '交通';
   if(/便當|套餐|拿鐵|美式|咖啡(?!豆)|奶茶|手搖|漢堡|雞排|披薩|早餐|午餐|晚餐|餐點|內用|外帶|飯糰|關東煮|御飯糰|三明治/.test(t)) return '餐飲';
   if(/菜|蔥|薑|蒜|菇|瓜|果|莓|蕉|蘋|橘|橙|芭樂|番茄|蕃茄|馬鈴薯|洋蔥|玉米|蓮|萵|苣|筍|豆|肉|雞|豬|牛|羊|魚|蝦|蟹|蛤|丸|火腿|香腸|培根|蛋|乳|奶|優格|起司|米|麵|粉|醬|醂|油|鹽|糖|醋|蜜|穀|麥|吐司|麵包|堅果|咖啡豆|茶葉|冷凍|冷藏|生鮮|餅|零食|飲料|果汁|汽水|可樂|水/.test(t)) return '食材';
@@ -2007,10 +2063,11 @@ $('#invFile').onchange = async e => {
 function addMoney(){
   const amt = parseFloat($('#mAmt').value);
   if(!(amt>0)){ toast('請輸入金額'); return; }
-  mlistW(dDate).push({id:uid(), by:Sync.name(), kind:$('#mKind').value, amt, cat:$('#mCat').value, note:$('#mNote').value.trim()});
+  mlistW(dDate).push({id:uid(), by:Sync.name(), kind:$('#mKind').value, amt, cat:$('#mCat').value, pay:$('#mKind').value==='out' ? $('#mPay').value : '', note:$('#mNote').value.trim()});
   $('#mAmt').value=''; $('#mNote').value=''; save(); toast('記好了 💰'); $('#mAmt').focus();
 }
 $('#mAdd').onclick = addMoney;
+$('#mPay').innerHTML = PAY_OPTS.map(([v,t]) => `<option value="${v}">${t}</option>`).join('');
 ['#mAmt','#mNote'].forEach(sel => $(sel).addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) addMoney(); }));
 function renderDiary(){
   const e = db.diary[dDate] || {mood:'', text:''}, ml = mlist(dDate);
@@ -2020,16 +2077,16 @@ function renderDiary(){
   const dn = doneOn(dDate);
   $('#dDone').innerHTML = dn.length ? dn.map(x=>`<li><span class="meta">${hm(x.at)}</span> ${x.html}</li>`).join('') : '<li class="empty" style="list-style:none;margin-left:-20px">這天還沒有勾掉的待辦</li>';
   const out = ml.filter(m=>m.kind==='out').reduce((a,m)=>a+m.amt,0), inc = ml.filter(m=>m.kind==='in').reduce((a,m)=>a+m.amt,0);
-  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="edit" data-k="money" data-id="${m.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delMoney" data-mid="${m.id}" aria-label="刪除">✕</button></div>`).join('')
+  $('#mList').innerHTML = ml.length ? ml.map(m=>`<div class="money"><span class="tag" style="background:${m.kind==='out'?'var(--soft-orange)':'var(--soft-mint)'}">${esc(m.cat)}</span><span class="grow">${m.pay ? `<span title="${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(2)}">${(PAY_OPTS.find(x=>x[0]===m.pay)||['',''])[1].slice(0,2)}</span> ` : ''}${esc(m.note)||'<span class="meta">—</span>'}</span><span class="amt ${m.kind}">${m.kind==='out'?'-':'+'}$${money(m.amt)}</span><button class="icon" data-act="edit" data-k="money" data-id="${m.id}" aria-label="編輯">✏️</button><button class="icon" data-act="delMoney" data-mid="${m.id}" aria-label="刪除">✕</button></div>`).join('')
     + `<div class="money" style="font-weight:900"><span class="grow">這天合計</span>${out?`<span class="amt out">支出 $${money(out)}</span>`:''}${inc?`<span class="amt in">收入 $${money(inc)}</span>`:''}</div>`
     : '<div class="empty">這天還沒有記帳</div>';
   // 本月
-  const ym = dDate.slice(0,7); let mo = 0, mi = 0; const byCat = {};
-  monthMoney(ym, m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; } else mi += m.amt; });
+  const ym = dDate.slice(0,7); let mo = 0, mi = 0, card = 0; const byCat = {};
+  monthMoney(ym, m => { if(m.kind==='out'){ mo += m.amt; byCat[m.cat] = (byCat[m.cat]||0) + m.amt; if(m.pay==='card') card += m.amt; } else mi += m.amt; });
   $('#mMonthTitle').textContent = `📊 ${+ym.slice(5)} 月收支`;
   const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>`
-    + (cats.length ? cats.map(([c,v])=>`<div class="catrow"><span style="width:44px;font-weight:700">${esc(c)}</span><div class="bar"><div style="width:${Math.round(v/mo*100)}%"></div></div><span style="min-width:90px;text-align:right">$${money(v)} · ${Math.round(v/mo*100)}%</span></div>`).join('') : '<div class="empty">這個月還沒有支出紀錄</div>');
+  $('#mMonth').innerHTML = `<div class="sum3"><div><b class="amt out" style="text-align:center">$${money(mo)}</b>支出</div><div><b class="amt in" style="text-align:center">$${money(mi)}</b>收入</div><div><b>$${money(mi-mo)}</b>結餘</div></div>` + (card ? `<p class="meta" style="margin:4px 0 6px">💳 這個月刷卡 $${money(card)}（可以拿來對信用卡帳單）</p>` : '')
+    + (cats.length ? cats.map(([c,v])=>`<div class="catrow"><span style="width:70px;flex:none;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c)}</span><div class="bar"><div style="width:${Math.round(v/mo*100)}%"></div></div><span style="min-width:90px;text-align:right">$${money(v)} · ${Math.round(v/mo*100)}%</span></div>`).join('') : '<div class="empty">這個月還沒有支出紀錄</div>');
   renderEntries();
 }
 function renderEntries(){
@@ -2235,7 +2292,7 @@ document.addEventListener('click', e => {
     case 'openDay': openDay(date || today(), b.dataset.k); return;
     case 'openDayBg': if(e.target === b) openDay(date); return;
     case 'tlSlot': { if(e.target !== b) return; const r = b.getBoundingClientRect(), m = Math.floor(((e.clientY - r.top) / TL_H * 60) / 30) * 30 + TL_FROM*60;
-      openDay(date, 'ev'); $('#dsTime').value = pad(Math.floor(m/60)) + ':' + pad(m%60); $('#dsEnd').value = ''; syncTw(); return; }
+      openDay(date, 'ev'); $('#dsTime').value = pad(Math.floor(m/60)) + ':' + pad(m%60); $('#dsEnd').value = ''; dsTimes(true); return; }
     case 'tab': goTab(b.dataset.tab); return;
     case 'habitInc': habitAdd(b.dataset.hid, +b.dataset.n); return;
     case 'delHabit': { const hs = myHabits(), h = hs.find(x=>x.id===b.dataset.hid); if(!h || !confirm(`刪除「${h.name}」這個習慣？過去的紀錄也會一起刪除。`)) return; hs.splice(hs.indexOf(h), 1); Object.values(myLog()).forEach(o => delete o[h.id]); break; }
@@ -2314,9 +2371,19 @@ const ZH_ASIA=["台灣","日本","韓國","北韓","中國","香港","澳門","�
 const COUNTIES = ['基隆市','台北市','新北市','桃園市','新竹市','新竹縣','苗栗縣','台中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','台南市','高雄市','屏東縣','宜蘭縣','花蓮縣','台東縣','澎湖縣','金門縣','連江縣'];
 
 // ---------- 日期格子：直接新增 ----------
-let dsDate = today(), dsKind = 'ev';
+let dsDate = today(), dsKind = 'ev', dsEvTag = '';
+function dsTimes(on){
+  $('#dsTimesWrap').classList.toggle('hidden', !on); $('#dsAddTime').classList.toggle('hidden', on);
+  if(!on){ $('#dsTime').value = ''; $('#dsEnd').value = ''; } else if(!$('#dsTime').value) $('#dsTime').value = '09:00';
+  syncTw();
+}
+function dsResetForm(){ $('#dsStart').value = dsDate; $('#dsEndDate').value = dsDate; dsTimes(false); }
+function renderEvTagPick(){
+  if(dsEvTag && !db.tags.some(t => t.name === dsEvTag)) dsEvTag = '';
+  $('#dsEvTagPick').innerHTML = [{name:'', color:'#9AA0B5'}].concat(db.tags).map(t => `<button type="button" class="gctag ${dsEvTag===t.name?'on':''}" data-tg="${esc(t.name)}" style="--tc:${t.color}"><i></i>${esc(t.name || '不分類')}</button>`).join('');
+}
 function openDay(ds, kind){
-  dsDate = ds; if(kind) dsKind = kind; renderDaySheet();
+  dsDate = ds; if(kind) dsKind = kind; dsResetForm(); renderDaySheet();
   $('#daySheet').classList.add('on'); setTimeout(() => $('#dsText').focus(), 50);
 }
 function renderDaySheet(){
@@ -2330,18 +2397,24 @@ function renderDaySheet(){
   $('#dsEvOpts').classList.toggle('hidden', dsKind!=='ev'); $('#dsTdOpts').classList.toggle('hidden', dsKind!=='td');
   $('#dsText').placeholder = dsKind==='ev' ? '行程名稱，例如：帶妹妹打疫苗' : '要完成的事，例如：繳學費';
   $('#dsTag').innerHTML = '<option value="">不分類</option>' + db.tags.map(t=>`<option>${esc(t.name)}</option>`).join('');
+  renderEvTagPick();
 }
 $('#dsKind').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if(!b) return; dsKind = b.dataset.k; renderDaySheet(); $('#dsText').focus(); });
 function dsAdd(){
   const v = $('#dsText').value.trim(); if(!v){ toast('請輸入內容'); return; }
-  const dsT = $('#dsTime').value, dsE = dsT ? $('#dsEnd').value : '', dsED = $('#dsEndDate').value > dsDate ? $('#dsEndDate').value : '';
+  const dsS = $('#dsStart').value || dsDate, dsT = $('#dsTime').value, dsE = dsT ? $('#dsEnd').value : '', dsED = $('#dsEndDate').value > dsS ? $('#dsEndDate').value : '';
   if(dsKind==='ev' && dsED && $('#dsRepeat').value){ toast('多天行程不能同時設定重複喔'); return; }
   if(dsKind==='ev' && !dsED && dsE && dsE <= dsT){ toast('結束時間要比開始時間晚喔'); return; }
-  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsDate, time:dsT, end:dsE, endDate:dsED, note:$('#dsNote').value.trim(), remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:$('#dsRepeat').value ? $('#dsUntil').value : ''});
+  if(dsKind==='ev') db.events.push({id:uid(), title:v, date:dsS, time:dsT, end:dsE, endDate:dsED, tag:dsEvTag, note:$('#dsNote').value.trim(), remind:+$('#dsRemind').value, notified:false, repeat:$('#dsRepeat').value, until:$('#dsRepeat').value ? $('#dsUntil').value : ''});
   else db.todos.push(newTodo({title:v, due:dsDate, start:dsDate<today()?dsDate:today(), pri:$('#dsPri').value, tag:$('#dsTag').value}));
-  $('#dsText').value = ''; $('#dsTime').value = ''; $('#dsEnd').value = ''; $('#dsEndDate').value = ''; $('#dsRepeat').value = ''; $('#dsUntil').value = ''; $('#dsNote').value = ''; $('#dsUntilWrap').classList.add('hidden'); save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
+  $('#dsText').value = ''; dsResetForm(); $('#dsRepeat').value = ''; $('#dsUntil').value = ''; $('#dsNote').value = ''; $('#dsUntilWrap').classList.add('hidden'); save(); renderDaySheet(); toast(dsKind==='ev' ? '行程加好了 📅' : '待辦加好了 ✅');
 }
 $('#dsAdd').onclick = dsAdd;
+$('#dsAddTime').onclick = () => dsTimes(true);
+$('#dsNoTime').onclick = () => dsTimes(false);
+$('#dsStart').addEventListener('change', e => { const v = e.target.value; if(!v) return; if(!$('#dsEndDate').value || $('#dsEndDate').value < v) $('#dsEndDate').value = v; });
+$('#dsEndDate').addEventListener('change', e => { if(e.target.value && e.target.value < $('#dsStart').value){ $('#dsEndDate').value = $('#dsStart').value; toast('結束日不能早於開始日'); } });
+$('#dsEvTagPick').addEventListener('click', e => { const b = e.target.closest('[data-tg]'); if(!b) return; dsEvTag = b.dataset.tg; renderEvTagPick(); });
 $('#dsRepeat').onchange = e => $('#dsUntilWrap').classList.toggle('hidden', !e.target.value);
 $('#dsText').addEventListener('keydown', e => { if(e.key==='Enter' && !e.isComposing) dsAdd(); });
 $('#dsClose').onclick = () => $('#daySheet').classList.remove('on');
@@ -2985,7 +3058,7 @@ const EDITORS = {
     after:(o,old) => { if(o.remindAt !== old.remindAt) o.notified = false; if(!o.due) o.countdown = false; }},
   step: {title:'✏️ 編輯步驟', name:o => o.title, del:(o,id) => { const t = db.todos.find(x=>x.id===id); if(t) t.steps = t.steps.filter(x=>x!==o); }, get:(id,sid) => { const t = db.todos.find(x=>x.id===id); return t && t.steps.find(x=>x.id===sid); }, fields:() => [['title','步驟','text',null,true]]},
   ev: {title:'✏️ 編輯行程', get:id => db.events.find(x=>x.id===id), note:o => o.repeat ? '🔁 這是重複行程，修改會套用到每一次。' : '',
-    fields:o => [['title','行程','text',null,true], ['date', o.repeat || isMulti(o) ? '開始日' : '日期','date',null,true], ['endDate','結束日（多天行程才填）','date'], ['time','開始時間','time24'], ['end','結束時間','time24','不設定'],
+    fields:o => [['title','行程','text',null,true], ['date', o.repeat || isMulti(o) ? '開始日' : '日期','date',null,true], ['endDate','結束日（多天行程才填）','date'], ['time','開始時間','time24'], ['end','結束時間','time24','不設定'], ['tag','標籤','select',[['','不分類']].concat(db.tags.map(t=>[t.name,t.name]))],
       ['remind','提醒','select',REMIND_OPTS,false,'num'], ['repeat','重複','select',REPEAT_OPTS], ['until','重複到（可不填）','date'], ['note','備註、地點','text']],
     check:nv => { if(!nv.time) nv.end = ''; if(nv.endDate && nv.endDate <= nv.date) nv.endDate = ''; if(nv.endDate && nv.repeat) return '多天行程不能同時設定重複喔';
       if(!nv.endDate && nv.end && nv.end <= nv.time) return '結束時間要比開始時間晚喔'; },
@@ -2994,7 +3067,7 @@ const EDITORS = {
   shop: {title:'✏️ 編輯要買的', name:o => o.name, del:o => { db.shop = db.shop.filter(x=>x!==o); }, get:id => db.shop.find(x=>x.id===id), fields:() => [['name','品名','text',null,true], ['qty','數量','text'],
     ['cat','分類','select',SHOP_CATS.map(c=>[c[0], c[1]+' '+c[2]])], ['store','在哪買','select',[['','不限']].concat(SHOP_STORES.map(x=>[x,x]))]]},
   money: {title:'✏️ 編輯記帳', name:o => `${o.cat||''} $${o.amt}`, del:o => { Object.values(db.money||{}).forEach(a => { const i = (a||[]).indexOf(o); if(i>=0) a.splice(i,1); }); }, get:id => findMoney(id), fields:o => [['kind','類型','select',[['out','支出'],['in','收入']]], ['amt','金額','number',null,true,'num'],
-    ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, [o.cat]))].map(c=>[c,c])], ['note','備註','text']]},
+    ['cat','分類','select',[...new Set(CATS.out.concat(CATS.in, [o.cat]))].map(c=>[c,c])], ['pay','付款方式','select',PAY_OPTS], ['note','備註','text']]},
   habit: {title:'✏️ 編輯習慣', get:id => myHabits().find(x=>x.id===id), fields:() => [['emoji','圖示','select',[...new Set(HABIT_EMOJIS)].map(e=>[e,e])],
     ['name','習慣','text',null,true], ['target','每天目標','number',null,true,'num'], ['unit','單位','text']]},
   idea: {title:'✏️ 編輯靈感', name:o => String(o.text).slice(0,20), del:o => { db.ideas = db.ideas.filter(x=>x!==o); }, get:id => db.ideas.find(x=>x.id===id), fields:() => [['text','內容','textarea',null,true]]},
